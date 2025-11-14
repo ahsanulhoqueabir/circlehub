@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Calendar, MapPin, User, Phone, Mail, Clock } from "lucide-react";
+import { X, Calendar, MapPin, User, Phone } from "lucide-react";
 import Image from "next/image";
 import { ShareItem } from "@/lib/mock-data/share-items";
 
@@ -95,7 +95,7 @@ export default function ItemDetailModal({
               <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
                 {item.title}
               </h3>
-              {item.isActive && (
+              {item.status === "available" && (
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                   Available
                 </span>
@@ -127,12 +127,6 @@ export default function ItemDetailModal({
                     <Calendar className="w-5 h-5" />
                     <span>Posted {formatDate(item.datePosted)}</span>
                   </div>
-                  {item.availability && (
-                    <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                      <Clock className="w-5 h-5" />
-                      <span>{item.availability}</span>
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -143,47 +137,15 @@ export default function ItemDetailModal({
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                     <User className="w-5 h-5" />
-                    <span>{item.contactInfo.name}</span>
+                    <span>{item.sharedBy.name}</span>
                   </div>
-                  {item.contactInfo.phone && (
-                    <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                      <Phone className="w-5 h-5" />
-                      <a
-                        href={`tel:${item.contactInfo.phone}`}
-                        className="hover:text-yellow-600"
-                      >
-                        {item.contactInfo.phone}
-                      </a>
-                    </div>
-                  )}
-                  {item.contactInfo.email && (
-                    <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                      <Mail className="w-5 h-5" />
-                      <a
-                        href={`mailto:${item.contactInfo.email}`}
-                        className="hover:text-yellow-600"
-                      >
-                        {item.contactInfo.email}
-                      </a>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                    <Phone className="w-5 h-5" />
+                    <span>{item.contactInfo}</span>
+                  </div>
                 </div>
               </div>
             </div>
-
-            {/* Notes */}
-            {item.notes && (
-              <div className="mb-6">
-                <h4 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                  Additional Notes
-                </h4>
-                <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-4">
-                  <p className="text-slate-600 dark:text-slate-300">
-                    {item.notes}
-                  </p>
-                </div>
-              </div>
-            )}
 
             {/* Tags */}
             {item.tags && item.tags.length > 0 && (

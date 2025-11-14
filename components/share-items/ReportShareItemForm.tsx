@@ -55,18 +55,21 @@ export default function ReportShareItemForm({
     e.preventDefault();
 
     const shareItemData = {
-      ...formData,
-      images: images.map((img) => URL.createObjectURL(img)),
-      tags: formData.tags.filter((tag) => tag.trim() !== ""),
-      contactInfo: {
-        name: formData.contactName,
-        phone: formData.contactPhone || undefined,
-        email: formData.contactEmail || undefined,
-        preferredContact: formData.preferredContact,
-      },
+      title: formData.title,
+      description: formData.description,
+      category: formData.category,
+      condition: formData.condition as "new" | "like-new" | "good" | "fair",
+      location: formData.location,
       datePosted: new Date().toISOString().split("T")[0],
-      isActive: true,
-      id: Math.random().toString(36).substr(2, 9),
+      contactInfo: formData.contactPhone || formData.contactEmail || "Contact via form",
+      imageUrl: images.length > 0 ? URL.createObjectURL(images[0]) : undefined,
+      tags: formData.tags.filter((tag) => tag.trim() !== ""),
+      status: "available" as const,
+      sharedBy: {
+        name: formData.contactName,
+        avatar: undefined,
+        studentId: undefined,
+      },
     };
 
     onSubmit(shareItemData);

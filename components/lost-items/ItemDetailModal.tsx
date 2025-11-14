@@ -253,7 +253,8 @@ export default function ItemDetailModal({
                       Reported by {item.reportedBy.name}
                     </h3>
                     <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
-                      Posted {getTimeAgo(item.datePosted)} • {item.views || 0} views
+                      Posted {getTimeAgo(item.datePosted)} • {item.views || 0}{" "}
+                      views
                     </p>
 
                     {/* Contact Info */}
