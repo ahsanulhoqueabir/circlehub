@@ -61,7 +61,8 @@ export default function ReportShareItemForm({
       condition: formData.condition as "new" | "like-new" | "good" | "fair",
       location: formData.location,
       datePosted: new Date().toISOString().split("T")[0],
-      contactInfo: formData.contactPhone || formData.contactEmail || "Contact via form",
+      contactInfo:
+        formData.contactPhone || formData.contactEmail || "Contact via form",
       imageUrl: images.length > 0 ? URL.createObjectURL(images[0]) : undefined,
       tags: formData.tags.filter((tag) => tag.trim() !== ""),
       status: "available" as const,
