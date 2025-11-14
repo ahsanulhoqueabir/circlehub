@@ -91,7 +91,7 @@ export default function ItemDetailModal({
                   Lost Item Details
                 </h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Posted {getTimeAgo(item.createdAt)}
+                  Posted {getTimeAgo(item.datePosted)}
                 </p>
               </div>
             </div>
@@ -202,7 +202,7 @@ export default function ItemDetailModal({
                         Posted
                       </p>
                       <p className="text-sm text-slate-600 dark:text-slate-400">
-                        {formatDate(item.createdAt)}
+                        {formatDate(item.datePosted)}
                       </p>
                     </div>
                   </div>
@@ -253,7 +253,7 @@ export default function ItemDetailModal({
                       Reported by {item.reportedBy.name}
                     </h3>
                     <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
-                      Posted {getTimeAgo(item.createdAt)} • {item.views} views
+                      Posted {getTimeAgo(item.datePosted)} • {item.views || 0} views
                     </p>
 
                     {/* Contact Info */}

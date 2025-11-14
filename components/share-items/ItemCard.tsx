@@ -44,7 +44,7 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
       {/* Image */}
       <div className="relative h-48 w-full">
         <Image
-          src={item.images[0] || "/placeholder-image.jpg"}
+          src={item.imageUrl || "/placeholder-image.jpg"}
           alt={item.title}
           fill
           className="object-cover"
@@ -67,7 +67,7 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
             {item.category}
           </span>
-          {item.isActive && (
+          {item.status === "available" && (
             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
               Available
             </span>
@@ -92,22 +92,13 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
           </div>
           <div className="flex items-center gap-1">
             <User className="w-4 h-4" />
-            <span>{item.contactInfo.name}</span>
+            <span>{item.sharedBy.name}</span>
           </div>
           <div className="flex items-center gap-1">
             <Calendar className="w-4 h-4" />
             <span>Posted {formatDate(item.datePosted)}</span>
           </div>
         </div>
-
-        {/* Availability */}
-        {item.availability && (
-          <div className="mt-3 p-2 bg-slate-50 dark:bg-slate-700 rounded-md">
-            <p className="text-xs text-slate-600 dark:text-slate-300">
-              <strong>Availability:</strong> {item.availability}
-            </p>
-          </div>
-        )}
 
         {/* Tags */}
         {item.tags && item.tags.length > 0 && (

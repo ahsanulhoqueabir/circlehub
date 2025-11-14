@@ -64,11 +64,11 @@ const StatusBadge = ({ status }: { status: FoundItem["status"] }) => {
         "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
       description: "This item has been successfully claimed by its owner",
     },
-    expired: {
-      label: "Expired",
+    returned: {
+      label: "Returned",
       className:
         "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400",
-      description: "This listing has expired",
+      description: "This item has been successfully returned to its owner",
     },
   };
 
@@ -161,7 +161,7 @@ export default function ItemDetailModal({
               </div>
               <div className="flex items-center gap-1">
                 <Eye className="w-4 h-4" />
-                <span>{item.views} views</span>
+                <span>{item.views || 0} views</span>
               </div>
             </div>
           </div>
@@ -249,7 +249,7 @@ export default function ItemDetailModal({
                     <div>
                       <span className="text-sm font-medium">Found by</span>
                       <p className="text-slate-900 dark:text-white">
-                        {item.reportedBy.name}
+                        {item.foundBy.name}
                       </p>
                     </div>
                   </div>

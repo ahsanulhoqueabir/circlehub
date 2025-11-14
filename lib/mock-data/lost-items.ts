@@ -11,6 +11,7 @@ export interface LostItem {
   imageUrl?: string;
   tags?: string[];
   status: "active" | "found" | "closed";
+  views?: number;
   reportedBy: {
     name: string;
     avatar?: string;

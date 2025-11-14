@@ -39,8 +39,8 @@ const StatusBadge = ({ status }: { status: FoundItem["status"] }) => {
       className:
         "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
     },
-    expired: {
-      label: "Expired",
+    returned: {
+      label: "Returned",
       className:
         "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400",
     },
@@ -105,7 +105,7 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
           </div>
           <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm">
             <User className="w-4 h-4 shrink-0" />
-            <span className="truncate">Found by {item.reportedBy.name}</span>
+            <span className="truncate">Found by {item.foundBy.name}</span>
           </div>
         </div>
 
@@ -138,7 +138,7 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
           </div>
           <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400 text-sm">
             <Eye className="w-4 h-4" />
-            <span>{item.views}</span>
+            <span>{item.views || 0}</span>
           </div>
         </div>
       </div>

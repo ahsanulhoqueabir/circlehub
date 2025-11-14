@@ -71,7 +71,7 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
           </div>
 
           <div className="flex flex-col items-end text-xs text-slate-500 dark:text-slate-400">
-            <span>{getTimeAgo(item.createdAt)}</span>
+            <span>{getTimeAgo(item.datePosted)}</span>
           </div>
         </div>
 
@@ -105,11 +105,11 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
           <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
             <div className="flex items-center gap-1">
               <Eye className="w-3 h-3" />
-              <span>{item.views}</span>
+              <span>{item.views || 0}</span>
             </div>
             <div className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
-              <span>{formatDate(item.createdAt)}</span>
+              <span>{formatDate(item.datePosted)}</span>
             </div>
           </div>
         </div>

@@ -70,7 +70,7 @@ export default function ItemDetailModal({
             {/* Image */}
             <div className="relative h-64 w-full mb-6 rounded-lg overflow-hidden">
               <Image
-                src={item.images[0] || "/placeholder-image.jpg"}
+                src={item.imageUrl || "/placeholder-image.jpg"}
                 alt={item.title}
                 fill
                 className="object-cover"

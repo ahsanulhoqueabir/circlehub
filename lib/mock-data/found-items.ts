@@ -10,6 +10,7 @@ export interface FoundItem {
   imageUrl?: string;
   tags?: string[];
   status: "available" | "claimed" | "returned";
+  views?: number;
   foundBy: {
     name: string;
     avatar?: string;
