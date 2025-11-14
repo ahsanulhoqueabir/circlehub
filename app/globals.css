@@ -1,26 +1,140 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --radius: 0.625rem;
+
+  /* CircleHub JnU Custom Colors - Light Mode */
+  --background: 248 250 252;
+  /* #F8FAFC - Neutral BG */
+  --foreground: 15 23 42;
+  /* #0F172A - Text Primary */
+  --card: 255 255 255;
+  /* #FFFFFF - Surface White */
+  --card-foreground: 15 23 42;
+  --popover: 255 255 255;
+  --popover-foreground: 15 23 42;
+  --primary: 37 99 235;
+  /* #2563EB - University Blue */
+  --primary-foreground: 255 255 255;
+  --secondary: 250 204 21;
+  /* #FACC15 - Gold */
+  --secondary-foreground: 15 23 42;
+  --muted: 248 250 252;
+  --muted-foreground: 100 116 139;
+  /* #64748B - Text Secondary */
+  --accent: 250 204 21;
+  /* Gold for highlights */
+  --accent-foreground: 15 23 42;
+  --destructive: 239 68 68;
+  /* #EF4444 - Warning/Lost */
+  --destructive-foreground: 255 255 255;
+  --border: 226 232 240;
+  /* #E2E8F0 - Soft Outline */
+  --input: 226 232 240;
+  --ring: 37 99 235;
+  /* University Blue */
+  --success: 34 197 94;
+  /* #22C55E - Success/Found */
+  --success-foreground: 255 255 255;
+  --warning: 239 68 68;
+  /* #EF4444 - Warning/Lost */
+  --warning-foreground: 255 255 255;
+
+  /* Charts and Sidebar */
+  --chart-1: 37 99 235;
+  --chart-2: 250 204 21;
+  --chart-3: 34 197 94;
+  --chart-4: 239 68 68;
+  --chart-5: 100 116 139;
+  --sidebar: 255 255 255;
+  --sidebar-foreground: 15 23 42;
+  --sidebar-primary: 37 99 235;
+  --sidebar-primary-foreground: 255 255 255;
+  --sidebar-accent: 250 204 21;
+  --sidebar-accent-foreground: 15 23 42;
+  --sidebar-border: 226 232 240;
+  --sidebar-ring: 37 99 235;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.dark {
+  /* CircleHub JnU Custom Colors - Dark Mode */
+  --background: 15 23 42;
+  /* Dark version of text primary */
+  --foreground: 248 250 252;
+  /* Light neutral for text */
+  --card: 30 41 59;
+  /* Darker card background */
+  --card-foreground: 248 250 252;
+  --popover: 30 41 59;
+  --popover-foreground: 248 250 252;
+  --primary: 59 130 246;
+  /* Slightly brighter blue for dark mode */
+  --primary-foreground: 15 23 42;
+  --secondary: 250 204 21;
+  /* Keep gold the same */
+  --secondary-foreground: 15 23 42;
+  --muted: 30 41 59;
+  --muted-foreground: 148 163 184;
+  /* Lighter secondary text */
+  --accent: 250 204 21;
+  --accent-foreground: 15 23 42;
+  --destructive: 248 113 113;
+  /* Lighter red for dark mode */
+  --destructive-foreground: 15 23 42;
+  --border: 51 65 85;
+  /* Darker border */
+  --input: 51 65 85;
+  --ring: 59 130 246;
+  --success: 74 222 128;
+  /* Lighter green for dark mode */
+  --success-foreground: 15 23 42;
+  --warning: 248 113 113;
+  --warning-foreground: 15 23 42;
+
+  /* Charts and Sidebar - Dark Mode */
+  --chart-1: 59 130 246;
+  --chart-2: 250 204 21;
+  --chart-3: 74 222 128;
+  --chart-4: 248 113 113;
+  --chart-5: 148 163 184;
+  --sidebar: 30 41 59;
+  --sidebar-foreground: 248 250 252;
+  --sidebar-primary: 59 130 246;
+  --sidebar-primary-foreground: 15 23 42;
+  --sidebar-accent: 250 204 21;
+  --sidebar-accent-foreground: 15 23 42;
+  --sidebar-border: 51 65 85;
+  --sidebar-ring: 59 130 246;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    border-color: rgb(var(--border));
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+
+  body {
+    background-color: rgb(var(--background));
+    color: rgb(var(--foreground));
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
 }

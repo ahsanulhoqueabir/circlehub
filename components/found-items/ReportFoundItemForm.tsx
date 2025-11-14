@@ -1,0 +1,485 @@
+"use client";
+
+import { useState } from "react";
+import { X, Upload, Plus, Minus } from "lucide-react";
+import { CATEGORIES, LOCATIONS } from "@/lib/mock-data/found-items";
+
+interface ReportFoundItemFormProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: {
+    title: string;
+    description: string;
+    category: string;
+    location: string;
+    dateFound: string;
+    contactInfo: string;
+    imageUrl?: string;
+    tags?: string[];
+  }) => Promise<void>;
+}
+
+export default function ReportFoundItemForm({
+  isOpen,
+  onClose,
+  onSubmit,
+}: ReportFoundItemFormProps) {
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    category: "",
+    location: "",
+    dateFound: "",
+    contactInfo: "",
+    imageUrl: "",
+    tags: [] as string[],
+  });
+  const [newTag, setNewTag] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  if (!isOpen) return null;
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.title.trim()) {
+      newErrors.title = "Title is required";
+    }
+
+    if (!formData.description.trim()) {
+      newErrors.description = "Description is required";
+    } else if (formData.description.trim().length < 20) {
+      newErrors.description = "Description must be at least 20 characters";
+    }
+
+    if (!formData.category) {
+      newErrors.category = "Category is required";
+    }
+
+    if (!formData.location) {
+      newErrors.location = "Location is required";
+    }
+
+    if (!formData.dateFound) {
+      newErrors.dateFound = "Date found is required";
+    } else {
+      const foundDate = new Date(formData.dateFound);
+      const today = new Date();
+      if (foundDate > today) {
+        newErrors.dateFound = "Date found cannot be in the future";
+      }
+    }
+
+    if (!formData.contactInfo.trim()) {
+      newErrors.contactInfo = "Contact information is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await onSubmit({
+        ...formData,
+        imageUrl: formData.imageUrl || undefined,
+        tags: formData.tags.length > 0 ? formData.tags : undefined,
+      });
+
+      // Reset form
+      setFormData({
+        title: "",
+        description: "",
+        category: "",
+        location: "",
+        dateFound: "",
+        contactInfo: "",
+        imageUrl: "",
+        tags: [],
+      });
+      setNewTag("");
+      setErrors({});
+      onClose();
+    } catch {
+      // Error handled silently
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  const addTag = () => {
+    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
+      setFormData((prev) => ({
+        ...prev,
+        tags: [...prev.tags, newTag.trim()],
+      }));
+      setNewTag("");
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
+    }));
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addTag();
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 backdrop-blur-lg bg-black/20 z-50 flex items-center justify-center p-4"
+      onClick={handleBackdropClick}
+    >
+      <div className="bg-white dark:bg-slate-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden border border-slate-200 dark:border-slate-700 shadow-xl">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+            Report Found Item
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto max-h-[calc(90vh-140px)]">
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {/* Title */}
+            <div>
+              <label
+                htmlFor="title"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+              >
+                Item Title *
+              </label>
+              <input
+                type="text"
+                id="title"
+                value={formData.title}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, title: e.target.value }))
+                }
+                placeholder="e.g., iPhone 15 Pro - Black"
+                className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                  errors.title
+                    ? "border-red-300 dark:border-red-600"
+                    : "border-slate-300 dark:border-slate-600"
+                }`}
+              />
+              {errors.title && (
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {errors.title}
+                </p>
+              )}
+            </div>
+
+            {/* Description */}
+            <div>
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+              >
+                Description *
+              </label>
+              <textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
+                rows={4}
+                placeholder="Please describe the found item in detail..."
+                className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                  errors.description
+                    ? "border-red-300 dark:border-red-600"
+                    : "border-slate-300 dark:border-slate-600"
+                }`}
+              />
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                {formData.description.length}/500 characters (minimum 20
+                required)
+              </p>
+              {errors.description && (
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {errors.description}
+                </p>
+              )}
+            </div>
+
+            {/* Category and Location */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label
+                  htmlFor="category"
+                  className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+                >
+                  Category *
+                </label>
+                <select
+                  id="category"
+                  value={formData.category}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      category: e.target.value,
+                    }))
+                  }
+                  className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                    errors.category
+                      ? "border-red-300 dark:border-red-600"
+                      : "border-slate-300 dark:border-slate-600"
+                  }`}
+                >
+                  <option value="">Select a category</option>
+                  {CATEGORIES.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+                {errors.category && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.category}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="location"
+                  className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+                >
+                  Found at Location *
+                </label>
+                <select
+                  id="location"
+                  value={formData.location}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      location: e.target.value,
+                    }))
+                  }
+                  className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                    errors.location
+                      ? "border-red-300 dark:border-red-600"
+                      : "border-slate-300 dark:border-slate-600"
+                  }`}
+                >
+                  <option value="">Select a location</option>
+                  {LOCATIONS.map((location) => (
+                    <option key={location} value={location}>
+                      {location}
+                    </option>
+                  ))}
+                </select>
+                {errors.location && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.location}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Date Found */}
+            <div>
+              <label
+                htmlFor="dateFound"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+              >
+                Date Found *
+              </label>
+              <input
+                type="date"
+                id="dateFound"
+                value={formData.dateFound}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    dateFound: e.target.value,
+                  }))
+                }
+                max={new Date().toISOString().split("T")[0]}
+                className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                  errors.dateFound
+                    ? "border-red-300 dark:border-red-600"
+                    : "border-slate-300 dark:border-slate-600"
+                }`}
+              />
+              {errors.dateFound && (
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {errors.dateFound}
+                </p>
+              )}
+            </div>
+
+            {/* Contact Information */}
+            <div>
+              <label
+                htmlFor="contactInfo"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+              >
+                Your Contact Information *
+              </label>
+              <textarea
+                id="contactInfo"
+                value={formData.contactInfo}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    contactInfo: e.target.value,
+                  }))
+                }
+                rows={2}
+                placeholder="your.email@student.jnu.ac.bd | +880-1711-123456"
+                className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                  errors.contactInfo
+                    ? "border-red-300 dark:border-red-600"
+                    : "border-slate-300 dark:border-slate-600"
+                }`}
+              />
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Include email and/or phone number so the owner can contact you
+              </p>
+              {errors.contactInfo && (
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {errors.contactInfo}
+                </p>
+              )}
+            </div>
+
+            {/* Image URL */}
+            <div>
+              <label
+                htmlFor="imageUrl"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+              >
+                Image URL (Optional)
+              </label>
+              <div className="relative">
+                <Upload className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="url"
+                  id="imageUrl"
+                  value={formData.imageUrl}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      imageUrl: e.target.value,
+                    }))
+                  }
+                  placeholder="https://example.com/image.jpg"
+                  className="w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Adding an image helps the owner identify their item
+              </p>
+            </div>
+
+            {/* Tags */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Tags (Optional)
+              </label>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Add a tag (e.g., black, phone, case)"
+                    className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                  <button
+                    type="button"
+                    onClick={addTag}
+                    disabled={!newTag.trim()}
+                    className="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {formData.tags.length > 0 && (
+                  <div className="flex gap-2 flex-wrap">
+                    {formData.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 text-sm rounded-md"
+                      >
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => removeTag(tag)}
+                          className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                Tags help make your listing more searchable
+              </p>
+            </div>
+          </form>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200 dark:border-slate-700">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-md font-medium transition-colors flex items-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              "Report Found Item"
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

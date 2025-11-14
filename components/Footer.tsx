@@ -1,0 +1,152 @@
+"use client";
+
+import Link from "next/link";
+import { Mail, Phone, MapPin } from "lucide-react";
+
+export default function Footer() {
+  const footerLinks = {
+    platform: [
+      { name: "Home", href: "/" },
+      { name: "Lost Items", href: "/lost" },
+      { name: "Found Items", href: "/found" },
+      { name: "Share Items", href: "/share" },
+    ],
+    support: [
+      { name: "Help Center", href: "/help" },
+      { name: "Contact Us", href: "/contact" },
+      { name: "Report Issue", href: "/report" },
+      { name: "Safety Guidelines", href: "/safety" },
+    ],
+    legal: [
+      { name: "Privacy Policy", href: "/privacy" },
+      { name: "Terms of Service", href: "/terms" },
+      { name: "Community Guidelines", href: "/guidelines" },
+      { name: "Cookie Policy", href: "/cookies" },
+    ],
+  };
+
+  return (
+    <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Main Footer Content */}
+        <div className="py-12 lg:py-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+            {/* Brand Section */}
+            <div className="lg:col-span-2">
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="w-10 h-10 bg-linear-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">CH</span>
+                </div>
+                <span className="text-xl font-bold text-slate-900 dark:text-white">
+                  CircleHub JnU
+                </span>
+              </div>
+              <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-md">
+                The modern platform connecting JnU students through lost & found
+                services, item sharing, and community building. Safe, secure,
+                and student-verified.
+              </p>
+
+              {/* Contact Info */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3 text-sm text-slate-600 dark:text-slate-400">
+                  <Mail className="w-4 h-4" />
+                  <span>support@circlehub.jnu.edu</span>
+                </div>
+                <div className="flex items-center space-x-3 text-sm text-slate-600 dark:text-slate-400">
+                  <Phone className="w-4 h-4" />
+                  <span>+88 (02) 123-4567</span>
+                </div>
+                <div className="flex items-center space-x-3 text-sm text-slate-600 dark:text-slate-400">
+                  <MapPin className="w-4 h-4" />
+                  <span>JnU Campus, Dhaka</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Platform Links */}
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">
+                Platform
+              </h3>
+              <ul className="space-y-3">
+                {footerLinks.platform.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      href={link.href}
+                      className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Support Links */}
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">
+                Support
+              </h3>
+              <ul className="space-y-3">
+                {footerLinks.support.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      href={link.href}
+                      className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Legal Links */}
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">
+                Legal
+              </h3>
+              <ul className="space-y-3">
+                {footerLinks.legal.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      href={link.href}
+                      className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Newsletter Signup */}
+        <div className="py-8 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div className="mb-4 lg:mb-0">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                Stay Updated
+              </h3>
+              <p className="text-slate-600 dark:text-slate-400">
+                Get notified about new features and JnU campus updates.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 max-w-md w-full lg:w-auto">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                Subscribe
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}

@@ -1,3 +1,23 @@
+# CircleHub JnU
+
+A modern platform connecting JnU students through lost & found services, item sharing, and community building. Built with Next.js, TypeScript, and Supabase.
+
+## Features
+
+- 🔍 **Lost & Found**: Report and search for lost items
+- 📤 **Item Sharing**: Share items with fellow students
+- 🔒 **Secure Authentication**: University email-based authentication
+- 🌙 **Dark Mode**: Beautiful dark and light themes
+- 📱 **Responsive**: Works perfectly on all devices
+
+## Tech Stack
+
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Styling**: Tailwind CSS
+- **Backend**: Supabase
+- **Authentication**: Supabase Auth
+- **Database**: PostgreSQL (Supabase)
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
