@@ -1,7 +1,7 @@
 "use client";
 
 import { Calendar, MapPin, Eye, User, Tag } from "lucide-react";
-import { FoundItem } from "@/lib/mock-data/found-items";
+import { FoundItemWithProfile } from "@/types/items.types";
 import Image from "next/image";
 
 // Simple date formatting function
@@ -23,30 +23,30 @@ const formatDateDistance = (date: string) => {
 };
 
 interface ItemCardProps {
-  item: FoundItem;
-  onClick: (item: FoundItem) => void;
+  item: FoundItemWithProfile;
+  onClick: (item: FoundItemWithProfile) => void;
 }
 
-const StatusBadge = ({ status }: { status: FoundItem["status"] }) => {
-  const statusConfig = {
-    available: {
+const StatusBadge = ({ status }: { status: string }) => {
+  const statusConfig: Record<string, { label: string; className: string }> = {
+    active: {
       label: "Available",
       className:
         "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
     },
-    claimed: {
-      label: "Claimed",
+    resolved: {
+      label: "Resolved",
       className:
         "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
     },
-    returned: {
-      label: "Returned",
+    archived: {
+      label: "Archived",
       className:
         "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400",
     },
   };
 
-  const config = statusConfig[status];
+  const config = statusConfig[status] || statusConfig.active;
 
   return (
     <span
@@ -68,10 +68,10 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
       className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
     >
       {/* Image */}
-      {item.imageUrl && (
+      {item.image_url && (
         <div className="aspect-video overflow-hidden bg-slate-100 dark:bg-slate-700">
           <Image
-            src={item.imageUrl}
+            src={item.image_url}
             alt={item.title}
             width={600}
             height={400}
@@ -101,11 +101,13 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
           </div>
           <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm">
             <Calendar className="w-4 h-4 shrink-0" />
-            <span>Found {formatDateDistance(item.dateFound)} ago</span>
+            <span>Found {formatDateDistance(item.date_found)} ago</span>
           </div>
           <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm">
             <User className="w-4 h-4 shrink-0" />
-            <span className="truncate">Found by {item.foundBy.name}</span>
+            <span className="truncate">
+              Found by {item.profiles?.name || "Anonymous"}
+            </span>
           </div>
         </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Image as ImageIcon, Upload } from "lucide-react";
 import { CATEGORIES, LOCATIONS } from "@/lib/mock-data/lost-items";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
@@ -19,7 +19,6 @@ interface LostItemFormData {
   location: string;
   dateLost: string;
   contactInfo: string;
-  rewardAmount?: number;
   imageUrl?: string;
   tags?: string[];
 }
@@ -42,11 +41,12 @@ export default function ReportLostItemForm({
     location: "",
     dateLost: undefined as Date | undefined,
     contactInfo: "",
-    rewardAmount: "",
     imageUrl: "",
     tags: [] as string[],
   });
 
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
   const [currentTag, setCurrentTag] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,6 +83,45 @@ export default function ReportLostItemForm({
     }));
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      setErrors((prev) => ({
+        ...prev,
+        image: "Please select a valid image file",
+      }));
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors((prev) => ({
+        ...prev,
+        image: "Image size should be less than 5MB",
+      }));
+      return;
+    }
+
+    setImageFile(file);
+    setErrors((prev) => ({ ...prev, image: "" }));
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview("");
+    setFormData((prev) => ({ ...prev, imageUrl: "" }));
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -100,15 +139,6 @@ export default function ReportLostItemForm({
       newErrors.dateLost = "Date lost cannot be in the future";
     }
 
-    // Validate reward amount
-    if (
-      formData.rewardAmount &&
-      (isNaN(Number(formData.rewardAmount)) ||
-        Number(formData.rewardAmount) < 0)
-    ) {
-      newErrors.rewardAmount = "Please enter a valid reward amount";
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -121,15 +151,24 @@ export default function ReportLostItemForm({
     setIsSubmitting(true);
 
     try {
+      // Convert image to base64 if present
+      let imageBase64 = "";
+      if (imageFile) {
+        const reader = new FileReader();
+        imageBase64 = await new Promise<string>((resolve, reject) => {
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(imageFile);
+        });
+      }
+
       const submitData = {
         ...formData,
         dateLost: formData.dateLost
           ? formData.dateLost.toISOString().split("T")[0]
           : "",
-        rewardAmount: formData.rewardAmount
-          ? Number(formData.rewardAmount)
-          : undefined,
         tags: formData.tags.length > 0 ? formData.tags : undefined,
+        imageBase64: imageBase64 || undefined,
       };
 
       await onSubmit(submitData);
@@ -142,10 +181,11 @@ export default function ReportLostItemForm({
         location: "",
         dateLost: undefined,
         contactInfo: "",
-        rewardAmount: "",
         imageUrl: "",
         tags: [],
       });
+      setImageFile(null);
+      setImagePreview("");
       setCurrentTag("");
       setErrors({});
       onClose();
@@ -289,57 +329,24 @@ export default function ReportLostItemForm({
               </div>
             </div>
 
-            {/* Date Lost and Reward Amount */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Date Lost *
-                </label>
-                <DatePicker
-                  date={formData.dateLost}
-                  onDateChange={(date) => handleInputChange("dateLost", date)}
-                  placeholder="Select date lost"
-                  maxDate={new Date()}
-                  error={!!errors.dateLost}
-                  className={errors.dateLost ? "border-red-500" : ""}
-                />
-                {errors.dateLost && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                    {errors.dateLost}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Reward Amount (Optional)
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 font-medium">
-                    ৳
-                  </span>
-                  <input
-                    type="number"
-                    value={formData.rewardAmount}
-                    onChange={(e) =>
-                      handleInputChange("rewardAmount", e.target.value)
-                    }
-                    placeholder="0"
-                    min="0"
-                    step="1"
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.rewardAmount
-                        ? "border-red-500"
-                        : "border-slate-300 dark:border-slate-600"
-                    }`}
-                  />
-                </div>
-                {errors.rewardAmount && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                    {errors.rewardAmount}
-                  </p>
-                )}
-              </div>
+            {/* Date Lost */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Date Lost *
+              </label>
+              <DatePicker
+                date={formData.dateLost}
+                onDateChange={(date) => handleInputChange("dateLost", date)}
+                placeholder="Select date lost"
+                maxDate={new Date()}
+                error={!!errors.dateLost}
+                className={errors.dateLost ? "border-red-500" : ""}
+              />
+              {errors.dateLost && (
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {errors.dateLost}
+                </p>
+              )}
             </div>
 
             {/* Description */}
@@ -392,18 +399,65 @@ export default function ReportLostItemForm({
               )}
             </div>
 
-            {/* Image URL */}
+            {/* Image Upload */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Image URL (Optional)
+                Item Image (Optional)
               </label>
-              <input
-                type="url"
-                value={formData.imageUrl}
-                onChange={(e) => handleInputChange("imageUrl", e.target.value)}
-                placeholder="https://example.com/image.jpg"
-                className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+
+              {!imagePreview ? (
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <label
+                    htmlFor="image-upload"
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                  >
+                    <Upload className="w-8 h-8 text-slate-400 mb-2" />
+                    <span className="text-sm text-slate-600 dark:text-slate-400">
+                      Click to upload image
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-500 mt-1">
+                      PNG, JPG, JPEG (Max 5MB)
+                    </span>
+                  </label>
+                </div>
+              ) : (
+                <div className="relative">
+                  <div className="relative w-full h-48 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-600">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute top-2 right-2 p-2 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                  <div className="mt-2 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                    <ImageIcon className="w-4 h-4" />
+                    <span>{imageFile?.name}</span>
+                    <span className="text-slate-500">
+                      ({(imageFile!.size / 1024).toFixed(1)} KB)
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {errors.image && (
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {errors.image}
+                </p>
+              )}
             </div>
 
             {/* Tags */}

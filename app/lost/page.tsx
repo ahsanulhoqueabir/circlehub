@@ -1,18 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, Plus, Grid, List } from "lucide-react";
-import {
-  mockLostItems,
-  LostItem,
-  CATEGORIES,
-  LOCATIONS,
-  filterByCategory,
-  filterByLocation,
-  searchItems,
-  sortItems,
-} from "@/lib/mock-data/lost-items";
-import { formatTaka } from "@/lib/utils";
+import useAxios from "@/hooks/use-axios";
+import { LostItemWithProfile } from "@/types/items.types";
+import { CATEGORIES, LOCATIONS } from "@/lib/mock-data/lost-items";
 import SearchBar from "@/components/lost-items/SearchBar";
 import FilterBar from "@/components/lost-items/FilterBar";
 import ItemCard from "@/components/lost-items/ItemCard";
@@ -20,7 +12,9 @@ import ItemDetailModal from "@/components/lost-items/ItemDetailModal";
 import ReportLostItemForm from "@/components/lost-items/ReportLostItemForm";
 
 export default function LostPage() {
-  const [items, setItems] = useState<LostItem[]>(mockLostItems);
+  const axios = useAxios();
+  const [items, setItems] = useState<LostItemWithProfile[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -30,44 +24,60 @@ export default function LostPage() {
   const [selectedSort, setSelectedSort] = useState("newest");
 
   // Modals
-  const [selectedItem, setSelectedItem] = useState<LostItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<LostItemWithProfile | null>(
+    null
+  );
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showReportForm, setShowReportForm] = useState(false);
 
   // View mode
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
+  // Fetch items from API
+  useEffect(() => {
+    fetchItems();
+  }, [selectedCategory, selectedLocation, selectedSort, searchQuery]);
+
+  const fetchItems = async () => {
+    try {
+      setIsLoading(true);
+      const params = new URLSearchParams({
+        status: "active",
+        sort: selectedSort,
+      });
+
+      if (selectedCategory !== "all") {
+        params.append("category", selectedCategory);
+      }
+
+      if (selectedLocation !== "all") {
+        params.append("location", selectedLocation);
+      }
+
+      if (searchQuery) {
+        params.append("search", searchQuery);
+      }
+
+      const response = await axios.get(`/api/items/lost?${params.toString()}`);
+
+      if (response.data.success) {
+        setItems(response.data.data.items);
+      }
+    } catch (error) {
+      console.error("Failed to fetch items:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Compute filtered items using useMemo to avoid cascading renders
   const filteredItems = useMemo(() => {
-    let filtered = [...items];
+    return items;
+  }, [items]);
 
-    // Apply search
-    if (searchQuery) {
-      filtered = searchItems(filtered, searchQuery);
-    }
-
-    // Apply category filter
-    filtered = filterByCategory(filtered, selectedCategory);
-
-    // Apply location filter
-    filtered = filterByLocation(filtered, selectedLocation);
-
-    // Apply date range filter
-    // Note: Date range filter requires start and end dates, skipping for now
-    // filtered = filterByDateRange(filtered, startDate, endDate);
-
-    // Apply sorting
-    filtered = sortItems(filtered, selectedSort);
-
-    return filtered;
-  }, [items, searchQuery, selectedCategory, selectedLocation, selectedSort]);
-
-  const handleItemClick = (item: LostItem) => {
+  const handleItemClick = (item: LostItemWithProfile) => {
     setSelectedItem(item);
     setShowDetailModal(true);
-
-    // Note: LostItem interface doesn't have views property
-    // In a real app, this would increment view count via API call
   };
 
   const handleReportSubmit = async (formData: {
@@ -79,24 +89,33 @@ export default function LostPage() {
     contactInfo: string;
     rewardAmount?: number;
     imageUrl?: string;
+    imageBase64?: string;
     tags?: string[];
   }) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const response = await axios.post("/api/items/lost", {
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        location: formData.location,
+        dateLost: formData.dateLost,
+        contactInfo: formData.contactInfo,
+        imageBase64: formData.imageBase64,
+        tags: formData.tags,
+        rewardAmount: formData.rewardAmount,
+      });
 
-    // Create new item (in real app this would be API call)
-    const newItem: LostItem = {
-      id: Date.now().toString(),
-      ...formData,
-      status: "active" as const,
-      reportedBy: {
-        name: "Current User",
-        studentId: "current-user",
-      },
-      datePosted: new Date().toISOString(),
-    };
+      if (response.data.success) {
+        // Refresh items list
+        await fetchItems();
+        return;
+      }
 
-    setItems((prev) => [newItem, ...prev]);
+      throw new Error(response.data.error || "Failed to create item");
+    } catch (error) {
+      console.error("Failed to report item:", error);
+      throw error;
+    }
   };
 
   const statsData = [
@@ -111,15 +130,21 @@ export default function LostPage() {
       color: "text-blue-600",
     },
     {
-      label: "Items Found",
-      value: items.filter((item) => item.status === "found").length.toString(),
+      label: "Items Resolved",
+      value: items
+        .filter((item) => item.status === "resolved")
+        .length.toString(),
       color: "text-green-600",
     },
     {
-      label: "Total Reward Amount",
-      value: `৳${formatTaka(
-        items.reduce((sum, item) => sum + (item.rewardAmount || 0), 0)
-      )}`,
+      label: "This Week",
+      value: items
+        .filter((item) => {
+          const weekAgo = new Date();
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          return new Date(item.created_at) > weekAgo;
+        })
+        .length.toString(),
       color: "text-purple-600",
     },
   ];

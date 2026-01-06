@@ -1,17 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { MapPin, Plus, Grid, List } from "lucide-react";
-import {
-  mockFoundItems,
-  FoundItem,
-  CATEGORIES,
-  LOCATIONS,
-  filterByCategory,
-  filterByLocation,
-  searchItems,
-  sortItems,
-} from "@/lib/mock-data/found-items";
+import useAxios from "@/hooks/use-axios";
+import { FoundItemWithProfile } from "@/types/items.types";
+import { CATEGORIES, LOCATIONS } from "@/lib/mock-data/found-items";
 import SearchBar from "@/components/found-items/SearchBar";
 import FilterBar from "@/components/found-items/FilterBar";
 import ItemCard from "@/components/found-items/ItemCard";
@@ -19,7 +12,9 @@ import ItemDetailModal from "@/components/found-items/ItemDetailModal";
 import ReportFoundItemForm from "@/components/found-items/ReportFoundItemForm";
 
 export default function FoundPage() {
-  const [items, setItems] = useState<FoundItem[]>(mockFoundItems);
+  const axios = useAxios();
+  const [items, setItems] = useState<FoundItemWithProfile[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,44 +24,58 @@ export default function FoundPage() {
   const [selectedSort, setSelectedSort] = useState("newest");
 
   // Modals
-  const [selectedItem, setSelectedItem] = useState<FoundItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<FoundItemWithProfile | null>(
+    null
+  );
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showReportForm, setShowReportForm] = useState(false);
 
   // View mode
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  // Compute filtered items using useMemo to avoid cascading renders
-  const filteredItems = useMemo(() => {
-    let filtered = [...items];
+  useEffect(() => {
+    fetchItems();
+  }, [selectedCategory, selectedLocation, selectedSort, searchQuery]);
 
-    // Apply search
-    if (searchQuery) {
-      filtered = searchItems(filtered, searchQuery);
+  const fetchItems = async () => {
+    try {
+      setIsLoading(true);
+      const params = new URLSearchParams({
+        status: "active",
+        sort: selectedSort,
+      });
+
+      if (selectedCategory !== "all") {
+        params.append("category", selectedCategory);
+      }
+
+      if (selectedLocation !== "all") {
+        params.append("location", selectedLocation);
+      }
+
+      if (searchQuery) {
+        params.append("search", searchQuery);
+      }
+
+      const response = await axios.get(`/api/items/found?${params.toString()}`);
+
+      if (response.data.success) {
+        setItems(response.data.data.items);
+      }
+    } catch (error) {
+      console.error("Failed to fetch items:", error);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    // Apply category filter
-    filtered = filterByCategory(filtered, selectedCategory);
+  const filteredItems = useMemo(() => {
+    return items;
+  }, [items]);
 
-    // Apply location filter
-    filtered = filterByLocation(filtered, selectedLocation);
-
-    // Apply date range filter
-    // Note: Date range filter requires start and end dates, skipping for now
-    // filtered = filterByDateRange(filtered, startDate, endDate);
-
-    // Apply sorting
-    filtered = sortItems(filtered, selectedSort);
-
-    return filtered;
-  }, [items, searchQuery, selectedCategory, selectedLocation, selectedSort]);
-
-  const handleItemClick = (item: FoundItem) => {
+  const handleItemClick = (item: FoundItemWithProfile) => {
     setSelectedItem(item);
     setShowDetailModal(true);
-
-    // Note: FoundItem interface doesn't have views property
-    // In a real app, this would increment view count via API call
   };
 
   const handleReportSubmit = async (formData: {
@@ -77,24 +86,31 @@ export default function FoundPage() {
     dateFound: string;
     contactInfo: string;
     imageUrl?: string;
+    imageBase64?: string;
     tags?: string[];
   }) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const response = await axios.post("/api/items/found", {
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        location: formData.location,
+        dateFound: formData.dateFound,
+        contactInfo: formData.contactInfo,
+        imageBase64: formData.imageBase64,
+        tags: formData.tags,
+      });
 
-    // Create new item (in real app this would be API call)
-    const newItem: FoundItem = {
-      id: Date.now().toString(),
-      ...formData,
-      status: "available" as const,
-      foundBy: {
-        name: "Current User",
-        studentId: "current-user",
-      },
-      datePosted: new Date().toISOString(),
-    };
+      if (response.data.success) {
+        await fetchItems();
+        return;
+      }
 
-    setItems((prev) => [newItem, ...prev]);
+      throw new Error(response.data.error || "Failed to create item");
+    } catch (error) {
+      console.error("Failed to report item:", error);
+      throw error;
+    }
   };
 
   const statsData = [
@@ -105,23 +121,25 @@ export default function FoundPage() {
     },
     {
       label: "Available Items",
-      value: items
-        .filter((item) => item.status === "available")
-        .length.toString(),
+      value: items.filter((item) => item.status === "active").length.toString(),
       color: "text-blue-600",
     },
     {
-      label: "Items Claimed",
+      label: "Items Resolved",
       value: items
-        .filter((item) => item.status === "claimed")
+        .filter((item) => item.status === "resolved")
         .length.toString(),
       color: "text-purple-600",
     },
     {
-      label: "Active Finders",
-      value: new Set(
-        items.map((item) => item.foundBy.studentId || item.foundBy.name)
-      ).size.toString(),
+      label: "This Week",
+      value: items
+        .filter((item) => {
+          const weekAgo = new Date();
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          return new Date(item.created_at) > weekAgo;
+        })
+        .length.toString(),
       color: "text-orange-600",
     },
   ];

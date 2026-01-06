@@ -133,11 +133,6 @@ export default function ItemDetailModal({
                     <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full">
                       {item.category}
                     </span>
-                    {item.rewardAmount && (
-                      <span className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full">
-                        ৳{formatTaka(item.rewardAmount)} Reward
-                      </span>
-                    )}
                     <span
                       className={`inline-flex items-center px-3 py-1 text-sm font-medium rounded-full ${
                         item.status === "active"

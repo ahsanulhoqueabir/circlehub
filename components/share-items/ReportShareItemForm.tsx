@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { X, Upload, Plus } from "lucide-react";
-import { ShareItem } from "@/lib/mock-data/share-items";
+import { X, Upload, Plus, ImageIcon } from "lucide-react";
+import { CreateShareItemRequest } from "@/types/items.types";
 
 interface ReportShareItemFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (itemData: Omit<ShareItem, "id">) => void;
+  onSubmit: (itemData: CreateShareItemRequest) => void;
 }
 
 export default function ReportShareItemForm({
@@ -19,28 +19,28 @@ export default function ReportShareItemForm({
     title: "",
     description: "",
     category: "",
-    condition: "good" as ShareItem["condition"],
+    condition: "good" as "new" | "like-new" | "good" | "fair" | "poor",
+    offerType: "free" as "free" | "exchange" | "rent" | "sale",
+    price: "",
     location: "",
-    availability: "",
-    contactName: "",
-    contactPhone: "",
-    contactEmail: "",
-    preferredContact: "email" as "phone" | "email" | "both",
-    notes: "",
+    contactInfo: "",
     tags: [""],
   });
 
-  const [images, setImages] = useState<File[]>([]);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const categories = [
-    "Books",
-    "Electronics",
-    "Clothing",
-    "Furniture",
-    "Kitchen",
-    "Sports",
-    "Art",
-    "Other",
+    { value: "electronics", label: "Electronics" },
+    { value: "clothing", label: "Clothing" },
+    { value: "accessories", label: "Accessories" },
+    { value: "documents", label: "Documents" },
+    { value: "books", label: "Books" },
+    { value: "keys", label: "Keys" },
+    { value: "bags", label: "Bags" },
+    { value: "sports", label: "Sports" },
+    { value: "jewelry", label: "Jewelry" },
+    { value: "others", label: "Others" },
   ];
 
   const conditions = [
@@ -51,30 +51,74 @@ export default function ReportShareItemForm({
     { value: "poor", label: "Poor" },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const offerTypes = [
+    { value: "free", label: "Free" },
+    { value: "exchange", label: "Exchange" },
+    { value: "rent", label: "Rent" },
+    { value: "sale", label: "Sale" },
+  ];
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        alert("Please select an image file");
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Image size must be less than 5MB");
+        return;
+      }
+
+      setImageFile(file);
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const shareItemData = {
+    // Convert image to base64 if present
+    let imageBase64: string | undefined;
+    if (imageFile) {
+      const reader = new FileReader();
+      imageBase64 = await new Promise((resolve) => {
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(imageFile);
+      });
+    }
+
+    const shareItemData: CreateShareItemRequest = {
       title: formData.title,
       description: formData.description,
-      category: formData.category,
-      condition: formData.condition as "new" | "like-new" | "good" | "fair",
+      category: formData.category as any,
+      condition: formData.condition,
+      offerType: formData.offerType,
+      price:
+        formData.offerType === "sale" && formData.price
+          ? Number(formData.price)
+          : null,
       location: formData.location,
-      datePosted: new Date().toISOString().split("T")[0],
-      contactInfo:
-        formData.contactPhone || formData.contactEmail || "Contact via form",
-      imageUrl: images.length > 0 ? URL.createObjectURL(images[0]) : undefined,
+      contactInfo: formData.contactInfo,
+      imageBase64,
       tags: formData.tags.filter((tag) => tag.trim() !== ""),
-      status: "available" as const,
-      sharedBy: {
-        name: formData.contactName,
-        avatar: undefined,
-        studentId: undefined,
-      },
     };
 
     onSubmit(shareItemData);
-    onClose();
 
     // Reset form
     setFormData({
@@ -82,16 +126,14 @@ export default function ReportShareItemForm({
       description: "",
       category: "",
       condition: "good",
+      offerType: "free",
+      price: "",
       location: "",
-      availability: "",
-      contactName: "",
-      contactPhone: "",
-      contactEmail: "",
-      preferredContact: "email",
-      notes: "",
+      contactInfo: "",
       tags: [""],
     });
-    setImages([]);
+    setImageFile(null);
+    setImagePreview(null);
   };
 
   const handleTagChange = (index: number, value: string) => {
@@ -195,8 +237,8 @@ export default function ReportShareItemForm({
                   >
                     <option value="">Select a category</option>
                     {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
+                      <option key={category.value} value={category.value}>
+                        {category.label}
                       </option>
                     ))}
                   </select>
@@ -211,7 +253,7 @@ export default function ReportShareItemForm({
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        condition: e.target.value as ShareItem["condition"],
+                        condition: e.target.value as any,
                       })
                     }
                     className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
@@ -224,17 +266,53 @@ export default function ReportShareItemForm({
                   </select>
                 </div>
               </div>
-            </div>
 
-            {/* Location and Availability */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium text-slate-900 dark:text-white">
-                Location & Availability
-              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Offer Type *
+                  </label>
+                  <select
+                    value={formData.offerType}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        offerType: e.target.value as any,
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  >
+                    {offerTypes.map((type) => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {formData.offerType === "sale" && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Price (৳) *
+                    </label>
+                    <input
+                      type="number"
+                      required={formData.offerType === "sale"}
+                      value={formData.price}
+                      onChange={(e) =>
+                        setFormData({ ...formData, price: e.target.value })
+                      }
+                      min="0"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                      placeholder="Enter price"
+                    />
+                  </div>
+                )}
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Pickup Location *
+                  Location *
                 </label>
                 <input
                   type="text"
@@ -250,122 +328,62 @@ export default function ReportShareItemForm({
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Availability
-                </label>
-                <input
-                  type="text"
-                  value={formData.availability}
-                  onChange={(e) =>
-                    setFormData({ ...formData, availability: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                  placeholder="e.g., Available weekends, Available until semester end"
-                />
-              </div>
-            </div>
-
-            {/* Contact Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium text-slate-900 dark:text-white">
-                Contact Information
-              </h3>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Your Name *
+                  Contact Information *
                 </label>
                 <input
                   type="text"
                   required
-                  value={formData.contactName}
+                  value={formData.contactInfo}
                   onChange={(e) =>
-                    setFormData({ ...formData, contactName: e.target.value })
+                    setFormData({ ...formData, contactInfo: e.target.value })
                   }
                   className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  placeholder="e.g., Email: student@email.com, Phone: 01XXXXXXXXX"
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.contactPhone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, contactPhone: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.contactEmail}
-                    onChange={(e) =>
-                      setFormData({ ...formData, contactEmail: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Preferred Contact Method
-                </label>
-                <select
-                  value={formData.preferredContact}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      preferredContact: e.target.value as
-                        | "phone"
-                        | "email"
-                        | "both",
-                    })
-                  }
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                >
-                  <option value="email">Email</option>
-                  <option value="phone">Phone</option>
-                  <option value="both">Both</option>
-                </select>
               </div>
             </div>
 
-            {/* Images */}
+            {/* Image Upload */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Images (up to 5)
+                Item Image
               </label>
-              <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-6 text-center">
-                <Upload className="mx-auto h-12 w-12 text-slate-400" />
-                <div className="mt-2">
-                  <label className="cursor-pointer">
-                    <span className="text-sm text-slate-600 dark:text-slate-300">
-                      Click to upload images or drag and drop
-                    </span>
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="hidden"
-                    />
-                  </label>
+              {imagePreview ? (
+                <div className="relative">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
-                {images.length > 0 && (
-                  <div className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-                    {images.length} image(s) selected
+              ) : (
+                <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-6 text-center">
+                  <ImageIcon className="mx-auto h-12 w-12 text-slate-400" />
+                  <div className="mt-2">
+                    <label className="cursor-pointer">
+                      <span className="text-sm text-yellow-600 dark:text-yellow-400 hover:text-yellow-700">
+                        Upload an image
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </label>
                   </div>
-                )}
-              </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    PNG, JPG, GIF up to 5MB
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Tags */}
@@ -403,22 +421,6 @@ export default function ReportShareItemForm({
                   Add Tag
                 </button>
               </div>
-            </div>
-
-            {/* Additional Notes */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Additional Notes
-              </label>
-              <textarea
-                value={formData.notes}
-                onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
-                }
-                rows={3}
-                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                placeholder="Any additional information..."
-              />
             </div>
 
             {/* Submit Buttons */}

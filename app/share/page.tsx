@@ -1,22 +1,49 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Share2, Plus } from "lucide-react";
 import SearchBar from "@/components/share-items/SearchBar";
 import FilterBar from "@/components/share-items/FilterBar";
 import ItemCard from "@/components/share-items/ItemCard";
 import ItemDetailModal from "@/components/share-items/ItemDetailModal";
 import ReportShareItemForm from "@/components/share-items/ReportShareItemForm";
-import { mockShareItems, ShareItem } from "@/lib/mock-data/share-items";
+import {
+  ShareItemWithProfile,
+  CreateShareItemRequest,
+} from "@/types/items.types";
+import { useAxios } from "@/hooks/use-axios";
 
 export default function SharePage() {
-  const [items, setItems] = useState<ShareItem[]>(mockShareItems);
+  const axios = useAxios();
+  const [items, setItems] = useState<ShareItemWithProfile[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedCondition, setSelectedCondition] = useState("all");
-  const [selectedItem, setSelectedItem] = useState<ShareItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<ShareItemWithProfile | null>(
+    null
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isReportFormOpen, setIsReportFormOpen] = useState(false);
+
+  // Fetch items on mount
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
+  const fetchItems = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get("/api/items/share");
+      if (response.data.success) {
+        setItems(response.data.data.items);
+      }
+    } catch (error) {
+      console.error("Failed to fetch share items:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
@@ -29,7 +56,7 @@ export default function SharePage() {
 
       const matchesCategory =
         selectedCategory === "All Categories" ||
-        item.category === selectedCategory;
+        item.category === selectedCategory.toLowerCase();
 
       const matchesCondition =
         selectedCondition === "all" || item.condition === selectedCondition;
@@ -38,23 +65,41 @@ export default function SharePage() {
         matchesSearch &&
         matchesCategory &&
         matchesCondition &&
-        item.status === "available"
+        item.status === "active"
       );
     });
   }, [items, searchTerm, selectedCategory, selectedCondition]);
 
-  const handleItemClick = (item: ShareItem) => {
+  const handleItemClick = (item: ShareItemWithProfile) => {
     setSelectedItem(item);
     setIsModalOpen(true);
   };
 
-  const handleReportSubmit = (itemData: Omit<ShareItem, "id">) => {
-    const newItem: ShareItem = {
-      ...itemData,
-      id: Math.random().toString(36).substr(2, 9),
-    };
-    setItems((prev) => [newItem, ...prev]);
+  const handleReportSubmit = async (itemData: CreateShareItemRequest) => {
+    try {
+      const response = await axios.post("/api/items/share", itemData);
+      if (response.data.success) {
+        // Refetch items to include the new one
+        await fetchItems();
+        setIsReportFormOpen(false);
+        alert("Item shared successfully!");
+      }
+    } catch (error: any) {
+      console.error("Failed to share item:", error);
+      alert(error.response?.data?.error || "Failed to share item");
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-yellow-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-300">Loading items...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Upload, Plus, Minus } from "lucide-react";
+import { X, Upload, Plus, Minus, Image as ImageIcon } from "lucide-react";
 import { CATEGORIES, LOCATIONS } from "@/lib/mock-data/found-items";
 
 interface ReportFoundItemFormProps {
@@ -34,6 +34,8 @@ export default function ReportFoundItemForm({
     imageUrl: "",
     tags: [] as string[],
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
   const [newTag, setNewTag] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -89,9 +91,20 @@ export default function ReportFoundItemForm({
     setIsSubmitting(true);
 
     try {
+      let imageBase64 = "";
+      if (imageFile) {
+        const reader = new FileReader();
+        imageBase64 = await new Promise<string>((resolve, reject) => {
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(imageFile);
+        });
+      }
+
       await onSubmit({
         ...formData,
         imageUrl: formData.imageUrl || undefined,
+        imageBase64: imageBase64 || undefined,
         tags: formData.tags.length > 0 ? formData.tags : undefined,
       });
 
@@ -106,6 +119,8 @@ export default function ReportFoundItemForm({
         imageUrl: "",
         tags: [],
       });
+      setImageFile(null);
+      setImagePreview("");
       setNewTag("");
       setErrors({});
       onClose();
@@ -137,6 +152,42 @@ export default function ReportFoundItemForm({
       ...prev,
       tags: prev.tags.filter((tag) => tag !== tagToRemove),
     }));
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setErrors((prev) => ({
+        ...prev,
+        image: "Please select a valid image file",
+      }));
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors((prev) => ({
+        ...prev,
+        image: "Image size should be less than 5MB",
+      }));
+      return;
+    }
+
+    setImageFile(file);
+    setErrors((prev) => ({ ...prev, image: "" }));
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview("");
+    setFormData((prev) => ({ ...prev, imageUrl: "" }));
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -374,30 +425,65 @@ export default function ReportFoundItemForm({
               )}
             </div>
 
-            {/* Image URL */}
+            {/* Image Upload */}
             <div>
-              <label
-                htmlFor="imageUrl"
-                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-              >
-                Image URL (Optional)
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Item Image (Optional)
               </label>
-              <div className="relative">
-                <Upload className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="url"
-                  id="imageUrl"
-                  value={formData.imageUrl}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      imageUrl: e.target.value,
-                    }))
-                  }
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full pl-10 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
-              </div>
+
+              {!imagePreview ? (
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <label
+                    htmlFor="image-upload"
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                  >
+                    <Upload className="w-8 h-8 text-slate-400 mb-2" />
+                    <span className="text-sm text-slate-600 dark:text-slate-400">
+                      Click to upload image
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-500 mt-1">
+                      PNG, JPG, JPEG (Max 5MB)
+                    </span>
+                  </label>
+                </div>
+              ) : (
+                <div className="relative">
+                  <div className="relative w-full h-48 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-600">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute top-2 right-2 p-2 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                  <div className="mt-2 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                    <ImageIcon className="w-4 h-4" />
+                    <span>{imageFile?.name}</span>
+                    <span className="text-slate-500">
+                      ({(imageFile!.size / 1024).toFixed(1)} KB)
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {errors.image && (
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {errors.image}
+                </p>
+              )}
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Adding an image helps the owner identify their item
               </p>

@@ -2,12 +2,11 @@
 
 import Image from "next/image";
 import { Calendar, MapPin, Eye, Clock, User } from "lucide-react";
-import { LostItem } from "@/lib/mock-data/lost-items";
-import { formatTaka } from "@/lib/utils";
+import { LostItemWithProfile } from "@/types/items.types";
 
 interface ItemCardProps {
-  item: LostItem;
-  onClick: (item: LostItem) => void;
+  item: LostItemWithProfile;
+  onClick: (item: LostItemWithProfile) => void;
 }
 
 export default function ItemCard({ item, onClick }: ItemCardProps) {
@@ -39,10 +38,10 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
       onClick={() => onClick(item)}
     >
       {/* Image */}
-      {item.imageUrl && (
+      {item.image_url && (
         <div className="aspect-video w-full overflow-hidden">
           <Image
-            src={item.imageUrl}
+            src={item.image_url}
             alt={item.title}
             width={400}
             height={200}
@@ -62,16 +61,16 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
               <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full">
                 {item.category}
               </span>
-              {item.rewardAmount && (
+              {item.reward_amount && (
                 <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full">
-                  ৳{formatTaka(item.rewardAmount)}
+                  ৳{item.reward_amount}
                 </span>
               )}
             </div>
           </div>
 
           <div className="flex flex-col items-end text-xs text-slate-500 dark:text-slate-400">
-            <span>{getTimeAgo(item.datePosted)}</span>
+            <span>{getTimeAgo(item.created_at)}</span>
           </div>
         </div>
 
@@ -89,7 +88,7 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
 
           <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
             <Calendar className="w-4 h-4 shrink-0" />
-            <span className="truncate">{formatDate(item.dateLost)}</span>
+            <span className="truncate">{formatDate(item.date_lost)}</span>
           </div>
         </div>
 
@@ -98,7 +97,7 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
               <User className="w-3 h-3" />
-              <span>{item.reportedBy.name}</span>
+              <span>{item.profiles?.name || "Anonymous"}</span>
             </div>
           </div>
 
@@ -109,7 +108,7 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
             </div>
             <div className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
-              <span>{formatDate(item.datePosted)}</span>
+              <span>{formatDate(item.created_at)}</span>
             </div>
           </div>
         </div>

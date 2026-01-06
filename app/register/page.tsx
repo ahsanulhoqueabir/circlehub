@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, User, CreditCard } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
@@ -17,6 +17,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const { register, loginWithGoogle, isLoading } = useAuth();
   const router = useRouter();
 
@@ -30,6 +31,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
@@ -48,7 +50,13 @@ export default function RegisterPage() {
         name: formData.name,
         studentId: formData.studentId,
       });
-      router.push("/");
+
+      setSuccess("Registration successful! Redirecting to login...");
+
+      // Redirect to login page after 2 seconds
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
     }
@@ -58,7 +66,6 @@ export default function RegisterPage() {
     setError("");
     try {
       await loginWithGoogle();
-      // Note: Google OAuth will redirect to callback page
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google sign-up failed");
     }
@@ -91,6 +98,12 @@ export default function RegisterPage() {
           {error && (
             <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
               {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-600 dark:text-green-400 text-sm">
+              {success}
             </div>
           )}
 

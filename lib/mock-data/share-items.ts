@@ -4,6 +4,7 @@ export interface ShareItem {
   description: string;
   category: string;
   condition: "new" | "like-new" | "good" | "fair";
+  offerType: "free" | "sale";
   price?: number;
   location: string;
   datePosted: string;
@@ -50,6 +51,7 @@ export const mockShareItems: ShareItem[] = [
       "Sharing a collection of programming books including Java, Python, and Data Structures. Great for CSE students.",
     category: "books",
     condition: "good",
+    offerType: "sale",
     price: 1500,
     location: "Hostel Area",
     datePosted: "2024-11-10",
@@ -70,6 +72,7 @@ export const mockShareItems: ShareItem[] = [
       "Casio scientific calculator, barely used. Perfect for math and engineering courses.",
     category: "electronics",
     condition: "like-new",
+    offerType: "sale",
     price: 800,
     location: "Campus Gate",
     datePosted: "2024-11-09",
@@ -90,6 +93,7 @@ export const mockShareItems: ShareItem[] = [
       "Wooden study table with matching chair. Good condition, perfect for hostel room.",
     category: "furniture",
     condition: "good",
+    offerType: "sale",
     price: 3500,
     location: "Hostel Area",
     datePosted: "2024-11-08",
@@ -110,6 +114,7 @@ export const mockShareItems: ShareItem[] = [
       "Complete cricket set including bat, ball, pads, and gloves. Free for sports club members.",
     category: "sports",
     condition: "good",
+    offerType: "free",
     location: "Sports Complex",
     datePosted: "2024-11-07",
     contactInfo: "karim.molla@student.jnu.ac.bd | +880-1800-012345",

@@ -11,7 +11,7 @@ import {
   ArrowRight,
   Star,
 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function Home() {
   const { isAuthenticated, user } = useAuth();

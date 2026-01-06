@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -30,7 +30,6 @@ export default function LoginPage() {
     setError("");
     try {
       await loginWithGoogle();
-      // Note: Google OAuth will redirect to callback page
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google sign-in failed");
     }

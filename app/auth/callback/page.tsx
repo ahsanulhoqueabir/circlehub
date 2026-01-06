@@ -4,6 +4,9 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 
+const TOKEN_KEY = "campus_connect_token";
+const USER_KEY = "campus_connect_user";
+
 export default function AuthCallbackPage() {
   const router = useRouter();
   const supabase = createClient();
@@ -19,8 +22,34 @@ export default function AuthCallbackPage() {
           return;
         }
 
-        if (data.session) {
-          // Successfully authenticated, redirect to home
+        if (data.session && data.session.user) {
+          // Get user data and generate JWT token via API
+          const response = await fetch("/api/auth/google/callback", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              userId: data.session.user.id,
+              email: data.session.user.email,
+            }),
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+
+            if (result.user && result.token) {
+              // Save to localStorage
+              localStorage.setItem(TOKEN_KEY, result.token);
+              localStorage.setItem(USER_KEY, JSON.stringify(result.user));
+
+              // Redirect to home
+              router.push("/");
+              return;
+            }
+          }
+
+          // Fallback: redirect to home even if token generation fails
           router.push("/");
         } else {
           // No session, redirect to login

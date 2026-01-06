@@ -1,72 +1,77 @@
 import { createServerClient } from "@/lib/supabase";
-import { NextResponse } from "next/server";
+import { FoundItemsService } from "@/services/found-items.services";
+import { uploadDocumentFromBase64 } from "@/services/clodinary.services";
+import { withAuth } from "@/middleware/with-auth";
+import { JwtPayload } from "@/types/jwt.types";
+import {
+  CreateFoundItemRequest,
+  ItemFilterOptions,
+  ItemCategory,
+  SortOption,
+  ItemStatus,
+} from "@/types/items.types";
+import { NextRequest, NextResponse } from "next/server";
 
-// GET found items
-export async function GET(request: Request) {
+/**
+ * GET /api/items/found
+ * Get found items with advanced filtering and pagination
+ */
+export async function GET(req: NextRequest) {
   try {
-    const supabase = createServerClient();
-    const { searchParams } = new URL(request.url);
-    const category = searchParams.get("category");
-    const limit = parseInt(searchParams.get("limit") || "20");
-    const offset = parseInt(searchParams.get("offset") || "0");
+    const { searchParams } = new URL(req.url);
 
-    let query = supabase
-      .from("found_items")
-      .select(
-        `
-        *,
-        profiles:user_id (name, email)
-      `
-      )
-      .eq("status", "available")
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+    const action = searchParams.get("action");
+    const userId = searchParams.get("userId");
 
-    if (category && category !== "all") {
-      query = query.eq("category", category);
+    if (action === "statistics") {
+      const stats = await FoundItemsService.getStatistics(userId || undefined);
+      return NextResponse.json({
+        success: true,
+        data: stats,
+      });
     }
 
-    const { data: items, error } = await query;
+    const filters: ItemFilterOptions = {
+      category: (searchParams.get("category") as ItemCategory) || undefined,
+      status: (searchParams.get("status") as ItemStatus) || "active",
+      search: searchParams.get("search") || undefined,
+      tags: searchParams.get("tags")?.split(",").filter(Boolean) || undefined,
+      location: searchParams.get("location") || undefined,
+      dateFrom: searchParams.get("dateFrom") || undefined,
+      dateTo: searchParams.get("dateTo") || undefined,
+      userId: userId || undefined,
+      sort: (searchParams.get("sort") as SortOption) || "newest",
+      limit: parseInt(searchParams.get("limit") || "20"),
+      offset: parseInt(searchParams.get("offset") || "0"),
+    };
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
+    const result = await FoundItemsService.getItems(filters);
 
     return NextResponse.json({
-      items: items || [],
+      success: true,
+      data: result,
     });
   } catch (error) {
     console.error("Get found items error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Internal server error",
+      },
       { status: 500 }
     );
   }
 }
 
-// POST new found item
-export async function POST(request: Request) {
+/**
+ * POST /api/items/found
+ * Create a new found item (requires authentication)
+ */
+export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
   try {
-    const supabase = createServerClient();
-
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const {
-      title,
-      description,
-      category,
-      location,
-      dateFound,
-      contactInfo,
-      imageUrl,
-    } = await request.json();
+    const body: CreateFoundItemRequest = await req.json();
+    const { title, description, category, location, dateFound, contactInfo } =
+      body;
 
     if (
       !title ||
@@ -77,41 +82,70 @@ export async function POST(request: Request) {
       !contactInfo
     ) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        {
+          success: false,
+          error: "Missing required fields",
+          required: [
+            "title",
+            "description",
+            "category",
+            "location",
+            "dateFound",
+            "contactInfo",
+          ],
+        },
         { status: 400 }
       );
     }
 
-    const { data: item, error } = await supabase
-      .from("found_items")
-      .insert([
-        {
-          user_id: user.id,
-          title,
-          description,
-          category,
-          location,
-          date_found: dateFound,
-          contact_info: contactInfo,
-          image_url: imageUrl,
-        },
-      ])
-      .select()
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    // Handle image upload if base64 image is provided
+    let imageUrl: string | null = null;
+    if (body.imageBase64) {
+      try {
+        imageUrl = await uploadDocumentFromBase64(
+          body.imageBase64,
+          "found-items",
+          `found_${Date.now()}`
+        );
+      } catch (error) {
+        console.error("Image upload error:", error);
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Failed to upload image. Please try again.",
+          },
+          { status: 500 }
+        );
+      }
     }
 
-    return NextResponse.json({
-      message: "Found item reported successfully",
-      item,
+    const item = await FoundItemsService.createItem(user.id, {
+      title,
+      description,
+      category,
+      location,
+      date_found: dateFound,
+      contact_info: contactInfo,
+      image_url: imageUrl,
+      tags: body.tags || null,
     });
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Found item reported successfully",
+        data: item,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Create found item error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Internal server error",
+      },
       { status: 500 }
     );
   }
-}
+});

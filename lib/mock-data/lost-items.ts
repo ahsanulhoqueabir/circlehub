@@ -7,7 +7,6 @@ export interface LostItem {
   dateLost: string;
   datePosted: string;
   contactInfo: string;
-  rewardAmount?: number;
   imageUrl?: string;
   tags?: string[];
   status: "active" | "found" | "closed";
@@ -55,7 +54,6 @@ export const mockLostItems: LostItem[] = [
     dateLost: "2024-11-10",
     datePosted: "2024-11-11",
     contactInfo: "john.doe@student.jnu.ac.bd | +880-1711-123456",
-    rewardAmount: 2000,
     imageUrl: "https://placehold.co/600x400?text=Black+iPhone+14+Pro",
     tags: ["iPhone", "blue case", "student ID"],
     status: "active",
@@ -75,7 +73,6 @@ export const mockLostItems: LostItem[] = [
     dateLost: "2024-11-09",
     datePosted: "2024-11-10",
     contactInfo: "jane.smith@student.jnu.ac.bd | +880-1722-234567",
-    rewardAmount: 1500,
     imageUrl: "https://placehold.co/600x400?text=Blue+Laptop+Bag",
     tags: ["documents", "charger"],
     status: "active",
@@ -95,7 +92,6 @@ export const mockLostItems: LostItem[] = [
     dateLost: "2024-11-08",
     datePosted: "2024-11-09",
     contactInfo: "ahmed.khan@student.jnu.ac.bd | +880-1733-345678",
-    rewardAmount: 5000,
     imageUrl: "https://placehold.co/600x400?text=Gold+Watch",
     tags: ["gold", "vintage", "sentimental"],
     status: "active",
@@ -168,14 +164,6 @@ export const sortItems = (items: LostItem[], sortBy: string): LostItem[] => {
       return sorted.sort(
         (a, b) =>
           new Date(a.datePosted).getTime() - new Date(b.datePosted).getTime()
-      );
-    case "reward-desc":
-      return sorted.sort(
-        (a, b) => (b.rewardAmount || 0) - (a.rewardAmount || 0)
-      );
-    case "reward-asc":
-      return sorted.sort(
-        (a, b) => (a.rewardAmount || 0) - (b.rewardAmount || 0)
       );
     case "title":
       return sorted.sort((a, b) => a.title.localeCompare(b.title));

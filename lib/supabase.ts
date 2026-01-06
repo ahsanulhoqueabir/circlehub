@@ -112,3 +112,24 @@ export function createMiddlewareClient(
     }
   );
 }
+
+/**
+ * Creates a Supabase client with service role key that bypasses RLS
+ * USE WITH CAUTION: Only use when you have already validated user permissions
+ */
+export function createServiceRoleClient() {
+  return createSupabaseServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return [];
+        },
+        setAll() {
+          // No-op for service role
+        },
+      },
+    }
+  );
+}
