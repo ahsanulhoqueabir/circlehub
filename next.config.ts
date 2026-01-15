@@ -8,7 +8,6 @@ const nextConfig: NextConfig = {
   // Proxy configuration for authentication
   experimental: {
     proxyTimeout: 30000,
-    instrumentationHook: true,
   },
 };
 

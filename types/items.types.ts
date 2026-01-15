@@ -11,6 +11,7 @@ export interface LostItem {
   image_url?: string;
   status: "active" | "found" | "closed";
   tags?: string[];
+  reward_amount?: number | null;
   views: number;
   created_at: string;
   updated_at: string;

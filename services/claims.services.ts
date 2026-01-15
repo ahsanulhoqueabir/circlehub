@@ -20,8 +20,11 @@ interface PopulatedClaim {
     date_found: Date;
     image_url?: string;
     status: string;
+    tags?: string[];
+    views?: number;
     user_id: unknown;
     created_at: Date;
+    updated_at: Date;
   };
   claimerId: {
     _id: unknown;
@@ -161,18 +164,21 @@ export class ClaimsService {
       updated_at: claim.updatedAt.toISOString(),
       found_item: claim.foundItemId
         ? {
-            id: String(claim.foundItemId._id),
+            _id: String(claim.foundItemId._id),
             title: claim.foundItemId.title,
             description: claim.foundItemId.description,
             category: claim.foundItemId.category,
             location: claim.foundItemId.location,
             date_found: claim.foundItemId.date_found.toISOString(),
-            image_url: claim.foundItemId.image_url || null,
+            image_url: claim.foundItemId.image_url || undefined,
             status: claim.foundItemId.status,
+            tags: claim.foundItemId.tags || [],
+            views: claim.foundItemId.views || 0,
             user_id: String(claim.foundItemId.user_id),
             created_at: claim.foundItemId.created_at.toISOString(),
+            updated_at: claim.foundItemId.updated_at.toISOString(),
           }
-        : null,
+        : undefined,
       claimer_profile: {
         id: String(claim.claimerId._id),
         name: claim.claimerId.name,
@@ -217,18 +223,21 @@ export class ClaimsService {
       updated_at: claim.updatedAt.toISOString(),
       found_item: claim.foundItemId
         ? {
-            id: String(claim.foundItemId._id),
+            _id: String(claim.foundItemId._id),
             title: claim.foundItemId.title,
             description: claim.foundItemId.description,
             category: claim.foundItemId.category,
             location: claim.foundItemId.location,
             date_found: claim.foundItemId.date_found.toISOString(),
-            image_url: claim.foundItemId.image_url || null,
+            image_url: claim.foundItemId.image_url || undefined,
             status: claim.foundItemId.status,
+            tags: claim.foundItemId.tags || [],
+            views: claim.foundItemId.views || 0,
             user_id: String(claim.foundItemId.user_id),
             created_at: claim.foundItemId.created_at.toISOString(),
+            updated_at: claim.foundItemId.updated_at.toISOString(),
           }
-        : null,
+        : undefined,
       claimer_profile: {
         id: String(claim.claimerId._id),
         name: claim.claimerId.name,

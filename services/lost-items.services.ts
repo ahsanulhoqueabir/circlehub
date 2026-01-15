@@ -117,16 +117,17 @@ export class LostItemsService {
       const items_with_profiles = items.map((item) => {
         const user = users_map.get(item.user_id.toString());
         return {
-          id: item._id.toString(),
+          _id: item._id.toString(),
           user_id: item.user_id.toString(),
           title: item.title,
           description: item.description,
           category: item.category,
           location: item.location,
           date_lost: item.date_lost.toISOString(),
-          image_url: item.image_url || null,
+          image_url: item.image_url || undefined,
           status: item.status,
           tags: item.tags || [],
+          reward_amount: item.reward_amount || null,
           views: item.views || 0,
           created_at: item.created_at.toISOString(),
           updated_at: item.updated_at.toISOString(),
@@ -200,16 +201,17 @@ export class LostItemsService {
       await LostItem.findByIdAndUpdate(item_id, { $inc: { views: 1 } });
 
       const item_with_profile: LostItemWithProfile = {
-        id: item._id.toString(),
+        _id: item._id.toString(),
         user_id: item.user_id.toString(),
         title: item.title,
         description: item.description,
         category: item.category,
         location: item.location,
         date_lost: item.date_lost.toISOString(),
-        image_url: item.image_url || null,
+        image_url: item.image_url || undefined,
         status: item.status,
         tags: item.tags || [],
+        reward_amount: item.reward_amount || null,
         views: (item.views || 0) + 1,
         created_at: item.created_at.toISOString(),
         updated_at: item.updated_at.toISOString(),

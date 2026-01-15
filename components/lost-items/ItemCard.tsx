@@ -97,7 +97,7 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
               <User className="w-3 h-3" />
-              <span>{item.profiles?.name || "Anonymous"}</span>
+              <span>{item.profile?.name || "Anonymous"}</span>
             </div>
           </div>
 

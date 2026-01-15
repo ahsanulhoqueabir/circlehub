@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyToken, JWTPayload } from "@/lib/jwt";
+import { JWTService } from "@/services/jwt.services";
+import { JwtPayload } from "@/types/jwt.types";
 
 export interface AuthenticatedRequest extends NextRequest {
-  user?: JWTPayload;
+  user?: JwtPayload;
 }
 
 /**
@@ -25,7 +26,7 @@ export const getTokenFromHeader = (request: NextRequest): string | null => {
 export const authenticate = (
   request: NextRequest
 ):
-  | { authenticated: true; user: JWTPayload }
+  | { authenticated: true; user: JwtPayload }
   | { authenticated: false; response: NextResponse } => {
   const token = getTokenFromHeader(request);
 
@@ -42,9 +43,9 @@ export const authenticate = (
     };
   }
 
-  const decoded = verifyToken(token);
+  const result = JWTService.verifyAccessToken(token);
 
-  if (!decoded) {
+  if (!result.valid || !result.payload) {
     return {
       authenticated: false,
       response: NextResponse.json(
@@ -59,7 +60,7 @@ export const authenticate = (
 
   return {
     authenticated: true,
-    user: decoded,
+    user: result.payload,
   };
 };
 

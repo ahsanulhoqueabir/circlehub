@@ -14,6 +14,7 @@ export interface ILostItem extends Document {
   image_url?: string;
   status: "active" | "found" | "closed";
   tags?: string[];
+  reward_amount?: number | null;
   views: number;
   created_at: Date;
   updated_at: Date;
@@ -76,6 +77,11 @@ const lost_item_schema = new Schema<ILostItem>(
     tags: {
       type: [String],
       default: [],
+    },
+    reward_amount: {
+      type: Number,
+      default: null,
+      min: [0, "Reward amount cannot be negative"],
     },
     views: {
       type: Number,

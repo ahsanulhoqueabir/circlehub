@@ -1,8 +1,8 @@
-import ShareItem, { IShareItem } from "@/models/share-items.m.ts";
+import ShareItem, { IShareItem } from "@/models/share-items.m";
 import User from "@/models/users.m";
 import dbConnect from "@/lib/mongodb";
 import { Types } from "mongoose";
-import { ServiceResponse } from "@/types/items.types";
+import type { ServiceResponse } from "@/types/auth.types";
 
 /**
  * Share Items Service

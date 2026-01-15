@@ -143,7 +143,7 @@ export default function ItemDetailModal({
                   <span>৳{item.price}</span>
                 </div>
               )}
-              {item.status === "active" && (
+              {item.status === "available" && (
                 <span className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                   Available
                 </span>

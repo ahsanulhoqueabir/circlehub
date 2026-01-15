@@ -117,14 +117,14 @@ export class FoundItemsService {
       const items_with_profiles = items.map((item) => {
         const user = users_map.get(item.user_id.toString());
         return {
-          id: item._id.toString(),
+          _id: item._id.toString(),
           user_id: item.user_id.toString(),
           title: item.title,
           description: item.description,
           category: item.category,
           location: item.location,
           date_found: item.date_found.toISOString(),
-          image_url: item.image_url || null,
+          image_url: item.image_url || undefined,
           status: item.status,
           tags: item.tags || [],
           views: item.views || 0,
@@ -200,14 +200,14 @@ export class FoundItemsService {
       await FoundItem.findByIdAndUpdate(item_id, { $inc: { views: 1 } });
 
       const item_with_profile: FoundItemWithProfile = {
-        id: item._id.toString(),
+        _id: item._id.toString(),
         user_id: item.user_id.toString(),
         title: item.title,
         description: item.description,
         category: item.category,
         location: item.location,
         date_found: item.date_found.toISOString(),
-        image_url: item.image_url || null,
+        image_url: item.image_url || undefined,
         status: item.status,
         tags: item.tags || [],
         views: (item.views || 0) + 1,
