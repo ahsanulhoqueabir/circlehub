@@ -23,6 +23,7 @@ interface ReportFoundItemFormProps {
     location: string;
     dateFound: string;
     imageUrl?: string;
+    imageBase64?: string;
     tags?: string[];
   }) => Promise<void>;
 }

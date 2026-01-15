@@ -98,7 +98,6 @@ export default function LostPage() {
     category: string;
     location: string;
     dateLost: string;
-    contactInfo: string;
     rewardAmount?: number;
     imageUrl?: string;
     imageBase64?: string;
@@ -111,7 +110,6 @@ export default function LostPage() {
         category: formData.category,
         location: formData.location,
         dateLost: formData.dateLost,
-        contactInfo: formData.contactInfo,
         imageBase64: formData.imageBase64,
         tags: formData.tags,
         rewardAmount: formData.rewardAmount,
@@ -143,9 +141,7 @@ export default function LostPage() {
     },
     {
       label: "Items Resolved",
-      value: items
-        .filter((item) => item.status === "resolved")
-        .length.toString(),
+      value: items.filter((item) => item.status === "found").length.toString(),
       color: "text-green-600",
     },
     {
@@ -299,7 +295,7 @@ export default function LostPage() {
           >
             {filteredItems.map((item) => (
               <div
-                key={item.id}
+                key={item._id}
                 className={viewMode === "grid" ? "break-inside-avoid mb-6" : ""}
               >
                 <ItemCard item={item} onClick={handleItemClick} />

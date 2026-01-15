@@ -155,7 +155,7 @@ export default function ItemDetailModal({
           preferredContact?: string;
         };
       } = {
-        found_item_id: item.id,
+        found_item_id: item._id,
       };
 
       // Only add message if provided

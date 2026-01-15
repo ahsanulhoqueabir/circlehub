@@ -96,7 +96,6 @@ export default function FoundPage() {
     category: string;
     location: string;
     dateFound: string;
-    contactInfo: string;
     imageUrl?: string;
     imageBase64?: string;
     tags?: string[];
@@ -108,7 +107,6 @@ export default function FoundPage() {
         category: formData.category,
         location: formData.location,
         dateFound: formData.dateFound,
-        contactInfo: formData.contactInfo,
         imageBase64: formData.imageBase64,
         tags: formData.tags,
       });
@@ -297,7 +295,7 @@ export default function FoundPage() {
           >
             {filteredItems.map((item) => (
               <div
-                key={item.id}
+                key={item._id}
                 className={viewMode === "grid" ? "break-inside-avoid mb-6" : ""}
               >
                 <ItemCard item={item} onClick={handleItemClick} />

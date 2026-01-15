@@ -1,27 +1,96 @@
-import { Database } from "@/lib/database.types";
+// Base item types from MongoDB models
 
-// Database types
-export type LostItem = Database["public"]["Tables"]["lost_items"]["Row"];
-export type LostItemInsert =
-  Database["public"]["Tables"]["lost_items"]["Insert"];
-export type LostItemUpdate =
-  Database["public"]["Tables"]["lost_items"]["Update"];
+export interface LostItem {
+  _id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  category: string;
+  location: string;
+  date_lost: string;
+  image_url?: string;
+  status: "active" | "found" | "closed";
+  tags?: string[];
+  views: number;
+  created_at: string;
+  updated_at: string;
+}
 
-export type FoundItem = Database["public"]["Tables"]["found_items"]["Row"];
-export type FoundItemInsert =
-  Database["public"]["Tables"]["found_items"]["Insert"];
-export type FoundItemUpdate =
-  Database["public"]["Tables"]["found_items"]["Update"];
+export interface FoundItem {
+  _id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  category: string;
+  location: string;
+  date_found: string;
+  image_url?: string;
+  status: "available" | "claimed" | "returned";
+  tags?: string[];
+  views: number;
+  created_at: string;
+  updated_at: string;
+}
 
-export type ShareItem = Database["public"]["Tables"]["share_items"]["Row"];
-export type ShareItemInsert =
-  Database["public"]["Tables"]["share_items"]["Insert"];
-export type ShareItemUpdate =
-  Database["public"]["Tables"]["share_items"]["Update"];
+export interface ShareItem {
+  _id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  category: string;
+  condition: "new" | "like-new" | "good" | "fair";
+  offer_type: "free" | "sale";
+  price?: number;
+  location: string;
+  image_url?: string;
+  tags?: string[];
+  status: "available" | "reserved" | "shared";
+  created_at: string;
+  updated_at: string;
+}
 
-export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-export type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];
-export type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
+export interface Profile {
+  _id: string;
+  email: string;
+  name: string;
+  phone?: string;
+  avatar_url?: string;
+  university?: string;
+  student_id?: string;
+  role: "admin" | "student";
+  verified: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// Insert types (omit auto-generated fields)
+export type LostItemInsert = Omit<
+  LostItem,
+  "_id" | "created_at" | "updated_at" | "views"
+>;
+export type FoundItemInsert = Omit<
+  FoundItem,
+  "_id" | "created_at" | "updated_at" | "views"
+>;
+export type ShareItemInsert = Omit<
+  ShareItem,
+  "_id" | "created_at" | "updated_at"
+>;
+export type ProfileInsert = Omit<Profile, "_id" | "created_at" | "updated_at">;
+
+// Update types (all fields optional except _id)
+export type LostItemUpdate = Partial<
+  Omit<LostItem, "_id" | "created_at" | "updated_at">
+>;
+export type FoundItemUpdate = Partial<
+  Omit<FoundItem, "_id" | "created_at" | "updated_at">
+>;
+export type ShareItemUpdate = Partial<
+  Omit<ShareItem, "_id" | "created_at" | "updated_at">
+>;
+export type ProfileUpdate = Partial<
+  Omit<Profile, "_id" | "created_at" | "updated_at">
+>;
 
 // Claim types
 export interface FoundItemClaim {

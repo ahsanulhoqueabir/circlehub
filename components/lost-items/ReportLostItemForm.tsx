@@ -20,6 +20,7 @@ interface LostItemFormData {
   location: string;
   dateLost: string;
   imageUrl?: string;
+  imageBase64?: string;
   tags?: string[];
 }
 

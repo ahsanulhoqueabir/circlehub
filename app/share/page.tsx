@@ -211,7 +211,7 @@ export default function SharePage() {
             <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-3 sm:gap-4 space-y-0">
               {filteredItems.map((item) => (
                 <ItemCard
-                  key={item.id}
+                  key={item._id}
                   item={item}
                   onClick={() => handleItemClick(item)}
                 />
@@ -221,7 +221,7 @@ export default function SharePage() {
             <div className="space-y-3 sm:space-y-4">
               {filteredItems.map((item) => (
                 <ItemCard
-                  key={item.id}
+                  key={item._id}
                   item={item}
                   onClick={() => handleItemClick(item)}
                   viewMode="list"
