@@ -3,6 +3,15 @@
 import { useState } from "react";
 import { X, Upload, Plus, Minus, Image as ImageIcon } from "lucide-react";
 import { CATEGORIES, LOCATIONS } from "@/lib/mock-data/found-items";
+import Image from "next/image";
+import { DatePicker } from "@/components/ui/date-picker";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ReportFoundItemFormProps {
   isOpen: boolean;
@@ -13,7 +22,6 @@ interface ReportFoundItemFormProps {
     category: string;
     location: string;
     dateFound: string;
-    contactInfo: string;
     imageUrl?: string;
     tags?: string[];
   }) => Promise<void>;
@@ -29,8 +37,7 @@ export default function ReportFoundItemForm({
     description: "",
     category: "",
     location: "",
-    dateFound: "",
-    contactInfo: "",
+    dateFound: undefined as Date | undefined,
     imageUrl: "",
     tags: [] as string[],
   });
@@ -65,16 +72,8 @@ export default function ReportFoundItemForm({
 
     if (!formData.dateFound) {
       newErrors.dateFound = "Date found is required";
-    } else {
-      const foundDate = new Date(formData.dateFound);
-      const today = new Date();
-      if (foundDate > today) {
-        newErrors.dateFound = "Date found cannot be in the future";
-      }
-    }
-
-    if (!formData.contactInfo.trim()) {
-      newErrors.contactInfo = "Contact information is required";
+    } else if (formData.dateFound > new Date()) {
+      newErrors.dateFound = "Date found cannot be in the future";
     }
 
     setErrors(newErrors);
@@ -103,7 +102,9 @@ export default function ReportFoundItemForm({
 
       await onSubmit({
         ...formData,
-        imageUrl: formData.imageUrl || undefined,
+        dateFound: formData.dateFound
+          ? formData.dateFound.toISOString().split("T")[0]
+          : "",
         imageBase64: imageBase64 || undefined,
         tags: formData.tags.length > 0 ? formData.tags : undefined,
       });
@@ -114,8 +115,7 @@ export default function ReportFoundItemForm({
         description: "",
         category: "",
         location: "",
-        dateFound: "",
-        contactInfo: "",
+        dateFound: undefined,
         imageUrl: "",
         tags: [],
       });
@@ -199,13 +199,13 @@ export default function ReportFoundItemForm({
 
   return (
     <div
-      className="fixed inset-0 backdrop-blur-lg bg-black/20 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 backdrop-blur-lg bg-black/20 z-50 flex items-center justify-center p-2 sm:p-4"
       onClick={handleBackdropClick}
     >
       <div className="bg-white dark:bg-slate-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden border border-slate-200 dark:border-slate-700 shadow-xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700">
+          <h2 className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-white">
             Report Found Item
           </h2>
           <button
@@ -217,7 +217,10 @@ export default function ReportFoundItemForm({
         </div>
 
         <div className="overflow-y-auto max-h-[calc(90vh-140px)]">
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <form
+            onSubmit={handleSubmit}
+            className="p-4 sm:p-6 space-y-4 sm:space-y-6"
+          >
             {/* Title */}
             <div>
               <label
@@ -234,9 +237,9 @@ export default function ReportFoundItemForm({
                   setFormData((prev) => ({ ...prev, title: e.target.value }))
                 }
                 placeholder="e.g., iPhone 15 Pro - Black"
-                className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent ${
                   errors.title
-                    ? "border-red-300 dark:border-red-600"
+                    ? "border-destructive"
                     : "border-slate-300 dark:border-slate-600"
                 }`}
               />
@@ -266,9 +269,9 @@ export default function ReportFoundItemForm({
                 }
                 rows={4}
                 placeholder="Please describe the found item in detail..."
-                className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent ${
                   errors.description
-                    ? "border-red-300 dark:border-red-600"
+                    ? "border-destructive"
                     : "border-slate-300 dark:border-slate-600"
                 }`}
               />
@@ -292,28 +295,27 @@ export default function ReportFoundItemForm({
                 >
                   Category *
                 </label>
-                <select
-                  id="category"
+                <Select
                   value={formData.category}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      category: e.target.value,
-                    }))
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, category: value }))
                   }
-                  className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                    errors.category
-                      ? "border-red-300 dark:border-red-600"
-                      : "border-slate-300 dark:border-slate-600"
-                  }`}
                 >
-                  <option value="">Select a category</option>
-                  {CATEGORIES.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger
+                    className={`h-12 w-full ${
+                      errors.category ? "border-destructive" : ""
+                    }`}
+                  >
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {errors.category && (
                   <p className="mt-1 text-sm text-red-600 dark:text-red-400">
                     {errors.category}
@@ -328,28 +330,27 @@ export default function ReportFoundItemForm({
                 >
                   Found at Location *
                 </label>
-                <select
-                  id="location"
+                <Select
                   value={formData.location}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      location: e.target.value,
-                    }))
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, location: value }))
                   }
-                  className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                    errors.location
-                      ? "border-red-300 dark:border-red-600"
-                      : "border-slate-300 dark:border-slate-600"
-                  }`}
                 >
-                  <option value="">Select a location</option>
-                  {LOCATIONS.map((location) => (
-                    <option key={location} value={location}>
-                      {location}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger
+                    className={`h-12 w-full ${
+                      errors.location ? "border-destructive" : ""
+                    }`}
+                  >
+                    <SelectValue placeholder="Select location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LOCATIONS.map((location) => (
+                      <SelectItem key={location} value={location}>
+                        {location}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {errors.location && (
                   <p className="mt-1 text-sm text-red-600 dark:text-red-400">
                     {errors.location}
@@ -360,67 +361,22 @@ export default function ReportFoundItemForm({
 
             {/* Date Found */}
             <div>
-              <label
-                htmlFor="dateFound"
-                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-              >
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                 Date Found *
               </label>
-              <input
-                type="date"
-                id="dateFound"
-                value={formData.dateFound}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    dateFound: e.target.value,
-                  }))
+              <DatePicker
+                date={formData.dateFound}
+                onDateChange={(date) =>
+                  setFormData((prev) => ({ ...prev, dateFound: date }))
                 }
-                max={new Date().toISOString().split("T")[0]}
-                className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.dateFound
-                    ? "border-red-300 dark:border-red-600"
-                    : "border-slate-300 dark:border-slate-600"
-                }`}
+                placeholder="Select date found"
+                maxDate={new Date()}
+                error={!!errors.dateFound}
+                className={errors.dateFound ? "border-destructive" : ""}
               />
               {errors.dateFound && (
                 <p className="mt-1 text-sm text-red-600 dark:text-red-400">
                   {errors.dateFound}
-                </p>
-              )}
-            </div>
-
-            {/* Contact Information */}
-            <div>
-              <label
-                htmlFor="contactInfo"
-                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-              >
-                Your Contact Information *
-              </label>
-              <textarea
-                id="contactInfo"
-                value={formData.contactInfo}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    contactInfo: e.target.value,
-                  }))
-                }
-                rows={2}
-                placeholder="your.email@student.jnu.ac.bd | +880-1711-123456"
-                className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.contactInfo
-                    ? "border-red-300 dark:border-red-600"
-                    : "border-slate-300 dark:border-slate-600"
-                }`}
-              />
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Include email and/or phone number so the owner can contact you
-              </p>
-              {errors.contactInfo && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                  {errors.contactInfo}
                 </p>
               )}
             </div>
@@ -456,9 +412,10 @@ export default function ReportFoundItemForm({
               ) : (
                 <div className="relative">
                   <div className="relative w-full h-48 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-600">
-                    <img
+                    <Image
                       src={imagePreview}
                       alt="Preview"
+                      fill
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -502,13 +459,13 @@ export default function ReportFoundItemForm({
                     onChange={(e) => setNewTag(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Add a tag (e.g., black, phone, case)"
-                    className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent"
                   />
                   <button
                     type="button"
                     onClick={addTag}
                     disabled={!newTag.trim()}
-                    className="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                    className="px-3 py-2 bg-success text-success-foreground rounded-md hover:bg-success/90 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -519,7 +476,7 @@ export default function ReportFoundItemForm({
                     {formData.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 text-sm rounded-md"
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-success/10 dark:bg-success/20 text-success text-sm rounded-md"
                       >
                         {tag}
                         <button
@@ -542,18 +499,18 @@ export default function ReportFoundItemForm({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200 dark:border-slate-700">
+        <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 p-4 sm:p-6 border-t border-slate-200 dark:border-slate-700">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+            className="w-full sm:w-auto px-4 py-2 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-md font-medium transition-colors flex items-center gap-2"
+            className="w-full sm:w-auto px-6 py-2 bg-success hover:bg-success/90 disabled:opacity-50 text-success-foreground rounded-md font-medium transition-colors flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
               <>

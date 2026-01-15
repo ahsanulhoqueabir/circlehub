@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -13,6 +13,8 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const { login, loginWithGoogle, isLoading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl") || "/";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +22,7 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      router.push("/");
+      router.push(returnUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     }

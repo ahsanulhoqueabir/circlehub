@@ -10,9 +10,12 @@ import FilterBar from "@/components/found-items/FilterBar";
 import ItemCard from "@/components/found-items/ItemCard";
 import ItemDetailModal from "@/components/found-items/ItemDetailModal";
 import ReportFoundItemForm from "@/components/found-items/ReportFoundItemForm";
+import AuthWarningModal from "@/components/AuthWarningModal";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function FoundPage() {
   const axios = useAxios();
+  const { isAuthenticated } = useAuth();
   const [items, setItems] = useState<FoundItemWithProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -29,6 +32,7 @@ export default function FoundPage() {
   );
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showReportForm, setShowReportForm] = useState(false);
+  const [showAuthWarning, setShowAuthWarning] = useState(false);
 
   // View mode
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -41,7 +45,7 @@ export default function FoundPage() {
     try {
       setIsLoading(true);
       const params = new URLSearchParams({
-        status: "active",
+        status: "available",
         sort: selectedSort,
       });
 
@@ -76,6 +80,14 @@ export default function FoundPage() {
   const handleItemClick = (item: FoundItemWithProfile) => {
     setSelectedItem(item);
     setShowDetailModal(true);
+  };
+
+  const handleReportClick = () => {
+    if (!isAuthenticated) {
+      setShowAuthWarning(true);
+      return;
+    }
+    setShowReportForm(true);
   };
 
   const handleReportSubmit = async (formData: {
@@ -121,13 +133,17 @@ export default function FoundPage() {
     },
     {
       label: "Available Items",
-      value: items.filter((item) => item.status === "active").length.toString(),
+      value: items
+        .filter((item) => item.status === "available")
+        .length.toString(),
       color: "text-blue-600",
     },
     {
-      label: "Items Resolved",
+      label: "Items Claimed/Returned",
       value: items
-        .filter((item) => item.status === "resolved")
+        .filter(
+          (item) => item.status === "claimed" || item.status === "returned"
+        )
         .length.toString(),
       color: "text-purple-600",
     },
@@ -160,7 +176,7 @@ export default function FoundPage() {
           </p>
 
           <button
-            onClick={() => setShowReportForm(true)}
+            onClick={handleReportClick}
             className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
           >
             <Plus className="w-5 h-5" />
@@ -263,7 +279,7 @@ export default function FoundPage() {
             </p>
             {!searchQuery && (
               <button
-                onClick={() => setShowReportForm(true)}
+                onClick={handleReportClick}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
               >
                 <Plus className="w-5 h-5" />
@@ -308,12 +324,20 @@ export default function FoundPage() {
           setShowDetailModal(false);
           setSelectedItem(null);
         }}
+        onClaimSuccess={() => {
+          fetchItems();
+        }}
       />
 
       <ReportFoundItemForm
         isOpen={showReportForm}
         onClose={() => setShowReportForm(false)}
         onSubmit={handleReportSubmit}
+      />
+
+      <AuthWarningModal
+        isOpen={showAuthWarning}
+        onClose={() => setShowAuthWarning(false)}
       />
     </div>
   );

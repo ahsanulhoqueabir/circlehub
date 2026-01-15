@@ -19,6 +19,55 @@ export type ShareItemInsert =
 export type ShareItemUpdate =
   Database["public"]["Tables"]["share_items"]["Update"];
 
+export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+export type ProfileInsert = Database["public"]["Tables"]["profiles"]["Insert"];
+export type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
+
+// Claim types
+export interface FoundItemClaim {
+  id: string;
+  found_item_id: string;
+  claimer_id: string;
+  status: "pending" | "approved" | "rejected";
+  message: string | null;
+  contact_info: {
+    phone?: string;
+    email?: string;
+    preferredContact?: string;
+  } | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FoundItemClaimWithProfile extends FoundItemClaim {
+  claimer_profile: UserProfile;
+  found_item?: FoundItem;
+}
+
+export interface CreateClaimRequest {
+  found_item_id: string;
+  message?: string;
+  contact_info?: {
+    phone?: string;
+    email?: string;
+    preferredContact?: string;
+  };
+}
+
+export interface UpdateClaimRequest {
+  status?: "pending" | "approved" | "rejected";
+  message?: string;
+}
+
+// User profile info for contact
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  avatar_url: string | null;
+}
+
 // Item status
 export type ItemStatus = "active" | "resolved" | "archived";
 
@@ -63,34 +112,28 @@ export interface ItemFilterOptions {
   offset?: number;
 }
 
+// User profile info for contact
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  avatar_url: string | null;
+}
+
 // Lost item with profile
 export interface LostItemWithProfile extends LostItem {
-  profiles?: {
-    id: string;
-    name: string;
-    email: string;
-    avatar_url?: string | null;
-  };
+  profile: UserProfile;
 }
 
 // Found item with profile
 export interface FoundItemWithProfile extends FoundItem {
-  profiles?: {
-    id: string;
-    name: string;
-    email: string;
-    avatar_url?: string | null;
-  };
+  profile: UserProfile;
 }
 
 // Share item with profile
 export interface ShareItemWithProfile extends ShareItem {
-  profiles?: {
-    id: string;
-    name: string;
-    email: string;
-    avatar_url?: string | null;
-  };
+  profile: UserProfile;
 }
 
 // API Response types
@@ -113,7 +156,6 @@ export interface CreateLostItemRequest {
   category: ItemCategory;
   location: string;
   dateLost: string;
-  contactInfo: string;
   imageUrl?: string | null;
   imageBase64?: string; // Base64 encoded image data
   tags?: string[];
@@ -126,7 +168,6 @@ export interface UpdateLostItemRequest {
   category?: ItemCategory;
   location?: string;
   dateLost?: string;
-  contactInfo?: string;
   imageUrl?: string | null;
   tags?: string[];
   status?: ItemStatus;
@@ -139,7 +180,6 @@ export interface CreateFoundItemRequest {
   category: ItemCategory;
   location: string;
   dateFound: string;
-  contactInfo: string;
   imageUrl?: string | null;
   imageBase64?: string; // Base64 encoded image data
   tags?: string[];
@@ -151,7 +191,6 @@ export interface UpdateFoundItemRequest {
   category?: ItemCategory;
   location?: string;
   dateFound?: string;
-  contactInfo?: string;
   imageUrl?: string | null;
   tags?: string[];
   status?: ItemStatus;
@@ -162,7 +201,6 @@ export interface CreateShareItemRequest {
   description: string;
   category: ItemCategory;
   location: string;
-  contactInfo: string;
   offerType: "free" | "exchange" | "rent" | "sale";
   condition: "new" | "like-new" | "good" | "fair" | "poor";
   price?: number | null;
@@ -176,7 +214,6 @@ export interface UpdateShareItemRequest {
   description?: string;
   category?: ItemCategory;
   location?: string;
-  contactInfo?: string;
   offerType?: "free" | "exchange" | "rent";
   condition?: "new" | "like-new" | "good" | "fair" | "poor";
   price?: number | null;

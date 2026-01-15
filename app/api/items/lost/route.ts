@@ -1,4 +1,3 @@
-import { createServerClient } from "@/lib/supabase";
 import { LostItemsService } from "@/services/lost-items.services";
 import { uploadDocumentFromBase64 } from "@/services/clodinary.services";
 import { withAuth } from "@/middleware/with-auth";
@@ -90,17 +89,9 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
     const body: CreateLostItemRequest = await req.json();
 
     // Validate required fields
-    const { title, description, category, location, dateLost, contactInfo } =
-      body;
+    const { title, description, category, location, dateLost } = body;
 
-    if (
-      !title ||
-      !description ||
-      !category ||
-      !location ||
-      !dateLost ||
-      !contactInfo
-    ) {
+    if (!title || !description || !category || !location || !dateLost) {
       return NextResponse.json(
         {
           success: false,
@@ -111,7 +102,6 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
             "category",
             "location",
             "dateLost",
-            "contactInfo",
           ],
         },
         { status: 400 }
@@ -147,7 +137,6 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
       category,
       location,
       date_lost: dateLost,
-      contact_info: contactInfo,
       image_url: imageUrl,
       tags: body.tags || null,
     });

@@ -104,7 +104,7 @@ export class LostItemsService {
     const userIds = [...new Set(data?.map((item) => item.user_id) || [])];
     const { data: profilesData } = await supabase
       .from("profiles")
-      .select("id, name, email, avatar_url")
+      .select("id, name, email, phone, avatar_url")
       .in("id", userIds);
 
     // Create a map of profiles
@@ -116,7 +116,7 @@ export class LostItemsService {
     const itemsWithProfiles =
       data?.map((item) => ({
         ...item,
-        profiles: profilesMap.get(item.user_id) || undefined,
+        profile: profilesMap.get(item.user_id)!,
       })) || [];
 
     const total = count || 0;
@@ -156,7 +156,7 @@ export class LostItemsService {
     // Fetch profile separately
     const { data: profileData } = await supabase
       .from("profiles")
-      .select("id, name, email, avatar_url")
+      .select("id, name, email, phone, avatar_url")
       .eq("id", data.user_id)
       .single();
 
@@ -165,7 +165,7 @@ export class LostItemsService {
 
     return {
       ...data,
-      profiles: profileData || undefined,
+      profile: profileData!,
     } as LostItemWithProfile;
   }
 

@@ -17,7 +17,6 @@ export type Database = {
       found_items: {
         Row: {
           category: string;
-          contact_info: string;
           created_at: string | null;
           date_found: string;
           description: string;
@@ -33,7 +32,6 @@ export type Database = {
         };
         Insert: {
           category: string;
-          contact_info: string;
           created_at?: string | null;
           date_found: string;
           description: string;
@@ -49,7 +47,6 @@ export type Database = {
         };
         Update: {
           category?: string;
-          contact_info?: string;
           created_at?: string | null;
           date_found?: string;
           description?: string;
@@ -68,7 +65,6 @@ export type Database = {
       lost_items: {
         Row: {
           category: string;
-          contact_info: string;
           created_at: string | null;
           date_lost: string;
           description: string;
@@ -84,7 +80,6 @@ export type Database = {
         };
         Insert: {
           category: string;
-          contact_info: string;
           created_at?: string | null;
           date_lost: string;
           description: string;
@@ -100,7 +95,6 @@ export type Database = {
         };
         Update: {
           category?: string;
-          contact_info?: string;
           created_at?: string | null;
           date_lost?: string;
           description?: string;
@@ -123,6 +117,7 @@ export type Database = {
           email: string;
           id: string;
           name: string;
+          phone: string | null;
           role: string | null;
           student_id: string | null;
           university: string | null;
@@ -135,6 +130,7 @@ export type Database = {
           email: string;
           id: string;
           name: string;
+          phone?: string | null;
           role?: string | null;
           student_id?: string | null;
           university?: string | null;
@@ -147,6 +143,7 @@ export type Database = {
           email?: string;
           id?: string;
           name?: string;
+          phone?: string | null;
           role?: string | null;
           student_id?: string | null;
           university?: string | null;
@@ -159,7 +156,6 @@ export type Database = {
         Row: {
           category: string;
           condition: string;
-          contact_info: string;
           created_at: string | null;
           description: string;
           id: string;
@@ -176,7 +172,6 @@ export type Database = {
         Insert: {
           category: string;
           condition: string;
-          contact_info: string;
           created_at?: string | null;
           description: string;
           id?: string;
@@ -193,11 +188,43 @@ export type Database = {
         Update: {
           category?: string;
           condition?: string;
-          contact_info?: string;
           created_at?: string | null;
           description?: string;
           id?: string;
           image_url?: string | null;
+          location?: string;
+          offer_type?: string;
+          price?: number | null;
+          status?: string | null;
+          tags?: string[] | null;
+          title?: string;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      increment_found_item_views: {
+        Args: { item_id: string };
+        Returns: undefined;
+      };
+      increment_lost_item_views: {
+        Args: { item_id: string };
+        Returns: undefined;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
+};
           location?: string;
           offer_type?: string;
           price?: number | null;

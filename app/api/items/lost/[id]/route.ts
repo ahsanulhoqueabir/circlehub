@@ -100,7 +100,6 @@ export async function PUT(
     if (body.category !== undefined) updates.category = body.category;
     if (body.location !== undefined) updates.location = body.location;
     if (body.dateLost !== undefined) updates.date_lost = body.dateLost;
-    if (body.contactInfo !== undefined) updates.contact_info = body.contactInfo;
     if (body.imageUrl !== undefined) updates.image_url = body.imageUrl;
     if (body.tags !== undefined) updates.tags = body.tags;
     if (body.status !== undefined) updates.status = body.status;

@@ -12,9 +12,12 @@ import {
   Share2,
   Phone,
   Mail,
+  CheckCircle,
 } from "lucide-react";
-import { FoundItem } from "@/lib/mock-data/found-items";
+import { FoundItemWithProfile } from "@/types/items.types";
 import Image from "next/image";
+import { useAuth } from "@/contexts/auth-context";
+import useAxios from "@/hooks/use-axios";
 
 // Simple date formatting function
 const formatDateDistance = (date: string) => {
@@ -45,13 +48,25 @@ const formatFullDate = (dateString: string) => {
 };
 
 interface ItemDetailModalProps {
-  item: FoundItem | null;
+  item: FoundItemWithProfile | null;
   isOpen: boolean;
   onClose: () => void;
+  onClaimSuccess?: () => void;
 }
 
-const StatusBadge = ({ status }: { status: FoundItem["status"] }) => {
-  const statusConfig = {
+const StatusBadge = ({
+  status,
+}: {
+  status: FoundItemWithProfile["status"];
+}) => {
+  const statusConfig: Record<
+    string,
+    {
+      label: string;
+      className: string;
+      description: string;
+    }
+  > = {
     available: {
       label: "Available",
       className:
@@ -72,7 +87,7 @@ const StatusBadge = ({ status }: { status: FoundItem["status"] }) => {
     },
   };
 
-  const config = statusConfig[status];
+  const config = statusConfig[status || "available"] || statusConfig.available;
 
   return (
     <div className="text-center">
@@ -92,14 +107,106 @@ export default function ItemDetailModal({
   item,
   isOpen,
   onClose,
+  onClaimSuccess,
 }: ItemDetailModalProps) {
+  const { user } = useAuth();
+  const axios = useAxios();
   const [showContactInfo, setShowContactInfo] = useState(false);
+  const [showClaimModal, setShowClaimModal] = useState(false);
+  const [claimMessage, setClaimMessage] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+  const [isSubmittingClaim, setIsSubmittingClaim] = useState(false);
+  const [hasClaimed, setHasClaimed] = useState(false);
 
   if (!isOpen || !item) return null;
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
+    }
+  };
+
+  const handleClaimItem = async () => {
+    if (!user) {
+      alert("Please login to claim this item");
+      return;
+    }
+
+    if (user.id === item.user_id) {
+      alert("You cannot claim your own found item");
+      return;
+    }
+
+    setShowClaimModal(true);
+  };
+
+  const handleSubmitClaim = async () => {
+    if (!user || !item) return;
+
+    setIsSubmittingClaim(true);
+
+    try {
+      const claimData: {
+        found_item_id: string;
+        message?: string;
+        contact_info?: {
+          phone?: string;
+          email?: string;
+          preferredContact?: string;
+        };
+      } = {
+        found_item_id: item.id,
+      };
+
+      // Only add message if provided
+      if (claimMessage && claimMessage.trim()) {
+        claimData.message = claimMessage.trim();
+      }
+
+      // Only add contact_info if we have phone or email
+      if (contactPhone || user.email) {
+        claimData.contact_info = {
+          preferredContact: contactPhone ? "phone" : "email",
+        };
+
+        if (contactPhone) {
+          claimData.contact_info.phone = contactPhone;
+        }
+
+        if (user.email) {
+          claimData.contact_info.email = user.email;
+        }
+      }
+
+      const response = await axios.post("/api/claims", claimData);
+
+      setHasClaimed(true);
+      setShowClaimModal(false);
+      setClaimMessage("");
+      setContactPhone("");
+
+      alert(
+        response.data?.message ||
+          "Claim submitted successfully! The finder will review your request."
+      );
+
+      if (onClaimSuccess) {
+        onClaimSuccess();
+      }
+    } catch (error) {
+      console.error("Error submitting claim:", error);
+      const err = error as {
+        response?: { data?: { error?: string; details?: string } };
+        message?: string;
+      };
+      const errorMessage =
+        err?.response?.data?.error ||
+        err?.response?.data?.details ||
+        err?.message ||
+        "Failed to submit claim. Please try again.";
+      alert(errorMessage);
+    } finally {
+      setIsSubmittingClaim(false);
     }
   };
 
@@ -125,22 +232,11 @@ export default function ItemDetailModal({
     }
   };
 
-  const parseContactInfo = (contactInfo: string) => {
-    const emailMatch = contactInfo.match(
-      /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/
-    );
-    const phoneMatch = contactInfo.match(
-      /(\+?880-?\d{4}-?\d{6}|\+?880\d{10}|01\d{9})/
-    );
-
-    return {
-      email: emailMatch ? emailMatch[1] : null,
-      phone: phoneMatch ? phoneMatch[1] : null,
-      raw: contactInfo,
-    };
+  const contact = {
+    email: item.profile?.email || null,
+    phone: item.profile?.phone || null,
+    name: item.profile?.name || "Unknown",
   };
-
-  const contact = parseContactInfo(item.contactInfo);
 
   return (
     <div
@@ -157,7 +253,7 @@ export default function ItemDetailModal({
             <div className="flex items-center gap-4 text-slate-600 dark:text-slate-400 text-sm">
               <div className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
-                <span>Found {formatDateDistance(item.dateFound)} ago</span>
+                <span>Found {formatDateDistance(item.date_found)} ago</span>
               </div>
               <div className="flex items-center gap-1">
                 <Eye className="w-4 h-4" />
@@ -186,10 +282,10 @@ export default function ItemDetailModal({
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
             {/* Left Column - Image and Status */}
             <div className="lg:col-span-1">
-              {item.imageUrl && (
+              {item.image_url && (
                 <div className="aspect-square overflow-hidden bg-slate-100 dark:bg-slate-700 rounded-lg mb-6">
                   <Image
-                    src={item.imageUrl}
+                    src={item.image_url}
                     alt={item.title}
                     width={400}
                     height={400}
@@ -240,7 +336,7 @@ export default function ItemDetailModal({
                     <div>
                       <span className="text-sm font-medium">Date found</span>
                       <p className="text-slate-900 dark:text-white">
-                        {formatFullDate(item.dateFound)}
+                        {formatFullDate(item.date_found)}
                       </p>
                     </div>
                   </div>
@@ -249,7 +345,7 @@ export default function ItemDetailModal({
                     <div>
                       <span className="text-sm font-medium">Found by</span>
                       <p className="text-slate-900 dark:text-white">
-                        {item.foundBy.name}
+                        {contact.name}
                       </p>
                     </div>
                   </div>
@@ -275,13 +371,46 @@ export default function ItemDetailModal({
                 </div>
               )}
 
-              {/* Contact Information */}
+              {/* Contact Information or Claim Button */}
               {item.status === "available" && (
-                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 sm:p-6">
                   <h3 className="font-semibold text-slate-900 dark:text-white mb-3">
-                    Contact Finder
+                    {user && user.id !== item.user_id
+                      ? "Claim This Item"
+                      : "Contact Finder"}
                   </h3>
-                  {!showContactInfo ? (
+
+                  {user && user.id !== item.user_id ? (
+                    // Claim button for other users
+                    <div className="text-center">
+                      {!hasClaimed ? (
+                        <>
+                          <p className="text-slate-600 dark:text-slate-400 mb-4">
+                            Is this your item? Submit a claim request to the
+                            finder.
+                          </p>
+                          <button
+                            onClick={handleClaimItem}
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors shadow-lg hover:shadow-xl"
+                          >
+                            <CheckCircle className="w-5 h-5" />
+                            Claim This Item
+                          </button>
+                        </>
+                      ) : (
+                        <div className="text-center">
+                          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 rounded-lg mb-2">
+                            <CheckCircle className="w-5 h-5" />
+                            <span className="font-medium">Claim Submitted</span>
+                          </div>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                            The finder will review your claim request
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ) : !showContactInfo ? (
+                    // Contact info for item owner
                     <div className="text-center">
                       <p className="text-slate-600 dark:text-slate-400 mb-4">
                         Is this your item? Contact the finder to claim it.
@@ -320,7 +449,7 @@ export default function ItemDetailModal({
                       )}
                       {!contact.email && !contact.phone && (
                         <p className="text-slate-700 dark:text-slate-300">
-                          {contact.raw}
+                          No contact information available
                         </p>
                       )}
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
@@ -346,6 +475,91 @@ export default function ItemDetailModal({
           </div>
         </div>
       </div>
+
+      {/* Claim Modal */}
+      {showClaimModal && (
+        <div className="fixed inset-0 backdrop-blur-lg bg-black/40 z-60 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-md w-full border border-slate-200 dark:border-slate-700 shadow-xl">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                Submit Claim Request
+              </h3>
+              <button
+                onClick={() => setShowClaimModal(false)}
+                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 sm:p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Why do you think this is your item?
+                </label>
+                <textarea
+                  value={claimMessage}
+                  onChange={(e) => setClaimMessage(e.target.value)}
+                  rows={4}
+                  placeholder="Describe the item features, where you lost it, or any identifying marks..."
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Contact Phone (Optional)
+                </label>
+                <input
+                  type="tel"
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                  placeholder="+1234567890"
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  Providing a phone number helps the finder contact you faster
+                </p>
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                <p className="text-sm text-slate-700 dark:text-slate-300">
+                  <strong>Note:</strong> The finder will review your claim and
+                  may contact you for verification. Be prepared to describe the
+                  item in detail.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col-reverse sm:flex-row gap-3 p-4 sm:p-6 border-t border-slate-200 dark:border-slate-700">
+              <button
+                onClick={() => setShowClaimModal(false)}
+                disabled={isSubmittingClaim}
+                className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 font-medium transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitClaim}
+                disabled={isSubmittingClaim}
+                className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isSubmittingClaim ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4" />
+                    Submit Claim
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

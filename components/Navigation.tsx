@@ -16,6 +16,7 @@ import {
   ChevronDown,
   BookOpen,
   Bell,
+  Package,
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/auth-context";
@@ -198,6 +199,15 @@ export default function Navigation() {
                       >
                         <BookOpen className="w-4 h-4" />
                         <span>My Items</span>
+                      </Link>
+
+                      <Link
+                        href="/claims"
+                        className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        <Package className="w-4 h-4" />
+                        <span>Claims</span>
                       </Link>
 
                       <Link

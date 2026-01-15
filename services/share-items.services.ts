@@ -24,7 +24,7 @@ export class ShareItemsService {
 
     const {
       category,
-      status = "active",
+      status = "available",
       search,
       tags,
       location,
@@ -99,7 +99,7 @@ export class ShareItemsService {
 
     const { data: profiles, error: profilesError } = await supabase
       .from("profiles")
-      .select("id, name, email, avatar_url")
+      .select("id, name, email, phone, avatar_url")
       .in("id", userIds);
 
     if (profilesError) {
@@ -111,7 +111,7 @@ export class ShareItemsService {
 
     const itemsWithProfiles: ShareItemWithProfile[] = items.map((item) => ({
       ...item,
-      profiles: profileMap.get(item.user_id) || undefined,
+      profile: profileMap.get(item.user_id)!,
     }));
 
     const total = count || 0;
@@ -153,7 +153,7 @@ export class ShareItemsService {
     // Manually fetch profile
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("id, name, email, avatar_url")
+      .select("id, name, email, phone, avatar_url")
       .eq("id", item.user_id)
       .single();
 
@@ -163,7 +163,7 @@ export class ShareItemsService {
 
     return {
       ...item,
-      profiles: profile || undefined,
+      profile: profile!,
     };
   }
 
@@ -185,7 +185,7 @@ export class ShareItemsService {
         {
           ...itemData,
           user_id: userId,
-          status: "active",
+          status: "available",
         },
       ])
       .select()

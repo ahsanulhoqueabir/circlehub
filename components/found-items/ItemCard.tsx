@@ -29,24 +29,24 @@ interface ItemCardProps {
 
 const StatusBadge = ({ status }: { status: string }) => {
   const statusConfig: Record<string, { label: string; className: string }> = {
-    active: {
+    available: {
       label: "Available",
       className:
         "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
     },
-    resolved: {
-      label: "Resolved",
+    claimed: {
+      label: "Claimed",
       className:
         "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
     },
-    archived: {
-      label: "Archived",
+    returned: {
+      label: "Returned",
       className:
-        "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400",
+        "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
     },
   };
 
-  const config = statusConfig[status] || statusConfig.active;
+  const config = statusConfig[status] || statusConfig.available;
 
   return (
     <span
@@ -106,7 +106,7 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
           <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm">
             <User className="w-4 h-4 shrink-0" />
             <span className="truncate">
-              Found by {item.profiles?.name || "Anonymous"}
+              Found by {item.profile?.name || "Anonymous"}
             </span>
           </div>
         </div>

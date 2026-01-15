@@ -24,7 +24,7 @@ export class FoundItemsService {
 
     const {
       category,
-      status = "active",
+      status = "available",
       search,
       tags,
       location,
@@ -100,7 +100,7 @@ export class FoundItemsService {
     const userIds = [...new Set(data?.map((item) => item.user_id) || [])];
     const { data: profilesData } = await supabase
       .from("profiles")
-      .select("id, name, email, avatar_url")
+      .select("id, name, email, phone, avatar_url")
       .in("id", userIds);
 
     const profilesMap = new Map(
@@ -110,7 +110,7 @@ export class FoundItemsService {
     const itemsWithProfiles =
       data?.map((item) => ({
         ...item,
-        profiles: profilesMap.get(item.user_id) || undefined,
+        profile: profilesMap.get(item.user_id)!,
       })) || [];
 
     const total = count || 0;
@@ -149,7 +149,7 @@ export class FoundItemsService {
 
     const { data: profileData } = await supabase
       .from("profiles")
-      .select("id, name, email, avatar_url")
+      .select("id, name, email, phone, avatar_url")
       .eq("id", data.user_id)
       .single();
 
@@ -157,7 +157,7 @@ export class FoundItemsService {
 
     return {
       ...data,
-      profiles: profileData || undefined,
+      profile: profileData!,
     } as FoundItemWithProfile;
   }
 
@@ -179,7 +179,7 @@ export class FoundItemsService {
         {
           ...itemData,
           user_id: userId,
-          status: "active",
+          status: "available",
           views: 0,
         },
       ])
@@ -317,9 +317,9 @@ export class FoundItemsService {
       if (item.category) {
         itemsByCategory[item.category]++;
       }
-      if (item.status === "active") {
+      if (item.status === "available") {
         activeCount++;
-      } else if (item.status === "resolved") {
+      } else if (item.status === "claimed" || item.status === "returned") {
         resolvedCount++;
       }
     });

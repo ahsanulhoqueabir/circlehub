@@ -1,12 +1,21 @@
 "use client";
 
 import { Filter } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface FilterBarProps {
   selectedCategory: string;
   selectedCondition: string;
+  selectedOfferType: string;
   onCategoryChange: (category: string) => void;
   onConditionChange: (condition: string) => void;
+  onOfferTypeChange: (offerType: string) => void;
 }
 
 const categories = [
@@ -30,56 +39,87 @@ const conditions = [
   { value: "poor", label: "Poor" },
 ];
 
+const offerTypes = [
+  { value: "all", label: "All Offers" },
+  { value: "free", label: "Free" },
+  { value: "exchange", label: "Exchange" },
+  { value: "rent", label: "Rent" },
+  { value: "sale", label: "For Sale" },
+];
+
 export default function FilterBar({
   selectedCategory,
   selectedCondition,
+  selectedOfferType,
   onCategoryChange,
   onConditionChange,
+  onOfferTypeChange,
 }: FilterBarProps) {
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4">
-      <div className="flex items-center gap-2 mb-4">
-        <Filter className="w-5 h-5 text-slate-500" />
-        <span className="font-medium text-slate-700 dark:text-slate-300">
+    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-3 sm:p-4">
+      <div className="flex items-center gap-2 mb-3 sm:mb-4">
+        <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-slate-500" />
+        <span className="text-sm sm:text-base font-medium text-slate-700 dark:text-slate-300">
           Filters
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {/* Category Filter */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+          <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
             Category
           </label>
-          <select
-            value={selectedCategory}
-            onChange={(e) => onCategoryChange(e.target.value)}
-            className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-          >
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
+          <Select value={selectedCategory} onValueChange={onCategoryChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Condition Filter */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+          <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
             Condition
           </label>
-          <select
-            value={selectedCondition}
-            onChange={(e) => onConditionChange(e.target.value)}
-            className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-          >
-            {conditions.map((condition) => (
-              <option key={condition.value} value={condition.value}>
-                {condition.label}
-              </option>
-            ))}
-          </select>
+          <Select value={selectedCondition} onValueChange={onConditionChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select condition" />
+            </SelectTrigger>
+            <SelectContent>
+              {conditions.map((condition) => (
+                <SelectItem key={condition.value} value={condition.value}>
+                  {condition.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Offer Type Filter */}
+        <div>
+          <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">
+            Offer Type
+          </label>
+          <Select value={selectedOfferType} onValueChange={onOfferTypeChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select offer type" />
+            </SelectTrigger>
+            <SelectContent>
+              {offerTypes.map((offer) => (
+                <SelectItem key={offer.value} value={offer.value}>
+                  {offer.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </div>

@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import Image from "next/image";
 
 interface LostItemFormData {
   title: string;
@@ -18,7 +19,6 @@ interface LostItemFormData {
   category: string;
   location: string;
   dateLost: string;
-  contactInfo: string;
   imageUrl?: string;
   tags?: string[];
 }
@@ -40,7 +40,6 @@ export default function ReportLostItemForm({
     category: "",
     location: "",
     dateLost: undefined as Date | undefined,
-    contactInfo: "",
     imageUrl: "",
     tags: [] as string[],
   });
@@ -131,8 +130,6 @@ export default function ReportLostItemForm({
     if (!formData.category) newErrors.category = "Category is required";
     if (!formData.location) newErrors.location = "Location is required";
     if (!formData.dateLost) newErrors.dateLost = "Date lost is required";
-    if (!formData.contactInfo.trim())
-      newErrors.contactInfo = "Contact information is required";
 
     // Validate date is not in the future
     if (formData.dateLost && formData.dateLost > new Date()) {
@@ -180,7 +177,7 @@ export default function ReportLostItemForm({
         category: "",
         location: "",
         dateLost: undefined,
-        contactInfo: "",
+
         imageUrl: "",
         tags: [],
       });
@@ -205,7 +202,7 @@ export default function ReportLostItemForm({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="flex min-h-screen items-center justify-center p-2 sm:p-4">
         {/* Backdrop */}
         <div
           className="fixed inset-0 backdrop-blur-lg bg-black/20 transition-opacity"
@@ -215,12 +212,12 @@ export default function ReportLostItemForm({
         {/* Modal */}
         <div className="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
-                <Plus className="w-5 h-5 text-red-600 dark:text-red-400" />
+          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-destructive/10 dark:bg-destructive/20 rounded-full flex items-center justify-center">
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
               </div>
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+              <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">
                 Report Lost Item
               </h2>
             </div>
@@ -233,299 +230,287 @@ export default function ReportLostItemForm({
             </button>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            {/* Title */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Item Title *
-              </label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => handleInputChange("title", e.target.value)}
-                placeholder="e.g., iPhone 14 Pro Max - Space Black"
-                className={`w-full px-4 py-3 border rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.title
-                    ? "border-red-500"
-                    : "border-slate-300 dark:border-slate-600"
-                }`}
-              />
-              {errors.title && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                  {errors.title}
-                </p>
-              )}
-            </div>
-
-            {/* Category and Location */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Scrollable Form Container */}
+          <div className="overflow-y-auto max-h-[calc(90vh-180px)]">
+            <form
+              onSubmit={handleSubmit}
+              className="p-4 sm:p-6 space-y-4 sm:space-y-6"
+            >
+              {/* Title */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Category *
+                  Item Title *
                 </label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) =>
-                    handleInputChange("category", value)
-                  }
-                >
-                  <SelectTrigger
-                    className={`h-12 ${
-                      errors.category
-                        ? "border-red-500"
-                        : "border-slate-300 dark:border-slate-600"
-                    }`}
-                  >
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIES.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.category && (
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => handleInputChange("title", e.target.value)}
+                  placeholder="e.g., iPhone 14 Pro Max - Space Black"
+                  className={`w-full px-4 py-3 border rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.title
+                      ? "border-red-500"
+                      : "border-slate-300 dark:border-slate-600"
+                  }`}
+                />
+                {errors.title && (
                   <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                    {errors.category}
+                    {errors.title}
                   </p>
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Location Lost *
-                </label>
-                <Select
-                  value={formData.location}
-                  onValueChange={(value) =>
-                    handleInputChange("location", value)
-                  }
-                >
-                  <SelectTrigger
-                    className={`h-12 ${
-                      errors.location
-                        ? "border-red-500"
-                        : "border-slate-300 dark:border-slate-600"
-                    }`}
-                  >
-                    <SelectValue placeholder="Select location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LOCATIONS.map((location) => (
-                      <SelectItem key={location} value={location}>
-                        {location}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.location && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                    {errors.location}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Date Lost */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Date Lost *
-              </label>
-              <DatePicker
-                date={formData.dateLost}
-                onDateChange={(date) => handleInputChange("dateLost", date)}
-                placeholder="Select date lost"
-                maxDate={new Date()}
-                error={!!errors.dateLost}
-                className={errors.dateLost ? "border-red-500" : ""}
-              />
-              {errors.dateLost && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                  {errors.dateLost}
-                </p>
-              )}
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Description *
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) =>
-                  handleInputChange("description", e.target.value)
-                }
-                rows={4}
-                placeholder="Provide detailed description of the item, where you think you lost it, distinctive features, etc."
-                className={`w-full px-4 py-3 border rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${
-                  errors.description
-                    ? "border-red-500"
-                    : "border-slate-300 dark:border-slate-600"
-                }`}
-              />
-              {errors.description && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                  {errors.description}
-                </p>
-              )}
-            </div>
-
-            {/* Contact Information */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Contact Information *
-              </label>
-              <input
-                type="text"
-                value={formData.contactInfo}
-                onChange={(e) =>
-                  handleInputChange("contactInfo", e.target.value)
-                }
-                placeholder="e.g., john.doe@student.jnu.ac.bd | +880-1711-123456"
-                className={`w-full px-4 py-3 border rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.contactInfo
-                    ? "border-red-500"
-                    : "border-slate-300 dark:border-slate-600"
-                }`}
-              />
-              {errors.contactInfo && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                  {errors.contactInfo}
-                </p>
-              )}
-            </div>
-
-            {/* Image Upload */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Item Image (Optional)
-              </label>
-
-              {!imagePreview ? (
-                <div className="relative">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    id="image-upload"
-                  />
-                  <label
-                    htmlFor="image-upload"
-                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
-                  >
-                    <Upload className="w-8 h-8 text-slate-400 mb-2" />
-                    <span className="text-sm text-slate-600 dark:text-slate-400">
-                      Click to upload image
-                    </span>
-                    <span className="text-xs text-slate-500 dark:text-slate-500 mt-1">
-                      PNG, JPG, JPEG (Max 5MB)
-                    </span>
+              {/* Category and Location */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Category *
                   </label>
-                </div>
-              ) : (
-                <div className="relative">
-                  <div className="relative w-full h-48 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-600">
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={removeImage}
-                    className="absolute top-2 right-2 p-2 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors"
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) =>
+                      handleInputChange("category", value)
+                    }
                   >
-                    <X className="w-4 h-4" />
-                  </button>
-                  <div className="mt-2 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                    <ImageIcon className="w-4 h-4" />
-                    <span>{imageFile?.name}</span>
-                    <span className="text-slate-500">
-                      ({(imageFile!.size / 1024).toFixed(1)} KB)
-                    </span>
-                  </div>
+                    <SelectTrigger
+                      className={`h-12 w-full ${
+                        errors.category ? "border-destructive" : ""
+                      }`}
+                    >
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIES.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.category && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                      {errors.category}
+                    </p>
+                  )}
                 </div>
-              )}
 
-              {errors.image && (
-                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                  {errors.image}
-                </p>
-              )}
-            </div>
-
-            {/* Tags */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Tags (Optional)
-              </label>
-              <div className="space-y-3">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={currentTag}
-                    onChange={(e) => setCurrentTag(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Add tags to help people find your item"
-                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                  <button
-                    type="button"
-                    onClick={addTag}
-                    disabled={!currentTag.trim()}
-                    className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Location Lost *
+                  </label>
+                  <Select
+                    value={formData.location}
+                    onValueChange={(value) =>
+                      handleInputChange("location", value)
+                    }
                   >
-                    Add
-                  </button>
+                    <SelectTrigger
+                      className={`h-12 w-full ${
+                        errors.location ? "border-destructive" : ""
+                      }`}
+                    >
+                      <SelectValue placeholder="Select location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LOCATIONS.map((location) => (
+                        <SelectItem key={location} value={location}>
+                          {location}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.location && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                      {errors.location}
+                    </p>
+                  )}
                 </div>
+              </div>
 
-                {formData.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {formData.tags.map((tag, index) => (
-                      <span
-                        key={index}
-                        className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-sm"
-                      >
-                        #{tag}
-                        <button
-                          type="button"
-                          onClick={() => removeTag(tag)}
-                          className="hover:text-blue-900 dark:hover:text-blue-200"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
+              {/* Date Lost */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Date Lost *
+                </label>
+                <DatePicker
+                  date={formData.dateLost}
+                  onDateChange={(date) => handleInputChange("dateLost", date)}
+                  placeholder="Select date lost"
+                  maxDate={new Date()}
+                  error={!!errors.dateLost}
+                  className={errors.dateLost ? "border-destructive" : ""}
+                />
+                {errors.dateLost && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.dateLost}
+                  </p>
                 )}
               </div>
-            </div>
 
-            {/* Form Actions */}
-            <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
-              <button
-                type="button"
-                onClick={onClose}
-                disabled={isSubmitting}
-                className="flex-1 px-6 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 font-medium transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? "Reporting..." : "Report Lost Item"}
-              </button>
-            </div>
-          </form>
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Description *
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) =>
+                    handleInputChange("description", e.target.value)
+                  }
+                  rows={4}
+                  placeholder="Provide detailed description of the item, where you think you lost it, distinctive features, etc."
+                  className={`w-full px-4 py-3 border rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-primary focus:border-transparent resize-none ${
+                    errors.description
+                      ? "border-destructive"
+                      : "border-slate-300 dark:border-slate-600"
+                  }`}
+                />
+                {errors.description && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.description}
+                  </p>
+                )}
+              </div>
+
+              {/* Contact Information */}
+              {/* Image Upload */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Item Image (Optional)
+                </label>
+
+                {!imagePreview ? (
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <label
+                      htmlFor="image-upload"
+                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                    >
+                      <Upload className="w-8 h-8 text-slate-400 mb-2" />
+                      <span className="text-sm text-slate-600 dark:text-slate-400">
+                        Click to upload image
+                      </span>
+                      <span className="text-xs text-slate-500 dark:text-slate-500 mt-1">
+                        PNG, JPG, JPEG (Max 5MB)
+                      </span>
+                    </label>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <div className="relative w-full h-48 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-600">
+                      <Image
+                        src={imagePreview}
+                        alt="Preview"
+                        fill
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute top-2 right-2 p-2 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    <div className="mt-2 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                      <ImageIcon className="w-4 h-4" />
+                      <span>{imageFile?.name}</span>
+                      <span className="text-slate-500">
+                        ({(imageFile!.size / 1024).toFixed(1)} KB)
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {errors.image && (
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.image}
+                  </p>
+                )}
+              </div>
+
+              {/* Tags */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Tags (Optional)
+                </label>
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={currentTag}
+                      onChange={(e) => setCurrentTag(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="e.g., black, phone, leather-case"
+                      className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                    <button
+                      type="button"
+                      onClick={addTag}
+                      disabled={!currentTag.trim()}
+                      className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Add
+                    </button>
+                  </div>
+
+                  {formData.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {formData.tags.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center gap-1 px-3 py-1 bg-destructive/10 dark:bg-destructive/20 text-destructive rounded-full text-sm"
+                        >
+                          #{tag}
+                          <button
+                            type="button"
+                            onClick={() => removeTag(tag)}
+                            className="hover:text-blue-900 dark:hover:text-blue-200"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                  Tags help people find your item more easily
+                </p>
+              </div>
+            </form>
+          </div>
+
+          {/* Form Actions */}
+          <div className="flex flex-col sm:flex-row gap-3 p-4 sm:p-6 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="flex-1 px-6 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 font-medium transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="flex-1 px-6 py-3 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Reporting...
+                </>
+              ) : (
+                "Report Lost Item"
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

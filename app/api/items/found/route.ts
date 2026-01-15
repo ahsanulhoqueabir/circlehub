@@ -70,17 +70,9 @@ export async function GET(req: NextRequest) {
 export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
   try {
     const body: CreateFoundItemRequest = await req.json();
-    const { title, description, category, location, dateFound, contactInfo } =
-      body;
+    const { title, description, category, location, dateFound } = body;
 
-    if (
-      !title ||
-      !description ||
-      !category ||
-      !location ||
-      !dateFound ||
-      !contactInfo
-    ) {
+    if (!title || !description || !category || !location || !dateFound) {
       return NextResponse.json(
         {
           success: false,
@@ -91,7 +83,6 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
             "category",
             "location",
             "dateFound",
-            "contactInfo",
           ],
         },
         { status: 400 }
@@ -125,7 +116,6 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
       category,
       location,
       date_found: dateFound,
-      contact_info: contactInfo,
       image_url: imageUrl,
       tags: body.tags || null,
     });

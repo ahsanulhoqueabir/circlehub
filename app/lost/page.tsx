@@ -10,9 +10,12 @@ import FilterBar from "@/components/lost-items/FilterBar";
 import ItemCard from "@/components/lost-items/ItemCard";
 import ItemDetailModal from "@/components/lost-items/ItemDetailModal";
 import ReportLostItemForm from "@/components/lost-items/ReportLostItemForm";
+import AuthWarningModal from "@/components/AuthWarningModal";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function LostPage() {
   const axios = useAxios();
+  const { isAuthenticated } = useAuth();
   const [items, setItems] = useState<LostItemWithProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -29,6 +32,7 @@ export default function LostPage() {
   );
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showReportForm, setShowReportForm] = useState(false);
+  const [showAuthWarning, setShowAuthWarning] = useState(false);
 
   // View mode
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -78,6 +82,14 @@ export default function LostPage() {
   const handleItemClick = (item: LostItemWithProfile) => {
     setSelectedItem(item);
     setShowDetailModal(true);
+  };
+
+  const handleReportClick = () => {
+    if (!isAuthenticated) {
+      setShowAuthWarning(true);
+      return;
+    }
+    setShowReportForm(true);
   };
 
   const handleReportSubmit = async (formData: {
@@ -166,7 +178,7 @@ export default function LostPage() {
           </p>
 
           <button
-            onClick={() => setShowReportForm(true)}
+            onClick={handleReportClick}
             className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
           >
             <Plus className="w-5 h-5" />
@@ -269,7 +281,7 @@ export default function LostPage() {
             </p>
             {!searchQuery && (
               <button
-                onClick={() => setShowReportForm(true)}
+                onClick={handleReportClick}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
               >
                 <Plus className="w-5 h-5" />
@@ -320,6 +332,11 @@ export default function LostPage() {
         isOpen={showReportForm}
         onClose={() => setShowReportForm(false)}
         onSubmit={handleReportSubmit}
+      />
+
+      <AuthWarningModal
+        isOpen={showAuthWarning}
+        onClose={() => setShowAuthWarning(false)}
       />
     </div>
   );

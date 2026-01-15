@@ -13,11 +13,42 @@ import {
   Tag,
 } from "lucide-react";
 import Image from "next/image";
-import { LostItem } from "@/lib/mock-data/lost-items";
-import { formatTaka } from "@/lib/utils";
+import { LostItemWithProfile } from "@/types/items.types";
+
+// Utility functions for date/time formatting
+const getTimeAgo = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInMs = now.getTime() - date.getTime();
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  if (diffInDays === 0) return "today";
+  if (diffInDays === 1) return "yesterday";
+  if (diffInDays < 7) return `${diffInDays} days ago`;
+  if (diffInDays < 30) {
+    const weeks = Math.floor(diffInDays / 7);
+    return weeks === 1 ? "1 week ago" : `${weeks} weeks ago`;
+  }
+  if (diffInDays < 365) {
+    const months = Math.floor(diffInDays / 30);
+    return months === 1 ? "1 month ago" : `${months} months ago`;
+  }
+  const years = Math.floor(diffInDays / 365);
+  return years === 1 ? "1 year ago" : `${years} years ago`;
+};
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
 
 interface ItemDetailModalProps {
-  item: LostItem | null;
+  item: LostItemWithProfile | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -31,43 +62,11 @@ export default function ItemDetailModal({
 
   if (!isOpen || !item) return null;
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+  const contact = {
+    email: item.profile?.email || null,
+    phone: item.profile?.phone || null,
+    name: item.profile?.name || "Unknown",
   };
-
-  const getTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInMilliseconds = now.getTime() - date.getTime();
-    const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24));
-
-    if (diffInDays === 0) return "Today";
-    if (diffInDays === 1) return "1 day ago";
-    if (diffInDays < 7) return `${diffInDays} days ago`;
-    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
-    return `${Math.floor(diffInDays / 30)} months ago`;
-  };
-
-  const parseContactInfo = (contactInfo: string) => {
-    const emailMatch = contactInfo.match(/[\w.-]+@[\w.-]+\.\w+/);
-    const phoneMatch = contactInfo.match(
-      /\d{3}-\d{4}|\(\d{3}\)\s*\d{3}-\d{4}|\d{10}/
-    );
-
-    return {
-      email: emailMatch ? emailMatch[0] : null,
-      phone: phoneMatch ? phoneMatch[0] : null,
-      raw: contactInfo,
-    };
-  };
-
-  const contact = parseContactInfo(item.contactInfo);
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -91,7 +90,7 @@ export default function ItemDetailModal({
                   Lost Item Details
                 </h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Posted {getTimeAgo(item.datePosted)}
+                  Posted {getTimeAgo(item.created_at || "")}
                 </p>
               </div>
             </div>
@@ -108,10 +107,10 @@ export default function ItemDetailModal({
           <div className="p-6 space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Image */}
-              {item.imageUrl && (
+              {item.image_url && (
                 <div className="aspect-video w-full overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
                   <Image
-                    src={item.imageUrl}
+                    src={item.image_url}
                     alt={item.title}
                     width={600}
                     height={400}
@@ -122,7 +121,9 @@ export default function ItemDetailModal({
 
               {/* Main Info */}
               <div
-                className={`space-y-4 ${!item.imageUrl ? "lg:col-span-2" : ""}`}
+                className={`space-y-4 ${
+                  !item.image_url ? "lg:col-span-2" : ""
+                }`}
               >
                 <div>
                   <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
@@ -142,8 +143,10 @@ export default function ItemDetailModal({
                           : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                       }`}
                     >
-                      {item.status.charAt(0).toUpperCase() +
-                        item.status.slice(1)}
+                      {item.status
+                        ? item.status.charAt(0).toUpperCase() +
+                          item.status.slice(1)
+                        : "Unknown"}
                     </span>
                   </div>
                 </div>
@@ -173,7 +176,7 @@ export default function ItemDetailModal({
                         Date Lost
                       </p>
                       <p className="text-sm text-slate-600 dark:text-slate-400">
-                        {formatDate(item.dateLost)}
+                        {formatDate(item.date_lost)}
                       </p>
                     </div>
                   </div>
@@ -197,7 +200,7 @@ export default function ItemDetailModal({
                         Posted
                       </p>
                       <p className="text-sm text-slate-600 dark:text-slate-400">
-                        {formatDate(item.datePosted)}
+                        {formatDate(item.created_at || "")}
                       </p>
                     </div>
                   </div>
@@ -230,10 +233,10 @@ export default function ItemDetailModal({
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center">
-                    {item.reportedBy.avatar ? (
+                    {item.profile?.avatar_url ? (
                       <Image
-                        src={item.reportedBy.avatar}
-                        alt={item.reportedBy.name}
+                        src={item.profile.avatar_url}
+                        alt={item.profile.name}
                         width={48}
                         height={48}
                         className="w-full h-full rounded-full object-cover"
@@ -245,11 +248,11 @@ export default function ItemDetailModal({
 
                   <div>
                     <h3 className="font-medium text-slate-900 dark:text-white">
-                      Reported by {item.reportedBy.name}
+                      Reported by {contact.name}
                     </h3>
                     <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
-                      Posted {getTimeAgo(item.datePosted)} • {item.views || 0}{" "}
-                      views
+                      Posted {getTimeAgo(item.created_at || "")} •{" "}
+                      {item.views || 0} views
                     </p>
 
                     {/* Contact Info */}
@@ -287,7 +290,7 @@ export default function ItemDetailModal({
                         )}
                         {!contact.email && !contact.phone && (
                           <div className="text-sm text-slate-600 dark:text-slate-400">
-                            {contact.raw}
+                            No contact information available
                           </div>
                         )}
                       </div>

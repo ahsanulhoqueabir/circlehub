@@ -3,6 +3,14 @@
 import { useState } from "react";
 import { X, Upload, Plus, ImageIcon } from "lucide-react";
 import { CreateShareItemRequest } from "@/types/items.types";
+import Image from "next/image";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ReportShareItemFormProps {
   isOpen: boolean;
@@ -23,7 +31,6 @@ export default function ReportShareItemForm({
     offerType: "free" as "free" | "exchange" | "rent" | "sale",
     price: "",
     location: "",
-    contactInfo: "",
     tags: [""],
   });
 
@@ -113,7 +120,6 @@ export default function ReportShareItemForm({
           ? Number(formData.price)
           : null,
       location: formData.location,
-      contactInfo: formData.contactInfo,
       imageBase64,
       tags: formData.tags.filter((tag) => tag.trim() !== ""),
     };
@@ -129,7 +135,6 @@ export default function ReportShareItemForm({
       offerType: "free",
       price: "",
       location: "",
-      contactInfo: "",
       tags: [""],
     });
     setImageFile(null);
@@ -152,9 +157,9 @@ export default function ReportShareItemForm({
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newImages = Array.from(e.target.files);
-      setImages((prev) => [...prev, ...newImages].slice(0, 5)); // Limit to 5 images
+    const file = e.target.files?.[0];
+    if (file) {
+      handleImageUpload(e);
     }
   };
 
@@ -162,7 +167,7 @@ export default function ReportShareItemForm({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="flex min-h-screen items-center justify-center p-2 sm:p-4">
         <div
           className="fixed inset-0 backdrop-blur-lg bg-black/20"
           onClick={onClose}
@@ -170,8 +175,8 @@ export default function ReportShareItemForm({
 
         <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700">
+            <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">
               Share an Item
             </h2>
             <button
@@ -183,7 +188,10 @@ export default function ReportShareItemForm({
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <form
+            onSubmit={handleSubmit}
+            className="p-4 sm:p-6 space-y-4 sm:space-y-6"
+          >
             {/* Basic Information */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-slate-900 dark:text-white">
@@ -201,7 +209,7 @@ export default function ReportShareItemForm({
                   onChange={(e) =>
                     setFormData({ ...formData, title: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-secondary focus:border-transparent"
                   placeholder="e.g., Engineering Textbooks Set"
                 />
               </div>
@@ -217,53 +225,63 @@ export default function ReportShareItemForm({
                     setFormData({ ...formData, description: e.target.value })
                   }
                   rows={4}
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-secondary focus:border-transparent"
                   placeholder="Describe the item you want to share..."
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Category *
                   </label>
-                  <select
+                  <Select
                     required
                     value={formData.category}
-                    onChange={(e) =>
-                      setFormData({ ...formData, category: e.target.value })
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, category: value })
                     }
-                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                   >
-                    <option value="">Select a category</option>
-                    {categories.map((category) => (
-                      <option key={category.value} value={category.value}>
-                        {category.label}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category.value} value={category.value}>
+                          {category.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Condition *
                   </label>
-                  <select
+                  <Select
                     value={formData.condition}
-                    onChange={(e) =>
+                    onValueChange={(value) =>
                       setFormData({
                         ...formData,
-                        condition: e.target.value as any,
+                        condition: value as any,
                       })
                     }
-                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                   >
-                    {conditions.map((condition) => (
-                      <option key={condition.value} value={condition.value}>
-                        {condition.label}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {conditions.map((condition) => (
+                        <SelectItem
+                          key={condition.value}
+                          value={condition.value}
+                        >
+                          {condition.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -272,22 +290,26 @@ export default function ReportShareItemForm({
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                     Offer Type *
                   </label>
-                  <select
+                  <Select
                     value={formData.offerType}
-                    onChange={(e) =>
+                    onValueChange={(value) =>
                       setFormData({
                         ...formData,
-                        offerType: e.target.value as any,
+                        offerType: value as any,
                       })
                     }
-                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
                   >
-                    {offerTypes.map((type) => (
-                      <option key={type.value} value={type.value}>
-                        {type.label}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {offerTypes.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {formData.offerType === "sale" && (
@@ -303,7 +325,7 @@ export default function ReportShareItemForm({
                         setFormData({ ...formData, price: e.target.value })
                       }
                       min="0"
-                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-secondary focus:border-transparent"
                       placeholder="Enter price"
                     />
                   </div>
@@ -321,24 +343,8 @@ export default function ReportShareItemForm({
                   onChange={(e) =>
                     setFormData({ ...formData, location: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-secondary focus:border-transparent"
                   placeholder="e.g., Engineering Block A, Room 201"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Contact Information *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.contactInfo}
-                  onChange={(e) =>
-                    setFormData({ ...formData, contactInfo: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
-                  placeholder="e.g., Email: student@email.com, Phone: 01XXXXXXXXX"
                 />
               </div>
             </div>
@@ -350,9 +356,11 @@ export default function ReportShareItemForm({
               </label>
               {imagePreview ? (
                 <div className="relative">
-                  <img
+                  <Image
                     src={imagePreview}
                     alt="Preview"
+                    width={400}
+                    height={300}
                     className="w-full h-48 object-cover rounded-lg"
                   />
                   <button
@@ -368,7 +376,7 @@ export default function ReportShareItemForm({
                   <ImageIcon className="mx-auto h-12 w-12 text-slate-400" />
                   <div className="mt-2">
                     <label className="cursor-pointer">
-                      <span className="text-sm text-yellow-600 dark:text-yellow-400 hover:text-yellow-700">
+                      <span className="text-sm text-secondary dark:text-secondary hover:text-secondary/90">
                         Upload an image
                       </span>
                       <input
@@ -398,7 +406,7 @@ export default function ReportShareItemForm({
                       type="text"
                       value={tag}
                       onChange={(e) => handleTagChange(index, e.target.value)}
-                      className="flex-1 px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                      className="flex-1 px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-secondary focus:border-transparent"
                       placeholder="Enter a tag"
                     />
                     {formData.tags.length > 1 && (
@@ -415,7 +423,7 @@ export default function ReportShareItemForm({
                 <button
                   type="button"
                   onClick={addTag}
-                  className="flex items-center gap-1 text-sm text-yellow-600 hover:text-yellow-700 dark:text-yellow-400"
+                  className="flex items-center gap-1 text-sm text-secondary hover:text-secondary/90 dark:text-secondary"
                 >
                   <Plus className="w-4 h-4" />
                   Add Tag
@@ -424,17 +432,17 @@ export default function ReportShareItemForm({
             </div>
 
             {/* Submit Buttons */}
-            <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
               <button
                 type="submit"
-                className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                className="w-full sm:flex-1 bg-secondary hover:bg-secondary/90 text-secondary-foreground px-6 py-3 rounded-lg font-medium transition-colors"
               >
                 Share Item
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="px-6 py-3 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                className="w-full sm:w-auto px-6 py-3 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
               >
                 Cancel
               </button>

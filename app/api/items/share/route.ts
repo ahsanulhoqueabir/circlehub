@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
       condition?: string;
     } = {
       category: (searchParams.get("category") as ItemCategory) || undefined,
-      status: (searchParams.get("status") as ItemStatus) || "active",
+      status: (searchParams.get("status") as ItemStatus) || "available",
       search: searchParams.get("search") || undefined,
       tags: searchParams.get("tags")?.split(",").filter(Boolean) || undefined,
       location: searchParams.get("location") || undefined,
@@ -72,22 +72,14 @@ export async function GET(req: NextRequest) {
 export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
   try {
     const body: CreateShareItemRequest = await req.json();
-    const {
-      title,
-      description,
-      category,
-      location,
-      contactInfo,
-      offerType,
-      condition,
-    } = body;
+    const { title, description, category, location, offerType, condition } =
+      body;
 
     if (
       !title ||
       !description ||
       !category ||
       !location ||
-      !contactInfo ||
       !offerType ||
       !condition
     ) {
@@ -100,7 +92,6 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
             "description",
             "category",
             "location",
-            "contactInfo",
             "offerType",
             "condition",
           ],
@@ -146,7 +137,6 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
       description,
       category,
       location,
-      contact_info: contactInfo,
       offer_type: offerType,
       condition,
       price: offerType === "sale" ? body.price : null,
