@@ -2,13 +2,6 @@ import { ShareItemsService } from "@/services/share-items.services";
 import { uploadDocumentFromBase64 } from "@/services/clodinary.services";
 import { withAuth } from "@/middleware/with-auth";
 import { JwtPayload } from "@/types/jwt.types";
-import {
-  CreateShareItemRequest,
-  ItemFilterOptions,
-  ItemCategory,
-  SortOption,
-  ItemStatus,
-} from "@/types/items.types";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -22,36 +15,58 @@ export async function GET(req: NextRequest) {
     const action = searchParams.get("action");
     const userId = searchParams.get("userId");
 
+    // Handle statistics request
     if (action === "statistics") {
-      const stats = await ShareItemsService.getStatistics(userId || undefined);
+      const result = await ShareItemsService.getStatistics(userId || undefined);
+
+      if (!result.success) {
+        return NextResponse.json(
+          { success: false, error: result.error },
+          { status: result.statusCode }
+        );
+      }
+
       return NextResponse.json({
         success: true,
-        data: stats,
+        data: result.data,
       });
     }
 
-    const filters: ItemFilterOptions & {
-      offerType?: string;
-      condition?: string;
-    } = {
-      category: (searchParams.get("category") as ItemCategory) || undefined,
-      status: (searchParams.get("status") as ItemStatus) || "available",
-      search: searchParams.get("search") || undefined,
-      tags: searchParams.get("tags")?.split(",").filter(Boolean) || undefined,
+    // Handle regular list request
+    const filters = {
+      page: parseInt(searchParams.get("page") || "1"),
+      limit: parseInt(searchParams.get("limit") || "10"),
+      category: searchParams.get("category") || undefined,
+      status:
+        (searchParams.get("status") as "available" | "reserved" | "shared") ||
+        "available",
       location: searchParams.get("location") || undefined,
       userId: userId || undefined,
-      sort: (searchParams.get("sort") as SortOption) || "newest",
-      limit: parseInt(searchParams.get("limit") || "20"),
-      offset: parseInt(searchParams.get("offset") || "0"),
-      offerType: searchParams.get("offerType") || undefined,
-      condition: searchParams.get("condition") || undefined,
+      sortBy: (searchParams.get("sortBy") as "date" | "price") || "date",
+      sortOrder: (searchParams.get("sortOrder") as "asc" | "desc") || "desc",
+      offerType:
+        (searchParams.get("offerType") as "free" | "sale") || undefined,
+      condition:
+        (searchParams.get("condition") as
+          | "new"
+          | "like-new"
+          | "good"
+          | "fair") || undefined,
+      tags: searchParams.get("tags")?.split(",").filter(Boolean) || undefined,
     };
 
     const result = await ShareItemsService.getItems(filters);
 
+    if (!result.success) {
+      return NextResponse.json(
+        { success: false, error: result.error },
+        { status: result.statusCode }
+      );
+    }
+
     return NextResponse.json({
       success: true,
-      data: result,
+      data: result.data,
     });
   } catch (error) {
     console.error("Get share items error:", error);
@@ -71,9 +86,18 @@ export async function GET(req: NextRequest) {
  */
 export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
   try {
-    const body: CreateShareItemRequest = await req.json();
-    const { title, description, category, location, offerType, condition } =
-      body;
+    const body = await req.json();
+    const {
+      title,
+      description,
+      category,
+      location,
+      offerType,
+      condition,
+      price,
+      tags,
+      imageBase64,
+    } = body;
 
     if (
       !title ||
@@ -101,7 +125,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
     }
 
     // Validate price for sale items
-    if (offerType === "sale" && (!body.price || body.price <= 0)) {
+    if (offerType === "sale" && (!price || price <= 0)) {
       return NextResponse.json(
         {
           success: false,
@@ -112,11 +136,11 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
     }
 
     // Handle image upload if base64 image is provided
-    let imageUrl: string | null = null;
-    if (body.imageBase64) {
+    let imageUrl: string | undefined = undefined;
+    if (imageBase64) {
       try {
         imageUrl = await uploadDocumentFromBase64(
-          body.imageBase64,
+          imageBase64,
           "share-items",
           `share_${Date.now()}`
         );
@@ -132,25 +156,34 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
       }
     }
 
-    const item = await ShareItemsService.createItem(user.id, {
-      title,
-      description,
-      category,
-      location,
-      offer_type: offerType,
-      condition,
-      price: offerType === "sale" ? body.price : null,
-      image_url: imageUrl,
-      tags: body.tags || null,
+    const result = await ShareItemsService.createItem({
+      userId: user.userId,
+      itemData: {
+        title,
+        description,
+        category,
+        location,
+        offerType,
+        condition,
+        price: offerType === "sale" ? price : undefined,
+        imageUrl,
+        tags: tags || [],
+      },
     });
+
+    if (!result.success) {
+      return NextResponse.json(
+        { success: false, error: result.error },
+        { status: result.statusCode }
+      );
+    }
 
     return NextResponse.json(
       {
         success: true,
-        message: "Share item created successfully",
-        data: item,
+        data: result.data,
       },
-      { status: 201 }
+      { status: result.statusCode }
     );
   } catch (error) {
     console.error("Create share item error:", error);

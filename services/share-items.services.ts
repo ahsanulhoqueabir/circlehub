@@ -1,359 +1,882 @@
-import { createServerClient, createServiceRoleClient } from "@/lib/supabase";
-import {
-  ItemFilterOptions,
-  ItemsResponse,
-  ShareItem,
-  ShareItemInsert,
-  ShareItemUpdate,
-  ShareItemWithProfile,
-  ItemStatistics,
-  ITEM_CATEGORIES,
-} from "@/types/items.types";
+import ShareItem, { IShareItem } from "@/models/share-items.m.ts";
+import User from "@/models/users.m";
+import { dbConnect } from "@/lib/mongodb";
+import { Types } from "mongoose";
+import { ServiceResponse } from "@/types/items.types";
 
 /**
- * Service for managing share items with optimized queries
+ * Share Items Service
+ * Handles all business logic for share items using MongoDB
  */
 export class ShareItemsService {
   /**
-   * Get share items with filtering, sorting, and pagination
+   * Get share items with filtering, pagination, and sorting
    */
   static async getItems(
-    filters: ItemFilterOptions & { offerType?: string; condition?: string } = {}
-  ): Promise<ItemsResponse<ShareItemWithProfile>> {
-    const supabase = createServerClient();
+    filters: {
+      page?: number;
+      limit?: number;
+      category?: string;
+      location?: string;
+      status?: "available" | "reserved" | "shared";
+      offerType?: "free" | "sale";
+      condition?: "new" | "like-new" | "good" | "fair";
+      tags?: string[];
+      sortBy?: "date" | "price";
+      sortOrder?: "asc" | "desc";
+      userId?: string;
+    } = {}
+  ): Promise<
+    ServiceResponse<{
+      items: Array<{
+        id: string;
+        userId: string;
+        title: string;
+        description: string;
+        category: string;
+        condition: string;
+        offerType: string;
+        price?: number;
+        location: string;
+        imageUrl?: string;
+        tags: string[];
+        status: string;
+        createdAt: string;
+        updatedAt: string;
+        profile?: {
+          name: string;
+          email: string;
+          phone?: string;
+          avatarUrl?: string;
+        };
+      }>;
+      pagination: {
+        currentPage: number;
+        totalPages: number;
+        totalItems: number;
+        itemsPerPage: number;
+      };
+    }>
+  > {
+    try {
+      const {
+        page = 1,
+        limit = 10,
+        category,
+        location,
+        status,
+        offerType,
+        condition,
+        tags,
+        sortBy = "date",
+        sortOrder = "desc",
+        userId,
+      } = filters;
 
-    const {
-      category,
-      status = "available",
-      search,
-      tags,
-      location,
-      userId,
-      sort = "newest",
-      limit = 20,
-      offset = 0,
-      offerType,
-      condition,
-    } = filters;
+      await dbConnect();
 
-    let query = supabase.from("share_items").select("*", { count: "exact" });
+      // Build query
+      const query: any = {};
 
-    if (status) {
-      query = query.eq("status", status);
+      if (status) {
+        query.status = status;
+      }
+
+      if (category) {
+        query.category = category.toLowerCase();
+      }
+
+      if (location) {
+        query.location = { $regex: location, $options: "i" };
+      }
+
+      if (offerType) {
+        query.offer_type = offerType;
+      }
+
+      if (condition) {
+        query.condition = condition;
+      }
+
+      if (tags && tags.length > 0) {
+        query.tags = { $in: tags };
+      }
+
+      if (userId) {
+        query.user_id = new Types.ObjectId(userId);
+      }
+
+      // Build sort
+      const sort: any = {};
+      if (sortBy === "price") {
+        sort.price = sortOrder === "asc" ? 1 : -1;
+      } else {
+        sort.created_at = sortOrder === "asc" ? 1 : -1;
+      }
+
+      // Execute query with pagination
+      const skip = (page - 1) * limit;
+
+      const [items, total_count] = await Promise.all([
+        ShareItem.find(query)
+          .sort(sort)
+          .skip(skip)
+          .limit(limit)
+          .populate("user_id", "name email phone avatar_url")
+          .lean()
+          .exec(),
+        ShareItem.countDocuments(query),
+      ]);
+
+      // Transform items
+      const transformed_items = items.map((item: any) => ({
+        id: item._id.toString(),
+        userId: item.user_id?._id
+          ? item.user_id._id.toString()
+          : item.user_id.toString(),
+        title: item.title,
+        description: item.description,
+        category: item.category,
+        condition: item.condition,
+        offerType: item.offer_type,
+        price: item.price || undefined,
+        location: item.location,
+        imageUrl: item.image_url || undefined,
+        tags: item.tags || [],
+        status: item.status,
+        createdAt: item.created_at.toISOString(),
+        updatedAt: item.updated_at.toISOString(),
+        profile: item.user_id?._id
+          ? {
+              name: item.user_id.name,
+              email: item.user_id.email,
+              phone: item.user_id.phone,
+              avatarUrl: item.user_id.avatar_url,
+            }
+          : undefined,
+      }));
+
+      const total_pages = Math.ceil(total_count / limit);
+
+      return {
+        success: true,
+        data: {
+          items: transformed_items,
+          pagination: {
+            currentPage: page,
+            totalPages: total_pages,
+            totalItems: total_count,
+            itemsPerPage: limit,
+          },
+        },
+        statusCode: 200,
+      };
+    } catch (error) {
+      console.error("ShareItemsService.getItems error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to fetch items",
+        statusCode: 500,
+      };
     }
-
-    if (category && category !== "all") {
-      query = query.eq("category", category);
-    }
-
-    if (search) {
-      query = query.or(
-        `title.ilike.%${search}%,description.ilike.%${search}%,location.ilike.%${search}%`
-      );
-    }
-
-    if (tags && tags.length > 0) {
-      query = query.overlaps("tags", tags);
-    }
-
-    if (location) {
-      query = query.ilike("location", `%${location}%`);
-    }
-
-    if (userId) {
-      query = query.eq("user_id", userId);
-    }
-
-    if (offerType) {
-      query = query.eq("offer_type", offerType);
-    }
-
-    if (condition) {
-      query = query.eq("condition", condition);
-    }
-
-    switch (sort) {
-      case "oldest":
-        query = query.order("created_at", { ascending: true });
-        break;
-      case "recently-updated":
-        query = query.order("updated_at", { ascending: false });
-        break;
-      case "newest":
-      default:
-        query = query.order("created_at", { ascending: false });
-        break;
-    }
-
-    query = query.range(offset, offset + limit - 1);
-
-    const { data, error, count } = await query;
-
-    if (error) {
-      throw new Error(`Failed to fetch share items: ${error.message}`);
-    }
-
-    // Manually fetch profiles for each item
-    const items = data as ShareItem[];
-    const userIds = [...new Set(items.map((item) => item.user_id))];
-
-    const { data: profiles, error: profilesError } = await supabase
-      .from("profiles")
-      .select("id, name, email, phone, avatar_url")
-      .in("id", userIds);
-
-    if (profilesError) {
-      throw new Error(`Failed to fetch profiles: ${profilesError.message}`);
-    }
-
-    // Map profiles to items
-    const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
-
-    const itemsWithProfiles: ShareItemWithProfile[] = items.map((item) => ({
-      ...item,
-      profile: profileMap.get(item.user_id)!,
-    }));
-
-    const total = count || 0;
-    const currentPage = Math.floor(offset / limit) + 1;
-    const hasMore = offset + limit < total;
-
-    return {
-      items: itemsWithProfiles,
-      total,
-      page: currentPage,
-      limit,
-      hasMore,
-    };
   }
 
   /**
    * Get a single share item by ID
    */
-  static async getItemById(
-    itemId: string
-  ): Promise<ShareItemWithProfile | null> {
-    const supabase = createServerClient();
-
-    const { data, error } = await supabase
-      .from("share_items")
-      .select("*")
-      .eq("id", itemId)
-      .single();
-
-    if (error) {
-      if (error.code === "PGRST116") {
-        return null;
+  static async getItemById(id: string): Promise<
+    ServiceResponse<{
+      id: string;
+      userId: string;
+      title: string;
+      description: string;
+      category: string;
+      condition: string;
+      offerType: string;
+      price?: number;
+      location: string;
+      imageUrl?: string;
+      tags: string[];
+      status: string;
+      createdAt: string;
+      updatedAt: string;
+      profile?: {
+        name: string;
+        email: string;
+        phone?: string;
+        avatarUrl?: string;
+      };
+    }>
+  > {
+    try {
+      if (!Types.ObjectId.isValid(id)) {
+        return {
+          success: false,
+          error: "Invalid item ID",
+          statusCode: 400,
+        };
       }
-      throw new Error(`Failed to fetch share item: ${error.message}`);
+
+      await dbConnect();
+
+      const item = await ShareItem.findById(id)
+        .populate("user_id", "name email phone avatar_url")
+        .lean()
+        .exec();
+
+      if (!item) {
+        return {
+          success: false,
+          error: "Share item not found",
+          statusCode: 404,
+        };
+      }
+
+      const user_data = item.user_id as any;
+
+      return {
+        success: true,
+        data: {
+          id: item._id.toString(),
+          userId: user_data._id
+            ? user_data._id.toString()
+            : item.user_id.toString(),
+          title: item.title,
+          description: item.description,
+          category: item.category,
+          condition: item.condition,
+          offerType: item.offer_type,
+          price: item.price || undefined,
+          location: item.location,
+          imageUrl: item.image_url || undefined,
+          tags: item.tags || [],
+          status: item.status,
+          createdAt: item.created_at.toISOString(),
+          updatedAt: item.updated_at.toISOString(),
+          profile: user_data._id
+            ? {
+                name: user_data.name,
+                email: user_data.email,
+                phone: user_data.phone,
+                avatarUrl: user_data.avatar_url,
+              }
+            : undefined,
+        },
+        statusCode: 200,
+      };
+    } catch (error) {
+      console.error("ShareItemsService.getItemById error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to fetch item",
+        statusCode: 500,
+      };
     }
-
-    const item = data as ShareItem;
-
-    // Manually fetch profile
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("id, name, email, phone, avatar_url")
-      .eq("id", item.user_id)
-      .single();
-
-    if (profileError) {
-      throw new Error(`Failed to fetch profile: ${profileError.message}`);
-    }
-
-    return {
-      ...item,
-      profile: profile!,
-    };
   }
 
   /**
    * Create a new share item
    */
-  static async createItem(
-    userId: string,
-    itemData: Omit<
-      ShareItemInsert,
-      "id" | "user_id" | "created_at" | "updated_at"
-    >
-  ): Promise<ShareItem> {
-    const supabase = createServiceRoleClient();
+  static async createItem(data: {
+    userId: string;
+    itemData: {
+      title: string;
+      description: string;
+      category: string;
+      condition: "new" | "like-new" | "good" | "fair";
+      offerType: "free" | "sale";
+      price?: number;
+      location: string;
+      imageUrl?: string;
+      tags?: string[];
+    };
+  }): Promise<
+    ServiceResponse<{
+      message: string;
+      item: {
+        id: string;
+        userId: string;
+        title: string;
+        description: string;
+        category: string;
+        condition: string;
+        offerType: string;
+        price?: number;
+        location: string;
+        imageUrl?: string;
+        tags: string[];
+        status: string;
+        createdAt: string;
+        updatedAt: string;
+      };
+    }>
+  > {
+    try {
+      const { userId: user_id, itemData: item_data } = data;
 
-    const { data, error } = await supabase
-      .from("share_items")
-      .insert([
-        {
-          ...itemData,
-          user_id: userId,
-          status: "available",
+      const {
+        title,
+        description,
+        category,
+        condition,
+        offerType,
+        price,
+        location,
+        imageUrl,
+        tags,
+      } = item_data;
+
+      if (
+        !title ||
+        !description ||
+        !category ||
+        !condition ||
+        !offerType ||
+        !location
+      ) {
+        return {
+          success: false,
+          error: "Missing required fields",
+          statusCode: 400,
+        };
+      }
+
+      // Validate price for sale items
+      if (offerType === "sale" && (!price || price <= 0)) {
+        return {
+          success: false,
+          error: "Price is required and must be greater than 0 for sale items",
+          statusCode: 400,
+        };
+      }
+
+      await dbConnect();
+
+      const new_item = await ShareItem.create({
+        user_id,
+        title,
+        description,
+        category,
+        condition,
+        offer_type: offerType,
+        price: offerType === "sale" ? price : undefined,
+        location,
+        image_url: imageUrl || null,
+        tags: tags || [],
+        status: "available",
+      });
+
+      return {
+        success: true,
+        data: {
+          message: "Share item created successfully",
+          item: {
+            id: new_item._id.toString(),
+            userId: new_item.user_id.toString(),
+            title: new_item.title,
+            description: new_item.description,
+            category: new_item.category,
+            condition: new_item.condition,
+            offerType: new_item.offer_type,
+            price: new_item.price || undefined,
+            location: new_item.location,
+            imageUrl: new_item.image_url || undefined,
+            tags: new_item.tags || [],
+            status: new_item.status,
+            createdAt: new_item.created_at.toISOString(),
+            updatedAt: new_item.updated_at.toISOString(),
+          },
         },
-      ])
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error(`Failed to create share item: ${error.message}`);
+        statusCode: 201,
+      };
+    } catch (error) {
+      console.error("ShareItemsService.createItem error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to create item",
+        statusCode: 500,
+      };
     }
-
-    return data as ShareItem;
   }
 
   /**
-   * Update a share item
+   * Update an existing share item
    */
-  static async updateItem(
-    itemId: string,
-    userId: string,
-    updates: ShareItemUpdate
-  ): Promise<ShareItem> {
-    const supabase = createServiceRoleClient();
+  static async updateItem(data: {
+    id: string;
+    userId: string;
+    updates: {
+      title?: string;
+      description?: string;
+      category?: string;
+      condition?: "new" | "like-new" | "good" | "fair";
+      offerType?: "free" | "sale";
+      price?: number;
+      location?: string;
+      imageUrl?: string;
+      tags?: string[];
+    };
+  }): Promise<
+    ServiceResponse<{
+      message: string;
+      item: {
+        id: string;
+        userId: string;
+        title: string;
+        description: string;
+        category: string;
+        condition: string;
+        offerType: string;
+        price?: number;
+        location: string;
+        imageUrl?: string;
+        tags: string[];
+        status: string;
+        createdAt: string;
+        updatedAt: string;
+      };
+    }>
+  > {
+    try {
+      const { id, userId: user_id, updates } = data;
 
-    const { data: existingItem, error: fetchError } = await supabase
-      .from("share_items")
-      .select("user_id")
-      .eq("id", itemId)
-      .single();
+      if (!Types.ObjectId.isValid(id)) {
+        return {
+          success: false,
+          error: "Invalid item ID",
+          statusCode: 400,
+        };
+      }
 
-    if (fetchError || !existingItem) {
-      throw new Error("Item not found");
+      await dbConnect();
+
+      const item = await ShareItem.findById(id);
+
+      if (!item) {
+        return {
+          success: false,
+          error: "Share item not found",
+          statusCode: 404,
+        };
+      }
+
+      // Verify ownership
+      if (item.user_id.toString() !== user_id) {
+        return {
+          success: false,
+          error: "You don't have permission to perform this action",
+          statusCode: 403,
+        };
+      }
+
+      // Validate price if offerType is being updated to sale or if price is being updated
+      const new_offer_type = updates.offerType || item.offer_type;
+      if (
+        new_offer_type === "sale" &&
+        updates.price !== undefined &&
+        updates.price <= 0
+      ) {
+        return {
+          success: false,
+          error: "Price must be greater than 0 for sale items",
+          statusCode: 400,
+        };
+      }
+
+      // Build update object
+      const update_data: any = {};
+      if (updates.title !== undefined) update_data.title = updates.title;
+      if (updates.description !== undefined)
+        update_data.description = updates.description;
+      if (updates.category !== undefined)
+        update_data.category = updates.category;
+      if (updates.condition !== undefined)
+        update_data.condition = updates.condition;
+      if (updates.offerType !== undefined)
+        update_data.offer_type = updates.offerType;
+      if (updates.price !== undefined) update_data.price = updates.price;
+      if (updates.location !== undefined)
+        update_data.location = updates.location;
+      if (updates.imageUrl !== undefined)
+        update_data.image_url = updates.imageUrl;
+      if (updates.tags !== undefined) update_data.tags = updates.tags;
+
+      // Update the item
+      const updated_item = await ShareItem.findByIdAndUpdate(id, update_data, {
+        new: true,
+        runValidators: true,
+      }).exec();
+
+      if (!updated_item) {
+        return {
+          success: false,
+          error: "Failed to update item",
+          statusCode: 500,
+        };
+      }
+
+      return {
+        success: true,
+        data: {
+          message: "Share item updated successfully",
+          item: {
+            id: updated_item._id.toString(),
+            userId: updated_item.user_id.toString(),
+            title: updated_item.title,
+            description: updated_item.description,
+            category: updated_item.category,
+            condition: updated_item.condition,
+            offerType: updated_item.offer_type,
+            price: updated_item.price || undefined,
+            location: updated_item.location,
+            imageUrl: updated_item.image_url || undefined,
+            tags: updated_item.tags || [],
+            status: updated_item.status,
+            createdAt: updated_item.created_at.toISOString(),
+            updatedAt: updated_item.updated_at.toISOString(),
+          },
+        },
+        statusCode: 200,
+      };
+    } catch (error) {
+      console.error("ShareItemsService.updateItem error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to update item",
+        statusCode: 500,
+      };
     }
-
-    if (existingItem.user_id !== userId) {
-      throw new Error("Unauthorized: You can only update your own items");
-    }
-
-    const { data, error } = await supabase
-      .from("share_items")
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", itemId)
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error(`Failed to update share item: ${error.message}`);
-    }
-
-    return data as ShareItem;
   }
 
   /**
    * Delete a share item
    */
-  static async deleteItem(itemId: string, userId: string): Promise<void> {
-    const supabase = createServiceRoleClient();
+  static async deleteItem(data: {
+    id: string;
+    userId: string;
+  }): Promise<ServiceResponse<{ message: string }>> {
+    try {
+      const { id, userId: user_id } = data;
 
-    const { data: existingItem, error: fetchError } = await supabase
-      .from("share_items")
-      .select("user_id")
-      .eq("id", itemId)
-      .single();
-
-    if (fetchError || !existingItem) {
-      throw new Error("Item not found");
-    }
-
-    if (existingItem.user_id !== userId) {
-      throw new Error("Unauthorized: You can only delete your own items");
-    }
-
-    const { error } = await supabase
-      .from("share_items")
-      .delete()
-      .eq("id", itemId);
-
-    if (error) {
-      throw new Error(`Failed to delete share item: ${error.message}`);
-    }
-  }
-
-  /**
-   * Get items statistics
-   */
-  static async getStatistics(userId?: string): Promise<ItemStatistics> {
-    const supabase = createServerClient();
-
-    let query = supabase
-      .from("share_items")
-      .select("category, status", { count: "exact" });
-
-    if (userId) {
-      query = query.eq("user_id", userId);
-    }
-
-    const { data, count, error } = await query;
-
-    if (error) {
-      throw new Error(`Failed to fetch statistics: ${error.message}`);
-    }
-
-    const itemsByCategory = ITEM_CATEGORIES.reduce((acc, cat) => {
-      acc[cat] = 0;
-      return acc;
-    }, {} as Record<string, number>);
-
-    let activeCount = 0;
-    let resolvedCount = 0;
-
-    data?.forEach((item) => {
-      if (item.category) {
-        itemsByCategory[item.category]++;
+      if (!Types.ObjectId.isValid(id)) {
+        return {
+          success: false,
+          error: "Invalid item ID",
+          statusCode: 400,
+        };
       }
-      if (item.status === "active") {
-        activeCount++;
-      } else if (item.status === "resolved") {
-        resolvedCount++;
+
+      await dbConnect();
+
+      const item = await ShareItem.findById(id);
+
+      if (!item) {
+        return {
+          success: false,
+          error: "Share item not found",
+          statusCode: 404,
+        };
       }
-    });
 
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      // Verify ownership
+      if (item.user_id.toString() !== user_id) {
+        return {
+          success: false,
+          error: "You don't have permission to perform this action",
+          statusCode: 403,
+        };
+      }
 
-    let recentQuery = supabase
-      .from("share_items")
-      .select("id", { count: "exact", head: true })
-      .gte("created_at", sevenDaysAgo.toISOString());
+      await ShareItem.findByIdAndDelete(id);
 
-    if (userId) {
-      recentQuery = recentQuery.eq("user_id", userId);
+      return {
+        success: true,
+        data: {
+          message: "Share item deleted successfully",
+        },
+        statusCode: 200,
+      };
+    } catch (error) {
+      console.error("ShareItemsService.deleteItem error:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to delete item",
+        statusCode: 500,
+      };
     }
-
-    const { count: recentCount } = await recentQuery;
-
-    return {
-      totalItems: count || 0,
-      activeItems: activeCount,
-      resolvedItems: resolvedCount,
-      itemsByCategory: itemsByCategory as Record<any, number>,
-      recentItems: recentCount || 0,
-    };
   }
 
   /**
-   * Search items by text
+   * Mark item as reserved, shared, or available
    */
-  static async searchItems(
-    searchQuery: string,
-    filters?: Omit<ItemFilterOptions, "search">
-  ): Promise<ItemsResponse<ShareItemWithProfile>> {
-    return this.getItems({
-      ...filters,
-      search: searchQuery,
-    });
+  static async updateStatus(data: {
+    id: string;
+    userId: string;
+    status: "available" | "reserved" | "shared";
+  }): Promise<
+    ServiceResponse<{
+      message: string;
+      item: {
+        id: string;
+        status: string;
+      };
+    }>
+  > {
+    try {
+      const { id, userId: user_id, status } = data;
+
+      if (!Types.ObjectId.isValid(id)) {
+        return {
+          success: false,
+          error: "Invalid item ID",
+          statusCode: 400,
+        };
+      }
+
+      await dbConnect();
+
+      const item = await ShareItem.findById(id);
+
+      if (!item) {
+        return {
+          success: false,
+          error: "Share item not found",
+          statusCode: 404,
+        };
+      }
+
+      // Verify ownership
+      if (item.user_id.toString() !== user_id) {
+        return {
+          success: false,
+          error: "You don't have permission to perform this action",
+          statusCode: 403,
+        };
+      }
+
+      item.status = status;
+      await item.save();
+
+      return {
+        success: true,
+        data: {
+          message: `Item marked as ${status} successfully`,
+          item: {
+            id: item._id.toString(),
+            status: item.status,
+          },
+        },
+        statusCode: 200,
+      };
+    } catch (error) {
+      console.error("ShareItemsService.updateStatus error:", error);
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "Failed to update status",
+        statusCode: 500,
+      };
+    }
   }
 
   /**
-   * Get user's items
+   * Get statistics for share items
    */
-  static async getUserItems(
-    userId: string,
-    filters?: Omit<ItemFilterOptions, "userId">
-  ): Promise<ItemsResponse<ShareItemWithProfile>> {
-    return this.getItems({
-      ...filters,
-      userId,
-    });
+  static async getStatistics(userId?: string): Promise<
+    ServiceResponse<{
+      totalItems: number;
+      availableItems: number;
+      reservedItems: number;
+      sharedItems: number;
+      freeItems: number;
+      saleItems: number;
+    }>
+  > {
+    try {
+      await dbConnect();
+
+      const query: any = {};
+      if (userId) {
+        query.user_id = new Types.ObjectId(userId);
+      }
+
+      const [
+        total_items,
+        available_items,
+        reserved_items,
+        shared_items,
+        free_items,
+        sale_items,
+      ] = await Promise.all([
+        ShareItem.countDocuments(query),
+        ShareItem.countDocuments({ ...query, status: "available" }),
+        ShareItem.countDocuments({ ...query, status: "reserved" }),
+        ShareItem.countDocuments({ ...query, status: "shared" }),
+        ShareItem.countDocuments({ ...query, offer_type: "free" }),
+        ShareItem.countDocuments({ ...query, offer_type: "sale" }),
+      ]);
+
+      return {
+        success: true,
+        data: {
+          totalItems: total_items,
+          availableItems: available_items,
+          reservedItems: reserved_items,
+          sharedItems: shared_items,
+          freeItems: free_items,
+          saleItems: sale_items,
+        },
+        statusCode: 200,
+      };
+    } catch (error) {
+      console.error("ShareItemsService.getStatistics error:", error);
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "Failed to fetch statistics",
+        statusCode: 500,
+      };
+    }
+  }
+
+  /**
+   * Search share items by text query
+   */
+  static async searchItems(data: { query: string; limit?: number }): Promise<
+    ServiceResponse<
+      Array<{
+        id: string;
+        userId: string;
+        title: string;
+        description: string;
+        category: string;
+        condition: string;
+        offerType: string;
+        price?: number;
+        location: string;
+        imageUrl?: string;
+        tags: string[];
+        status: string;
+        createdAt: string;
+        updatedAt: string;
+      }>
+    >
+  > {
+    try {
+      const { query: search_query, limit = 10 } = data;
+
+      await dbConnect();
+
+      const items = await ShareItem.find({
+        $or: [
+          { title: { $regex: search_query, $options: "i" } },
+          { description: { $regex: search_query, $options: "i" } },
+          { location: { $regex: search_query, $options: "i" } },
+          { tags: { $in: [new RegExp(search_query, "i")] } },
+        ],
+        status: "available",
+      })
+        .limit(limit)
+        .sort({ created_at: -1 })
+        .lean()
+        .exec();
+
+      const transformed_items = items.map((item: any) => ({
+        id: item._id.toString(),
+        userId: item.user_id.toString(),
+        title: item.title,
+        description: item.description,
+        category: item.category,
+        condition: item.condition,
+        offerType: item.offer_type,
+        price: item.price || undefined,
+        location: item.location,
+        imageUrl: item.image_url || undefined,
+        tags: item.tags || [],
+        status: item.status,
+        createdAt: item.created_at.toISOString(),
+        updatedAt: item.updated_at.toISOString(),
+      }));
+
+      return {
+        success: true,
+        data: transformed_items,
+        statusCode: 200,
+      };
+    } catch (error) {
+      console.error("ShareItemsService.searchItems error:", error);
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "Failed to search items",
+        statusCode: 500,
+      };
+    }
+  }
+
+  /**
+   * Get all items by a specific user
+   */
+  static async getUserItems(userId: string): Promise<
+    ServiceResponse<
+      Array<{
+        id: string;
+        userId: string;
+        title: string;
+        description: string;
+        category: string;
+        condition: string;
+        offerType: string;
+        price?: number;
+        location: string;
+        imageUrl?: string;
+        tags: string[];
+        status: string;
+        createdAt: string;
+        updatedAt: string;
+      }>
+    >
+  > {
+    try {
+      await dbConnect();
+
+      const items = await ShareItem.find({
+        user_id: new Types.ObjectId(userId),
+      })
+        .sort({ created_at: -1 })
+        .lean()
+        .exec();
+
+      const transformed_items = items.map((item: any) => ({
+        id: item._id.toString(),
+        userId: item.user_id.toString(),
+        title: item.title,
+        description: item.description,
+        category: item.category,
+        condition: item.condition,
+        offerType: item.offer_type,
+        price: item.price || undefined,
+        location: item.location,
+        imageUrl: item.image_url || undefined,
+        tags: item.tags || [],
+        status: item.status,
+        createdAt: item.created_at.toISOString(),
+        updatedAt: item.updated_at.toISOString(),
+      }));
+
+      return {
+        success: true,
+        data: transformed_items,
+        statusCode: 200,
+      };
+    } catch (error) {
+      console.error("ShareItemsService.getUserItems error:", error);
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "Failed to fetch user items",
+        statusCode: 500,
+      };
+    }
   }
 }
