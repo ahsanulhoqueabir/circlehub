@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import { useState, useEffect, useCallback } from "react";
 import {
   Search,
   MapPin,
@@ -10,11 +12,36 @@ import {
   Clock,
   ArrowRight,
   Star,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 
 export default function Home() {
   const { isAuthenticated, user } = useAuth();
+  const [current_slide, set_current_slide] = useState(0);
+
+  const banners = [
+    "/banner/banner-1.jpeg",
+    "/banner/banner-2.jpeg",
+    "/banner/banner-3.jpeg",
+  ];
+
+  const next_slide = useCallback(() => {
+    set_current_slide((prev) => (prev + 1) % banners.length);
+  }, [banners.length]);
+
+  const prev_slide = useCallback(() => {
+    set_current_slide((prev) => (prev - 1 + banners.length) % banners.length);
+  }, [banners.length]);
+
+  // Auto-slide every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      next_slide();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [next_slide]);
 
   const features = [
     {
@@ -74,60 +101,121 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-linear-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-800">
-        <div className="absolute inset-0 bg-grid-slate-100 dark:bg-grid-slate-700/25 bg-size-[20px_20px] mask-[radial-gradient(ellipse_800px_600px_at_center,white,transparent)]"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center">
-            <h1 className="text-5xl md:text-6xl font-bold text-slate-900 dark:text-white mb-6">
-              CircleHub{" "}
-              <span className="text-blue-600 dark:text-blue-400">JnU</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 mb-8 max-w-3xl mx-auto">
-              The modern platform for JnU lost & found, sharing items, and
-              connecting with your campus community
-            </p>
+      {/* Hero Section with Carousel */}
+      <section className="relative h-[500px] md:h-[600px] overflow-hidden">
+        {/* Banner Carousel */}
+        <div className="absolute inset-0">
+          {banners.map((banner, index) => (
+            <div
+              key={index}
+              className={`absolute inset-0  transition-opacity duration-1000 ${
+                index === current_slide ? "opacity-80" : "opacity-0"
+              }`}
+            >
+              <Image
+                src={banner}
+                alt={`Campus Banner ${index + 1}`}
+                fill
+                className="object-cover"
+                priority={index === 0}
+              />
+            </div>
+          ))}
+          {/* Dark Overlay for better text readability */}
+          <div className="absolute inset-0 bg-linear-to-b from-black/70 via-black/60 to-black/80"></div>
+        </div>
 
-            {isAuthenticated ? (
-              <div className="space-y-4">
-                <p className="text-lg text-slate-700 dark:text-slate-300">
-                  Welcome back,{" "}
-                  <span className="font-semibold">{user?.name}</span>!
-                </p>
+        {/* Navigation Arrows */}
+        <button
+          onClick={prev_slide}
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/20 hover:bg-white/40 text-white transition-colors backdrop-blur-sm"
+          aria-label="Previous slide"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+        <button
+          onClick={next_slide}
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/20 hover:bg-white/40 text-white transition-colors backdrop-blur-sm"
+          aria-label="Next slide"
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
+
+        {/* Slide Indicators */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+          {banners.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => set_current_slide(index)}
+              className={`w-3 h-3 rounded-full transition-all ${
+                index === current_slide
+                  ? "bg-white w-8"
+                  : "bg-white/50 hover:bg-white/75"
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+
+        {/* Hero Content */}
+        <div className="relative z-10 h-full flex items-center justify-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div className="text-center">
+              <p
+                className="text-xl md:text-2xl text-white mb-8 max-w-3xl mx-auto"
+                style={{
+                  textShadow:
+                    "2px 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5)",
+                }}
+              >
+                The modern platform for JnU lost & found, sharing items, and
+                connecting with your campus community
+              </p>
+
+              {isAuthenticated ? (
+                <div className="space-y-4">
+                  <p
+                    className="text-lg text-white"
+                    style={{ textShadow: "2px 2px 6px rgba(0,0,0,0.8)" }}
+                  >
+                    Welcome back,{" "}
+                    <span className="font-semibold">{user?.name}</span>!
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Link
+                      href="/lost"
+                      className="inline-flex items-center px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors shadow-lg"
+                    >
+                      Report Lost Item
+                      <ArrowRight className="ml-2 w-4 h-4" />
+                    </Link>
+                    <Link
+                      href="/found"
+                      className="inline-flex items-center px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors shadow-lg"
+                    >
+                      Report Found Item
+                      <ArrowRight className="ml-2 w-4 h-4" />
+                    </Link>
+                  </div>
+                </div>
+              ) : (
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link
-                    href="/lost"
-                    className="inline-flex items-center px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors"
+                    href="/register"
+                    className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors text-lg shadow-lg"
                   >
-                    Report Lost Item
-                    <ArrowRight className="ml-2 w-4 h-4" />
+                    Get Started
+                    <ArrowRight className="ml-2 w-5 h-5" />
                   </Link>
                   <Link
-                    href="/found"
-                    className="inline-flex items-center px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+                    href="/login"
+                    className="inline-flex items-center px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-medium rounded-lg border border-white/30 hover:bg-white/20 transition-colors text-lg"
                   >
-                    Report Found Item
-                    <ArrowRight className="ml-2 w-4 h-4" />
+                    Sign In
                   </Link>
                 </div>
-              </div>
-            ) : (
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  href="/register"
-                  className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors text-lg"
-                >
-                  Get Started
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Link>
-                <Link
-                  href="/login"
-                  className="inline-flex items-center px-8 py-4 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-lg"
-                >
-                  Sign In
-                </Link>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </section>
