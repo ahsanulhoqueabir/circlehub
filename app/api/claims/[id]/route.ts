@@ -7,13 +7,24 @@ import { JwtPayload } from "@/types/jwt.types";
  * GET /api/claims/[id]
  * Get specific claim details
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  return withAuth(async (req: NextRequest, user: JwtPayload) => {
+export const GET = withAuth(
+  async (
+    request: NextRequest,
+    user: JwtPayload,
+    context?: { params: Promise<{ id: string }> }
+  ) => {
     try {
-      const { id } = await params;
+      if (!context?.params) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Missing claim ID",
+          },
+          { status: 400 }
+        );
+      }
+
+      const { id } = await context.params;
 
       // This would need to be implemented in the service if needed
       return NextResponse.json(
@@ -31,21 +42,32 @@ export async function GET(
         { status: 500 }
       );
     }
-  })(request);
-}
+  }
+);
 
 /**
  * PATCH /api/claims/[id]
  * Update claim status (approve/reject)
  */
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  return withAuth(async (req: NextRequest, user: JwtPayload) => {
+export const PATCH = withAuth(
+  async (
+    request: NextRequest,
+    user: JwtPayload,
+    context?: { params: Promise<{ id: string }> }
+  ) => {
     try {
-      const { id: claimId } = await params;
-      const body = await req.json();
+      if (!context?.params) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Missing claim ID",
+          },
+          { status: 400 }
+        );
+      }
+
+      const { id: claimId } = await context.params;
+      const body = await request.json();
 
       if (!body.status || !["approved", "rejected"].includes(body.status)) {
         return NextResponse.json(
@@ -89,20 +111,31 @@ export async function PATCH(
         { status: 500 }
       );
     }
-  })(request);
-}
+  }
+);
 
 /**
  * DELETE /api/claims/[id]
  * Delete a claim
  */
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  return withAuth(async (req: NextRequest, user: JwtPayload) => {
+export const DELETE = withAuth(
+  async (
+    request: NextRequest,
+    user: JwtPayload,
+    context?: { params: Promise<{ id: string }> }
+  ) => {
     try {
-      const { id: claimId } = await params;
+      if (!context?.params) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Missing claim ID",
+          },
+          { status: 400 }
+        );
+      }
+
+      const { id: claimId } = await context.params;
 
       const result = await FoundItemClaimsService.deleteClaim(
         claimId,
@@ -134,5 +167,5 @@ export async function DELETE(
         { status: 500 }
       );
     }
-  })(request);
-}
+  }
+);

@@ -1,4 +1,3 @@
-import { createServerClient } from "@/lib/supabase";
 import { FoundItemsService } from "@/services/found-items.services";
 import { uploadDocumentFromBase64 } from "@/services/clodinary.services";
 import { withAuth } from "@/middleware/with-auth";

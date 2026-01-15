@@ -10,10 +10,10 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { id } = await context.params;
 
     if (!id) {
       return NextResponse.json(
@@ -61,10 +61,20 @@ export const PUT = withAuth(
   async (
     req: NextRequest,
     user: JwtPayload,
-    { params }: { params: Promise<{ id: string }> }
+    context?: { params: Promise<{ id: string }> }
   ) => {
     try {
-      const { id } = await params;
+      if (!context?.params) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Missing item ID",
+          },
+          { status: 400 }
+        );
+      }
+
+      const { id } = await context.params;
 
       if (!id) {
         return NextResponse.json(
@@ -117,10 +127,20 @@ export const DELETE = withAuth(
   async (
     req: NextRequest,
     user: JwtPayload,
-    { params }: { params: Promise<{ id: string }> }
+    context?: { params: Promise<{ id: string }> }
   ) => {
     try {
-      const { id } = await params;
+      if (!context?.params) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Missing item ID",
+          },
+          { status: 400 }
+        );
+      }
+
+      const { id } = await context.params;
 
       if (!id) {
         return NextResponse.json(
@@ -170,10 +190,20 @@ export const PATCH = withAuth(
   async (
     req: NextRequest,
     user: JwtPayload,
-    { params }: { params: Promise<{ id: string }> }
+    context?: { params: Promise<{ id: string }> }
   ) => {
     try {
-      const { id } = await params;
+      if (!context?.params) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Missing item ID",
+          },
+          { status: 400 }
+        );
+      }
+
+      const { id } = await context.params;
 
       if (!id) {
         return NextResponse.json(

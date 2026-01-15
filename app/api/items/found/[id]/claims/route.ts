@@ -11,10 +11,20 @@ export const GET = withAuth(
   async (
     request: NextRequest,
     user: JwtPayload,
-    { params }: { params: Promise<{ id: string }> }
+    context?: { params: Promise<{ id: string }> }
   ) => {
     try {
-      const { id: itemId } = await params;
+      if (!context?.params) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Missing item ID",
+          },
+          { status: 400 }
+        );
+      }
+
+      const { id: itemId } = await context.params;
 
       const result = await FoundItemClaimsService.getClaimsByItemId(
         itemId,

@@ -25,10 +25,11 @@ CircleHub is a comprehensive campus community platform built specifically for Ja
 
 ### 🛡️ **Secure Authentication**
 
-- University email-based authentication
-- Google OAuth integration
+- JWT-based authentication system
+- University email-based registration and login
+- Secure password hashing with bcrypt
 - Automatic profile creation with university verification
-- Secure user sessions with Supabase Auth
+- Access and refresh token management
 
 ### 🎨 **Modern User Experience**
 
@@ -61,11 +62,11 @@ CircleHub is a comprehensive campus community platform built specifically for Ja
 
 ### **Backend & Database**
 
-- **Backend**: Supabase (BaaS)
-- **Database**: PostgreSQL (Supabase)
-- **Authentication**: Supabase Auth with Google OAuth
-- **Storage**: Supabase Storage (for images)
-- **Real-time**: Supabase Realtime subscriptions
+- **Backend**: Next.js API Routes
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JWT (JSON Web Tokens) with bcrypt
+- **Storage**: Cloudinary (for images)
+- **ORM**: Mongoose for MongoDB
 
 ### **Development Tools**
 
@@ -78,8 +79,10 @@ CircleHub is a comprehensive campus community platform built specifically for Ja
 
 ```json
 {
-  "@supabase/supabase-js": "^2.81.1",
-  "@supabase/ssr": "^0.7.0",
+  "mongoose": "^9.1.3",
+  "jsonwebtoken": "^9.0.3",
+  "bcryptjs": "^3.0.3",
+  "cloudinary": "^2.8.0",
   "@radix-ui/react-popover": "^1.1.15",
   "@radix-ui/react-select": "^2.2.6",
   "date-fns": "^4.1.0",
@@ -115,7 +118,14 @@ campus-connect/
 ├── contexts/              # React Context providers
 ├── lib/                   # Utilities and configurations
 │   ├── mock-data/         # Mock data for development
-│   └── supabase/          # Supabase client configuration
+│   └── mongodb.ts         # MongoDB connection configuration
+├── models/                # Mongoose models
+│   ├── users.m.ts         # User model
+│   ├── lost-items.m.ts    # Lost items model
+│   ├── found-items.m.ts   # Found items model
+│   └── share-items.m.ts   # Share items model
+├── services/              # Business logic services
+├── middleware/            # API middleware (auth, etc.)
 └── public/                # Static assets
 ```
 
@@ -126,8 +136,8 @@ campus-connect/
 ### Prerequisites
 
 - Node.js 18+ and npm
-- Supabase account
-- Google Cloud Console account (for OAuth)
+- MongoDB database (local or MongoDB Atlas)
+- Cloudinary account (for image storage)
 
 ### 1. Clone the Repository
 
@@ -153,19 +163,33 @@ cp .env.example .env.local
 Fill in your environment variables:
 
 ```env
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+# MongoDB Configuration
+MONGODB_URI=your_mongodb_connection_string
+
+# JWT Configuration
+JWT_SECRET=your_secure_jwt_secret_key
+JWT_ACCESS_TOKEN_EXPIRY=15m
+JWT_REFRESH_TOKEN_EXPIRY=7d
+
+# Cloudinary Configuration
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+
+# App Configuration
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
 ### 4. Database Setup
 
-1. Create a new Supabase project
-2. Run the SQL commands from `supabase-setup.sql` in your Supabase SQL editor
-3. Configure Google OAuth in Supabase Dashboard:
-   - Go to Authentication > Providers > Google
-   - Add your Google OAuth credentials
-   - Set redirect URL: `https://your-project.supabase.co/auth/v1/callback`
+1. Create a MongoDB database (local or MongoDB Atlas)
+2. Copy your MongoDB connection string
+3. Add the connection string to your `.env.local` file
+4. The database collections will be created automatically when you run the app
+5. Configure Cloudinary for image uploads:
+   - Sign up at cloudinary.com
+   - Get your cloud name, API key, and API secret
+   - Add them to your `.env.local` file
 
 ### 5. Run Development Server
 
@@ -181,11 +205,12 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ### **Core Tables**
 
-#### `profiles`
+#### `users`
 
-- User profiles linked to Supabase Auth
+- User profiles with JWT authentication
 - University verification and student information
 - Avatar and contact details
+- Secure password hashing with bcrypt
 
 #### `lost_items`
 
@@ -202,8 +227,9 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ### **Security Features**
 
-- Row Level Security (RLS) enabled on all tables
-- User-specific policies for data access
+- JWT-based authentication with access and refresh tokens
+- Secure password hashing with bcrypt
+- Middleware-based route protection
 - Automatic profile creation on user signup
 - Secure authentication with university email verification
 
@@ -286,7 +312,8 @@ For questions or support, please [open an issue](https://github.com/ahsanulhoque
 ## 🙏 Acknowledgments
 
 - Built with [Next.js](https://nextjs.org/)
-- Powered by [Supabase](https://supabase.io/)
+- Database powered by [MongoDB](https://www.mongodb.com/)
+- Image storage by [Cloudinary](https://cloudinary.com/)
 - UI components from [Radix UI](https://radix-ui.com/)
 - Icons by [Lucide](https://lucide.dev/)
 - Styled with [Tailwind CSS](https://tailwindcss.com/)

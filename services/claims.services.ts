@@ -1,10 +1,45 @@
-import { createServiceRoleClient } from "@/lib/supabase";
+import dbConnect from "@/lib/mongodb";
+import FoundItemClaimModel from "@/models/found-item-claims.m";
+import FoundItemModel from "@/models/found-items.m";
 import {
   FoundItemClaim,
   FoundItemClaimWithProfile,
   CreateClaimRequest,
   UpdateClaimRequest,
 } from "@/types/items.types";
+
+// Type for populated claim data from MongoDB
+interface PopulatedClaim {
+  _id: unknown;
+  foundItemId: {
+    _id: unknown;
+    title: string;
+    description: string;
+    category: string;
+    location: string;
+    date_found: Date;
+    image_url?: string;
+    status: string;
+    user_id: unknown;
+    created_at: Date;
+  };
+  claimerId: {
+    _id: unknown;
+    name: string;
+    email: string;
+    phone?: string;
+    avatar_url?: string;
+  };
+  status: "pending" | "approved" | "rejected";
+  message?: string;
+  contactInfo?: {
+    phone?: string;
+    email?: string;
+    other?: string;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export class ClaimsService {
   /**
@@ -14,26 +49,20 @@ export class ClaimsService {
     userId: string,
     claimData: CreateClaimRequest
   ): Promise<FoundItemClaim> {
-    const supabase = createServiceRoleClient();
+    await dbConnect();
 
     // Check if user already claimed this item
-    const { data: existingClaim } = await supabase
-      .from("found_item_claims")
-      .select("id")
-      .eq("found_item_id", claimData.found_item_id)
-      .eq("claimer_id", userId)
-      .single();
+    const existingClaim = await FoundItemClaimModel.findOne({
+      foundItemId: claimData.found_item_id,
+      claimerId: userId,
+    });
 
     if (existingClaim) {
       throw new Error("You have already claimed this item");
     }
 
     // Check if item is still available
-    const { data: foundItem } = await supabase
-      .from("found_items")
-      .select("status, user_id")
-      .eq("id", claimData.found_item_id)
-      .single();
+    const foundItem = await FoundItemModel.findById(claimData.found_item_id);
 
     if (!foundItem) {
       throw new Error("Found item not found");
@@ -44,29 +73,27 @@ export class ClaimsService {
     }
 
     // User cannot claim their own found item
-    if (foundItem.user_id === userId) {
+    if (foundItem.user_id.toString() === userId) {
       throw new Error("You cannot claim your own found item");
     }
 
-    const { data, error } = await supabase
-      .from("found_item_claims")
-      .insert({
-        found_item_id: claimData.found_item_id,
-        claimer_id: userId,
-        message: claimData.message || null,
-        contact_info: claimData.contact_info || null,
-      })
-      .select()
-      .single();
+    const newClaim = await FoundItemClaimModel.create({
+      foundItemId: claimData.found_item_id,
+      claimerId: userId,
+      message: claimData.message || null,
+      contactInfo: claimData.contact_info || null,
+    });
 
-    if (error) {
-      console.error("Supabase error creating claim:", error);
-      throw new Error(error.message || "Failed to create claim in database");
-    }
-    if (!data) {
-      throw new Error("No data returned from claim creation");
-    }
-    return data as FoundItemClaim;
+    return {
+      id: newClaim._id.toString(),
+      found_item_id: newClaim.foundItemId.toString(),
+      claimer_id: newClaim.claimerId.toString(),
+      status: newClaim.status,
+      message: newClaim.message || null,
+      contact_info: newClaim.contactInfo || null,
+      created_at: newClaim.createdAt.toISOString(),
+      updated_at: newClaim.updatedAt.toISOString(),
+    } as FoundItemClaim;
   }
 
   /**
@@ -76,38 +103,37 @@ export class ClaimsService {
     itemId: string,
     userId: string
   ): Promise<FoundItemClaimWithProfile[]> {
-    const supabase = createServiceRoleClient();
+    await dbConnect();
 
     // Verify user owns this item
-    const { data: foundItem } = await supabase
-      .from("found_items")
-      .select("user_id")
-      .eq("id", itemId)
-      .single();
+    const foundItem = await FoundItemModel.findById(itemId);
 
-    if (!foundItem || foundItem.user_id !== userId) {
+    if (!foundItem || foundItem.user_id.toString() !== userId) {
       throw new Error("Unauthorized to view claims for this item");
     }
 
-    const { data, error } = await supabase
-      .from("found_item_claims")
-      .select(
-        `
-        *,
-        claimer_profile:profiles!claimer_id (
-          id,
-          name,
-          email,
-          phone,
-          avatar_url
-        )
-      `
-      )
-      .eq("found_item_id", itemId)
-      .order("created_at", { ascending: false });
+    const claims = await FoundItemClaimModel.find({ foundItemId: itemId })
+      .populate("claimerId", "name email phone avatar_url")
+      .sort({ createdAt: -1 })
+      .lean();
 
-    if (error) throw error;
-    return data as unknown as FoundItemClaimWithProfile[];
+    return claims.map((claim: PopulatedClaim) => ({
+      id: String(claim._id),
+      found_item_id: itemId,
+      claimer_id: String(claim.claimerId._id),
+      status: claim.status,
+      message: claim.message || null,
+      contact_info: claim.contactInfo || null,
+      created_at: claim.createdAt.toISOString(),
+      updated_at: claim.updatedAt.toISOString(),
+      claimer_profile: {
+        id: String(claim.claimerId._id),
+        name: claim.claimerId.name,
+        email: claim.claimerId.email,
+        phone: claim.claimerId.phone || null,
+        avatar_url: claim.claimerId.avatar_url || null,
+      },
+    })) as FoundItemClaimWithProfile[];
   }
 
   /**
@@ -116,39 +142,45 @@ export class ClaimsService {
   static async getClaimsByUserId(
     userId: string
   ): Promise<FoundItemClaimWithProfile[]> {
-    const supabase = createServiceRoleClient();
+    await dbConnect();
 
-    const { data, error } = await supabase
-      .from("found_item_claims")
-      .select(
-        `
-        *,
-        found_item:found_items (
-          id,
-          title,
-          description,
-          category,
-          location,
-          date_found,
-          image_url,
-          status,
-          user_id,
-          created_at
-        ),
-        claimer_profile:profiles!claimer_id (
-          id,
-          name,
-          email,
-          phone,
-          avatar_url
-        )
-      `
-      )
-      .eq("claimer_id", userId)
-      .order("created_at", { ascending: false });
+    const claims = await FoundItemClaimModel.find({ claimerId: userId })
+      .populate("foundItemId")
+      .populate("claimerId", "name email phone avatar_url")
+      .sort({ createdAt: -1 })
+      .lean();
 
-    if (error) throw error;
-    return data as unknown as FoundItemClaimWithProfile[];
+    return claims.map((claim: PopulatedClaim) => ({
+      id: String(claim._id),
+      found_item_id: String(claim.foundItemId._id),
+      claimer_id: String(claim.claimerId._id),
+      status: claim.status,
+      message: claim.message || null,
+      contact_info: claim.contactInfo || null,
+      created_at: claim.createdAt.toISOString(),
+      updated_at: claim.updatedAt.toISOString(),
+      found_item: claim.foundItemId
+        ? {
+            id: String(claim.foundItemId._id),
+            title: claim.foundItemId.title,
+            description: claim.foundItemId.description,
+            category: claim.foundItemId.category,
+            location: claim.foundItemId.location,
+            date_found: claim.foundItemId.date_found.toISOString(),
+            image_url: claim.foundItemId.image_url || null,
+            status: claim.foundItemId.status,
+            user_id: String(claim.foundItemId.user_id),
+            created_at: claim.foundItemId.created_at.toISOString(),
+          }
+        : null,
+      claimer_profile: {
+        id: String(claim.claimerId._id),
+        name: claim.claimerId.name,
+        email: claim.claimerId.email,
+        phone: claim.claimerId.phone || null,
+        avatar_url: claim.claimerId.avatar_url || null,
+      },
+    })) as FoundItemClaimWithProfile[];
   }
 
   /**
@@ -157,39 +189,54 @@ export class ClaimsService {
   static async getReceivedClaims(
     userId: string
   ): Promise<FoundItemClaimWithProfile[]> {
-    const supabase = createServiceRoleClient();
+    await dbConnect();
 
-    const { data, error } = await supabase
-      .from("found_item_claims")
-      .select(
-        `
-        *,
-        found_item:found_items!inner (
-          id,
-          title,
-          description,
-          category,
-          location,
-          date_found,
-          image_url,
-          status,
-          user_id,
-          created_at
-        ),
-        claimer_profile:profiles!claimer_id (
-          id,
-          name,
-          email,
-          phone,
-          avatar_url
-        )
-      `
-      )
-      .eq("found_items.user_id", userId)
-      .order("created_at", { ascending: false });
+    // First, find all items found by this user
+    const foundItems = await FoundItemModel.find({ user_id: userId }).select(
+      "_id"
+    );
+    const foundItemIds = foundItems.map((item) => item._id);
 
-    if (error) throw error;
-    return data as unknown as FoundItemClaimWithProfile[];
+    // Then find all claims for those items
+    const claims = await FoundItemClaimModel.find({
+      foundItemId: { $in: foundItemIds },
+    })
+      .populate("foundItemId")
+      .populate("claimerId", "name email phone avatar_url")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return claims.map((claim: PopulatedClaim) => ({
+      id: String(claim._id),
+      found_item_id: String(claim.foundItemId._id),
+      claimer_id: String(claim.claimerId._id),
+      status: claim.status,
+      message: claim.message || null,
+      contact_info: claim.contactInfo || null,
+      created_at: claim.createdAt.toISOString(),
+      updated_at: claim.updatedAt.toISOString(),
+      found_item: claim.foundItemId
+        ? {
+            id: String(claim.foundItemId._id),
+            title: claim.foundItemId.title,
+            description: claim.foundItemId.description,
+            category: claim.foundItemId.category,
+            location: claim.foundItemId.location,
+            date_found: claim.foundItemId.date_found.toISOString(),
+            image_url: claim.foundItemId.image_url || null,
+            status: claim.foundItemId.status,
+            user_id: String(claim.foundItemId.user_id),
+            created_at: claim.foundItemId.created_at.toISOString(),
+          }
+        : null,
+      claimer_profile: {
+        id: String(claim.claimerId._id),
+        name: claim.claimerId.name,
+        email: claim.claimerId.email,
+        phone: claim.claimerId.phone || null,
+        avatar_url: claim.claimerId.avatar_url || null,
+      },
+    })) as FoundItemClaimWithProfile[];
   }
 
   /**
@@ -200,61 +247,60 @@ export class ClaimsService {
     userId: string,
     updateData: UpdateClaimRequest
   ): Promise<FoundItemClaim> {
-    const supabase = createServiceRoleClient();
+    await dbConnect();
 
     // Get claim and verify ownership
-    const { data: claim } = await supabase
-      .from("found_item_claims")
-      .select("found_item_id")
-      .eq("id", claimId)
-      .single();
+    const claim = await FoundItemClaimModel.findById(claimId);
 
     if (!claim) {
       throw new Error("Claim not found");
     }
 
     // Verify user owns the found item
-    const { data: foundItem } = await supabase
-      .from("found_items")
-      .select("user_id")
-      .eq("id", claim.found_item_id)
-      .single();
+    const foundItem = await FoundItemModel.findById(claim.foundItemId);
 
-    if (!foundItem || foundItem.user_id !== userId) {
+    if (!foundItem || foundItem.user_id.toString() !== userId) {
       throw new Error("Unauthorized to update this claim");
     }
 
-    const { data, error } = await supabase
-      .from("found_item_claims")
-      .update({
+    const updatedClaim = await FoundItemClaimModel.findByIdAndUpdate(
+      claimId,
+      {
         ...updateData,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", claimId)
-      .select()
-      .single();
+        updatedAt: new Date(),
+      },
+      { new: true }
+    );
 
-    if (error) throw error;
-    return data as FoundItemClaim;
+    if (!updatedClaim) {
+      throw new Error("Failed to update claim");
+    }
+
+    return {
+      id: updatedClaim._id.toString(),
+      found_item_id: updatedClaim.foundItemId.toString(),
+      claimer_id: updatedClaim.claimerId.toString(),
+      status: updatedClaim.status,
+      message: updatedClaim.message || null,
+      contact_info: updatedClaim.contactInfo || null,
+      created_at: updatedClaim.createdAt.toISOString(),
+      updated_at: updatedClaim.updatedAt.toISOString(),
+    } as FoundItemClaim;
   }
 
   /**
    * Delete a claim (user can only delete their own pending claims)
    */
   static async deleteClaim(claimId: string, userId: string): Promise<void> {
-    const supabase = createServiceRoleClient();
+    await dbConnect();
 
-    const { data: claim } = await supabase
-      .from("found_item_claims")
-      .select("claimer_id, status")
-      .eq("id", claimId)
-      .single();
+    const claim = await FoundItemClaimModel.findById(claimId);
 
     if (!claim) {
       throw new Error("Claim not found");
     }
 
-    if (claim.claimer_id !== userId) {
+    if (claim.claimerId.toString() !== userId) {
       throw new Error("Unauthorized to delete this claim");
     }
 
@@ -262,12 +308,7 @@ export class ClaimsService {
       throw new Error("Can only delete pending claims");
     }
 
-    const { error } = await supabase
-      .from("found_item_claims")
-      .delete()
-      .eq("id", claimId);
-
-    if (error) throw error;
+    await FoundItemClaimModel.findByIdAndDelete(claimId);
   }
 
   /**
@@ -277,30 +318,26 @@ export class ClaimsService {
     userId: string,
     itemId: string
   ): Promise<boolean> {
-    const supabase = createServiceRoleClient();
+    await dbConnect();
 
-    const { data } = await supabase
-      .from("found_item_claims")
-      .select("id")
-      .eq("found_item_id", itemId)
-      .eq("claimer_id", userId)
-      .single();
+    const claim = await FoundItemClaimModel.findOne({
+      foundItemId: itemId,
+      claimerId: userId,
+    });
 
-    return !!data;
+    return !!claim;
   }
 
   /**
    * Get claim count for an item
    */
   static async getClaimCount(itemId: string): Promise<number> {
-    const supabase = createServiceRoleClient();
+    await dbConnect();
 
-    const { count, error } = await supabase
-      .from("found_item_claims")
-      .select("*", { count: "exact", head: true })
-      .eq("found_item_id", itemId);
+    const count = await FoundItemClaimModel.countDocuments({
+      foundItemId: itemId,
+    });
 
-    if (error) throw error;
-    return count || 0;
+    return count;
   }
 }

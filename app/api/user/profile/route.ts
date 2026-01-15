@@ -1,36 +1,33 @@
-import { createServerClient } from "@/lib/supabase";
+import { withAuth } from "@/middleware/with-auth";
+import { JwtPayload } from "@/types/jwt.types";
+import dbConnect from "@/lib/mongodb";
+import UserModel from "@/models/users.m";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET current user profile
-export async function GET() {
+export const GET = withAuth(async (req: NextRequest, user: JwtPayload) => {
   try {
-    const supabase = createServerClient();
+    await dbConnect();
 
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
+    const userProfile = await UserModel.findById(user.userId).select(
+      "-password"
+    );
 
-    if (error || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!userProfile) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const userProfile = {
-      id: user.id,
-      email: user.email || "",
-      name:
-        user.user_metadata?.full_name ||
-        user.user_metadata?.name ||
-        user.email?.split("@")[0] ||
-        "User",
-      avatar: user.user_metadata?.avatar_url,
-      university: user.user_metadata?.university,
-      studentId: user.user_metadata?.student_id,
-      verified: user.email_confirmed_at ? true : false,
-    };
-
     return NextResponse.json({
-      user: userProfile,
+      user: {
+        id: userProfile._id.toString(),
+        email: userProfile.email,
+        name: userProfile.name,
+        avatar: userProfile.avatar_url,
+        university: userProfile.university,
+        studentId: userProfile.student_id,
+        phone: userProfile.phone,
+        verified: userProfile.verified,
+      },
     });
   } catch (error) {
     console.error("Get user error:", error);
@@ -39,53 +36,42 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
+});
 
 // PUT update user profile
-export async function PUT(req: NextRequest) {
+export const PUT = withAuth(async (req: NextRequest, user: JwtPayload) => {
   try {
-    const { name, university, studentId } = await req.json();
-    const supabase = createServerClient();
-
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { name, university, studentId, phone } = await req.json();
+    await dbConnect();
 
     const updateData: Record<string, string> = {};
-    if (name) updateData.full_name = name;
+    if (name) updateData.name = name;
     if (university !== undefined) updateData.university = university;
     if (studentId !== undefined) updateData.student_id = studentId;
+    if (phone !== undefined) updateData.phone = phone;
 
-    const { error } = await supabase.auth.updateUser({
-      data: updateData,
-    });
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      user.userId,
+      updateData,
+      { new: true }
+    ).select("-password");
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    if (!updatedUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-
-    const updatedProfile = {
-      id: user.id,
-      email: user.email || "",
-      name:
-        name ||
-        user.user_metadata?.full_name ||
-        user.email?.split("@")[0] ||
-        "User",
-      avatar: user.user_metadata?.avatar_url,
-      university: university || user.user_metadata?.university,
-      studentId: studentId || user.user_metadata?.student_id,
-      verified: user.email_confirmed_at ? true : false,
-    };
 
     return NextResponse.json({
       message: "Profile updated successfully",
-      user: updatedProfile,
+      user: {
+        id: updatedUser._id.toString(),
+        email: updatedUser.email,
+        name: updatedUser.name,
+        avatar: updatedUser.avatar_url,
+        university: updatedUser.university,
+        studentId: updatedUser.student_id,
+        phone: updatedUser.phone,
+        verified: updatedUser.verified,
+      },
     });
   } catch (error) {
     console.error("Update user error:", error);
@@ -94,4 +80,4 @@ export async function PUT(req: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
