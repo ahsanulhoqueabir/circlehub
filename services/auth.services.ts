@@ -162,8 +162,8 @@ export class AuthService {
 
       await dbConnect();
 
-      // Find user by email
-      const user = await User.findOne({ email });
+      // Find user by email (explicitly select password field)
+      const user = await User.findOne({ email }).select("+password");
 
       if (!user) {
         return {

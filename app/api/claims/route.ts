@@ -1,92 +1,101 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/middleware/with-auth";
-import { ClaimsService } from "@/services/claims.services";
+import { FoundItemClaimsService } from "@/services/found-item-claims.services";
+import { JwtPayload } from "@/types/jwt.types";
 
-// GET /api/claims - Get user's claims (made by user and received by user)
-async function GET(request: NextRequest) {
-  return withAuth(async (req, user) => {
-    try {
-      const { searchParams } = new URL(req.url);
-      const type = searchParams.get("type") || "made"; // 'made' or 'received'
+/**
+ * GET /api/claims
+ * Get user's claims (made by user and received by user)
+ */
+export const GET = withAuth(async (req: NextRequest, user: JwtPayload) => {
+  try {
+    const { searchParams } = new URL(req.url);
+    const type = searchParams.get("type") || "made"; // 'made' or 'received'
 
-      let claims;
-      if (type === "received") {
-        // Get claims on items user found
-        claims = await ClaimsService.getReceivedClaims(user.id);
-      } else {
-        // Get claims user made
-        claims = await ClaimsService.getClaimsByUserId(user.id);
-      }
+    let result;
+    if (type === "received") {
+      // Get claims on items user found
+      result = await FoundItemClaimsService.getReceivedClaims(user.userId);
+    } else {
+      // Get claims user made
+      result = await FoundItemClaimsService.getClaimsByUserId(user.userId);
+    }
 
-      return NextResponse.json({
-        claims,
-        total: claims.length,
-      });
-    } catch (error) {
-      console.error("Error fetching claims:", error);
+    if (!result.success) {
       return NextResponse.json(
         {
-          error: "Failed to fetch claims",
-          details: error instanceof Error ? error.message : "Unknown error",
+          success: false,
+          error: result.error,
         },
-        { status: 500 }
+        { status: result.statusCode }
       );
     }
-  })(request);
-}
 
-// POST /api/claims - Create a new claim
-async function POST(request: NextRequest) {
-  return withAuth(async (req, user) => {
-    try {
-      const body = await req.json();
+    return NextResponse.json({
+      success: true,
+      claims: result.data,
+      total: result.data?.length || 0,
+    });
+  } catch (error) {
+    console.error("Error fetching claims:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to fetch claims",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+});
 
-      if (!body.found_item_id) {
-        return NextResponse.json(
-          { error: "found_item_id is required" },
-          { status: 400 }
-        );
-      }
+/**
+ * POST /api/claims
+ * Create a new claim (requires authentication)
+ */
+export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
+  try {
+    const body = await req.json();
 
-      const claim = await ClaimsService.createClaim(user.id, body);
-
-      return NextResponse.json(
-        { claim, message: "Claim submitted successfully" },
-        { status: 201 }
-      );
-    } catch (error) {
-      console.error("Error creating claim:", error);
-
-      // Extract error message from various error types
-      let errorMessage = "Unknown error";
-      let statusCode = 500;
-
-      if (error instanceof Error) {
-        errorMessage = error.message;
-        if (error.message.includes("already claimed")) {
-          statusCode = 400;
-        } else if (error.message.includes("not found")) {
-          statusCode = 404;
-        } else if (error.message.includes("no longer available")) {
-          statusCode = 400;
-        } else if (error.message.includes("cannot claim your own")) {
-          statusCode = 400;
-        }
-      } else if (error && typeof error === "object" && "message" in error) {
-        errorMessage = String((error as any).message);
-      } else if (typeof error === "string") {
-        errorMessage = error;
-      }
-
+    if (!body.found_item_id) {
       return NextResponse.json(
         {
-          error: "Failed to create claim",
-          details: errorMessage,
+          success: false,
+          error: "found_item_id is required",
         },
-        { status: statusCode }
+        { status: 400 }
       );
     }
-  })(request);
-}
 
-export { GET, POST };
+    const result = await FoundItemClaimsService.createClaim(user.userId, body);
+
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: result.error,
+        },
+        { status: result.statusCode }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: result.data?.message || "Claim submitted successfully",
+        claim: result.data?.claim,
+      },
+      { status: result.statusCode }
+    );
+  } catch (error) {
+    console.error("Error creating claim:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to create claim",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+});

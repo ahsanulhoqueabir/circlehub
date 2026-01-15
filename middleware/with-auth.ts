@@ -79,16 +79,20 @@ export async function authMiddleware(request: NextRequest): Promise<{
  * @param handler - The API route handler function
  * @returns Protected API route handler
  */
-export function withAuth(
-  handler: (request: NextRequest, user: JwtPayload) => Promise<NextResponse>
+export function withAuth<T = unknown>(
+  handler: (
+    request: NextRequest,
+    user: JwtPayload,
+    context?: T
+  ) => Promise<NextResponse>
 ) {
-  return async (request: NextRequest) => {
+  return async (request: NextRequest, context?: T) => {
     const authResult = await authMiddleware(request);
 
     if (!authResult.success || !authResult.user) {
       return authResult.response!;
     }
 
-    return handler(request, authResult.user);
+    return handler(request, authResult.user, context);
   };
 }

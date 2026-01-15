@@ -24,16 +24,29 @@ export async function GET(req: NextRequest) {
     const userId = searchParams.get("userId");
 
     if (action === "statistics") {
-      const stats = await FoundItemsService.getStatistics(userId || undefined);
+      const stats_result = await FoundItemsService.getStatistics(
+        userId || undefined
+      );
+
+      if (!stats_result.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: stats_result.error,
+          },
+          { status: stats_result.statusCode }
+        );
+      }
+
       return NextResponse.json({
         success: true,
-        data: stats,
+        data: stats_result.data,
       });
     }
 
     const filters: ItemFilterOptions = {
       category: (searchParams.get("category") as ItemCategory) || undefined,
-      status: (searchParams.get("status") as ItemStatus) || "active",
+      status: (searchParams.get("status") as ItemStatus) || "available",
       search: searchParams.get("search") || undefined,
       tags: searchParams.get("tags")?.split(",").filter(Boolean) || undefined,
       location: searchParams.get("location") || undefined,
@@ -47,9 +60,19 @@ export async function GET(req: NextRequest) {
 
     const result = await FoundItemsService.getItems(filters);
 
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: result.error,
+        },
+        { status: result.statusCode }
+      );
+    }
+
     return NextResponse.json({
       success: true,
-      data: result,
+      data: result.data,
     });
   } catch (error) {
     console.error("Get found items error:", error);
@@ -110,23 +133,33 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
       }
     }
 
-    const item = await FoundItemsService.createItem(user.id, {
+    const result = await FoundItemsService.createItem(user.userId, {
       title,
       description,
       category,
       location,
-      date_found: dateFound,
-      image_url: imageUrl,
-      tags: body.tags || null,
+      dateFound,
+      imageUrl,
+      tags: body.tags || [],
     });
+
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: result.error,
+        },
+        { status: result.statusCode }
+      );
+    }
 
     return NextResponse.json(
       {
         success: true,
-        message: "Found item reported successfully",
-        data: item,
+        message: result.data?.message || "Found item reported successfully",
+        data: result.data?.item,
       },
-      { status: 201 }
+      { status: result.statusCode }
     );
   } catch (error) {
     console.error("Create found item error:", error);

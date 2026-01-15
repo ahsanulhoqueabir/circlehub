@@ -14,38 +14,35 @@ import { NextRequest, NextResponse } from "next/server";
 /**
  * GET /api/items/lost
  * Get lost items with advanced filtering and pagination
- * Query params:
- * - category: ItemCategory | "all"
- * - status: ItemStatus (default: "active")
- * - search: string
- * - tags: string[] (comma-separated)
- * - location: string
- * - dateFrom: string (ISO date)
- * - dateTo: string (ISO date)
- * - userId: string
- * - sort: SortOption (newest, oldest, most-viewed, recently-updated)
- * - limit: number (default: 20)
- * - offset: number (default: 0)
- * - action: "statistics" | "search" | "user-items" (optional)
  */
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
 
-    // Check for special actions
     const action = searchParams.get("action");
     const userId = searchParams.get("userId");
 
-    // Handle statistics endpoint
     if (action === "statistics") {
-      const stats = await LostItemsService.getStatistics(userId || undefined);
+      const stats_result = await LostItemsService.getStatistics(
+        userId || undefined
+      );
+
+      if (!stats_result.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: stats_result.error,
+          },
+          { status: stats_result.statusCode }
+        );
+      }
+
       return NextResponse.json({
         success: true,
-        data: stats,
+        data: stats_result.data,
       });
     }
 
-    // Build filter options
     const filters: ItemFilterOptions = {
       category: (searchParams.get("category") as ItemCategory) || undefined,
       status: (searchParams.get("status") as ItemStatus) || "active",
@@ -60,12 +57,21 @@ export async function GET(req: NextRequest) {
       offset: parseInt(searchParams.get("offset") || "0"),
     };
 
-    // Get items with filters
     const result = await LostItemsService.getItems(filters);
+
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: result.error,
+        },
+        { status: result.statusCode }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      data: result,
+      data: result.data,
     });
   } catch (error) {
     console.error("Get lost items error:", error);
@@ -85,10 +91,7 @@ export async function GET(req: NextRequest) {
  */
 export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
   try {
-    // Parse request body
     const body: CreateLostItemRequest = await req.json();
-
-    // Validate required fields
     const { title, description, category, location, dateLost } = body;
 
     if (!title || !description || !category || !location || !dateLost) {
@@ -112,11 +115,10 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
     let imageUrl: string | null = null;
     if (body.imageBase64) {
       try {
-        // Upload to Cloudinary
         imageUrl = await uploadDocumentFromBase64(
           body.imageBase64,
-          "lost-items", // folder name in Cloudinary
-          `lost_${Date.now()}` // filename
+          "lost-items",
+          `lost_${Date.now()}`
         );
       } catch (error) {
         console.error("Image upload error:", error);
@@ -130,24 +132,34 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
       }
     }
 
-    // Create item using service with user ID from JWT
-    const item = await LostItemsService.createItem(user.id, {
+    const result = await LostItemsService.createItem(user.userId, {
       title,
       description,
       category,
       location,
-      date_lost: dateLost,
-      image_url: imageUrl,
-      tags: body.tags || null,
+      dateLost,
+      imageUrl,
+      tags: body.tags || [],
+      rewardAmount: body.rewardAmount,
     });
+
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: result.error,
+        },
+        { status: result.statusCode }
+      );
+    }
 
     return NextResponse.json(
       {
         success: true,
-        message: "Lost item reported successfully",
-        data: item,
+        message: result.data?.message || "Lost item reported successfully",
+        data: result.data?.item,
       },
-      { status: 201 }
+      { status: result.statusCode }
     );
   } catch (error) {
     console.error("Create lost item error:", error);

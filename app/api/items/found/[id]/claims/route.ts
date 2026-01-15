@@ -1,38 +1,51 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/middleware/with-auth";
-import { ClaimsService } from "@/services/claims.services";
+import { FoundItemClaimsService } from "@/services/found-item-claims.services";
+import { JwtPayload } from "@/types/jwt.types";
 
-// GET /api/items/found/[id]/claims - Get all claims for a specific found item
-async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  return withAuth(request, async (user) => {
+/**
+ * GET /api/items/found/[id]/claims
+ * Get all claims for a specific found item (requires authentication and ownership)
+ */
+export const GET = withAuth(
+  async (
+    request: NextRequest,
+    user: JwtPayload,
+    { params }: { params: Promise<{ id: string }> }
+  ) => {
     try {
-      const itemId = params.id;
+      const { id: itemId } = await params;
 
-      const claims = await ClaimsService.getClaimsByItemId(itemId, user.id);
+      const result = await FoundItemClaimsService.getClaimsByItemId(
+        itemId,
+        user.userId
+      );
+
+      if (!result.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: result.error,
+          },
+          { status: result.statusCode }
+        );
+      }
 
       return NextResponse.json({
-        claims,
-        total: claims.length,
+        success: true,
+        claims: result.data,
+        total: result.data?.length || 0,
       });
     } catch (error) {
       console.error("Error fetching item claims:", error);
       return NextResponse.json(
         {
+          success: false,
           error: "Failed to fetch claims",
           details: error instanceof Error ? error.message : "Unknown error",
         },
-        {
-          status:
-            error instanceof Error && error.message.includes("Unauthorized")
-              ? 403
-              : 500,
-        }
+        { status: 500 }
       );
     }
-  });
-}
-
-export { GET };
+  }
+);
