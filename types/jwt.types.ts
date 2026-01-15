@@ -1,38 +1,39 @@
-import { UserProfile } from "./auth.types";
-
-export interface JwtTokenResponse {
-  token: string;
-  refreshToken: string;
-  expiresIn: number;
-}
-
-export interface JwtVerifyResult {
-  valid: boolean;
-  user?: {
-    id: string;
-    email: string;
-    role: string;
-  };
-  error?: string;
-}
-
+/**
+ * JWT Token Payload
+ * Contains user information embedded in the JWT token
+ */
 export interface JwtPayload {
-  id: string;
+  userId: string;
   email: string;
   role: string;
-  iat?: number;
-  exp?: number;
+  iat?: number; // Issued at
+  exp?: number; // Expires at
 }
 
-export interface JwtValidateResult {
+/**
+ * JWT Token Response
+ * Returned when generating tokens
+ */
+export interface JwtTokenResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number; // in seconds
+  tokenType: "Bearer";
+}
+
+/**
+ * JWT Verification Result
+ */
+export interface JwtVerifyResult {
   valid: boolean;
-  user?: UserProfile;
+  payload?: JwtPayload;
   error?: string;
 }
 
-export interface JwtRefreshResult {
-  success: boolean;
-  token?: string;
-  expiresIn?: number;
+/**
+ * JWT Token Decode Result
+ */
+export interface JwtDecodeResult {
+  payload: JwtPayload | null;
   error?: string;
 }

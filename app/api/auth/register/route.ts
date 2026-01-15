@@ -1,25 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
-import { registerUser } from "@/services/auth.services";
 import type { RegisterRequest } from "@/types/auth.types";
+import { AuthService } from "@/services/auth.services";
 
 export async function POST(req: NextRequest) {
-  const body: RegisterRequest = await req.json();
+  try {
+    const body: RegisterRequest = await req.json();
 
-  const result = await registerUser(body);
+    const result = await AuthService.registerUser(body);
 
-  if (result.success && result.data) {
-    // Return success with redirect flag for frontend
+    if (result.success && result.data) {
+      return NextResponse.json(
+        {
+          ...result.data,
+          redirect: "/login",
+        },
+        { status: result.statusCode }
+      );
+    }
+
     return NextResponse.json(
-      {
-        ...result.data,
-        redirect: "/login",
-      },
+      { error: result.error },
       { status: result.statusCode }
     );
+  } catch (error) {
+    console.error("Register API error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json(
-    { error: result.error },
-    { status: result.statusCode }
-  );
 }

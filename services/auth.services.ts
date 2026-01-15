@@ -1,296 +1,250 @@
-import { createServerClient } from "@/lib/supabase";
-import { baseUrl } from "@/config/env";
+import dbConnect from "@/lib/mongodb";
+import User from "@/models/users.m";
+import { JWTService } from "./jwt.services";
+import bcrypt from "bcryptjs";
 import type {
   RegisterRequest,
   LoginRequest,
   UserProfile,
   AuthSuccessResponse,
-  GoogleAuthResponse,
-  LogoutResponse,
   ServiceResponse,
+  RefreshTokenResponse,
 } from "@/types/auth.types";
 
-/**
- * Register a new user with email and password
- */
-export async function registerUser(
-  data: RegisterRequest
-): Promise<ServiceResponse<AuthSuccessResponse>> {
-  try {
-    const { email, password, name, university, studentId } = data;
+export class AuthService {
+  /**
+   * Hash password using bcrypt
+   */
+  private static async hashPassword(password: string): Promise<string> {
+    const salt = await bcrypt.genSalt(10);
+    return bcrypt.hash(password, salt);
+  }
 
-    // Validation
-    if (!email || !password || !name) {
-      return {
-        success: false,
-        error: "Email, password, and name are required",
-        statusCode: 400,
+  /**
+   * Compare password with hashed password
+   */
+  private static async comparePassword(
+    password: string,
+    hashedPassword: string
+  ): Promise<boolean> {
+    return bcrypt.compare(password, hashedPassword);
+  }
+
+  /**
+   * Register a new user with email and password
+   */
+  static async registerUser(
+    data: RegisterRequest
+  ): Promise<ServiceResponse<{ message: string; user: UserProfile }>> {
+    try {
+      const { email, password, name, university, studentId } = data;
+
+      // Validation
+      if (!email || !password || !name) {
+        return {
+          success: false,
+          error: "Email, password, and name are required",
+          statusCode: 400,
+        };
+      }
+
+      // Password strength validation
+      if (password.length < 8) {
+        return {
+          success: false,
+          error: "Password must be at least 8 characters long",
+          statusCode: 400,
+        };
+      }
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return {
+          success: false,
+          error: "Invalid email format",
+          statusCode: 400,
+        };
+      }
+
+      await dbConnect();
+
+      // Check if user already exists
+      const existingUser = await User.findOne({ email });
+
+      if (existingUser) {
+        return {
+          success: false,
+          error: "User with this email already exists",
+          statusCode: 409,
+        };
+      }
+
+      // Hash password
+      const hashedPassword = await this.hashPassword(password);
+
+      // Create new user
+      const newUser = await User.create({
+        email,
+        password: hashedPassword,
+        name,
+        university,
+        studentId,
+        verified: false,
+        role: "student", // Default role
+      });
+
+      const userProfile: UserProfile = {
+        id: newUser._id.toString(),
+        email: newUser.email,
+        name: newUser.name,
+        university: newUser.university,
+        studentId: newUser.studentId,
+        verified: newUser.verified || false,
+        role: newUser.role || "student",
       };
-    }
 
-    const supabase = createServerClient();
-
-    const { data: authData, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
+      return {
+        success: true,
         data: {
-          full_name: name,
-          university: university,
-          student_id: studentId,
+          message: "Registration successful",
+          user: userProfile,
         },
-      },
-    });
+        statusCode: 201,
+      };
+    } catch (error: any) {
+      console.error("Register service error:", error);
 
-    if (error) {
+      if (error.code === 11000) {
+        return {
+          success: false,
+          error: "User with this email already exists",
+          statusCode: 409,
+        };
+      }
+
+      if (error.name === "ValidationError") {
+        const messages = Object.values(error.errors)
+          .map((err: any) => err.message)
+          .join(", ");
+        return {
+          success: false,
+          error: messages,
+          statusCode: 400,
+        };
+      }
+
       return {
         success: false,
-        error: error.message,
-        statusCode: 400,
+        error: "Internal server error",
+        statusCode: 500,
       };
     }
-
-    if (!authData.user) {
-      return {
-        success: false,
-        error: "Registration failed",
-        statusCode: 400,
-      };
-    }
-
-    const userProfile: UserProfile = {
-      id: authData.user.id,
-      email: authData.user.email || email,
-      name: name,
-      university: university,
-      studentId: studentId,
-      verified: false,
-      role: "student", // Default role
-    };
-
-    return {
-      success: true,
-      data: {
-        message: "Registration successful. Please login to continue.",
-        user: userProfile,
-      },
-      statusCode: 200,
-    };
-  } catch (error) {
-    console.error("Register service error:", error);
-    return {
-      success: false,
-      error: "Internal server error",
-      statusCode: 500,
-    };
   }
-}
 
-/**
- * Login user with email and password
- */
-export async function loginUser(
-  data: LoginRequest
-): Promise<ServiceResponse<AuthSuccessResponse>> {
-  try {
-    const { email, password } = data;
+  /**
+   * Login user with email and password
+   */
+  static async loginUser(
+    data: LoginRequest
+  ): Promise<ServiceResponse<AuthSuccessResponse>> {
+    try {
+      const { email, password } = data;
 
-    // Validation
-    if (!email || !password) {
+      // Validation
+      if (!email || !password) {
+        return {
+          success: false,
+          error: "Email and password are required",
+          statusCode: 400,
+        };
+      }
+
+      await dbConnect();
+
+      // Find user by email
+      const user = await User.findOne({ email });
+
+      if (!user) {
+        return {
+          success: false,
+          error: "Invalid email or password",
+          statusCode: 401,
+        };
+      }
+
+      // Verify password
+      const isPasswordValid = await this.comparePassword(
+        password,
+        user.password
+      );
+
+      if (!isPasswordValid) {
+        return {
+          success: false,
+          error: "Invalid email or password",
+          statusCode: 401,
+        };
+      }
+
+      const userProfile: UserProfile = {
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        avatar: user.avatar,
+        university: user.university,
+        studentId: user.studentId,
+        verified: user.verified || false,
+        role: user.role || "student",
+      };
+
+      // Generate JWT tokens
+      const tokens = JWTService.generateTokens({
+        userId: user._id.toString(),
+        email: user.email,
+        role: user.role || "student",
+      });
+
+      return {
+        success: true,
+        data: {
+          message: "Login successful",
+          user: userProfile,
+          tokens,
+        },
+        statusCode: 200,
+      };
+    } catch (error) {
+      console.error("Login service error:", error);
       return {
         success: false,
-        error: "Email and password are required",
-        statusCode: 400,
+        error: "Internal server error",
+        statusCode: 500,
       };
     }
-
-    const supabase = createServerClient();
-
-    const { data: authData, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      return {
-        success: false,
-        error: error.message,
-        statusCode: 401,
-      };
-    }
-
-    if (!authData.user) {
-      return {
-        success: false,
-        error: "Login failed",
-        statusCode: 401,
-      };
-    }
-
-    // Fetch user profile from database to get role
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", authData.user.id)
-      .single();
-
-    const userRole = profile?.role || "student";
-
-    const userProfile: UserProfile = {
-      id: authData.user.id,
-      email: authData.user.email || "",
-      name:
-        authData.user.user_metadata?.full_name ||
-        authData.user.user_metadata?.name ||
-        authData.user.email?.split("@")[0] ||
-        "User",
-      avatar: authData.user.user_metadata?.avatar_url,
-      university: authData.user.user_metadata?.university,
-      studentId: authData.user.user_metadata?.student_id,
-      verified: authData.user.email_confirmed_at ? true : false,
-      role: userRole,
-    };
-
-    // Import JWT service and generate token
-    const { JWTService } = await import("./jwt.services");
-    const token = JWTService.generateJWTToken({
-      id: authData.user.id,
-      email: authData.user.email || "",
-      role: userRole,
-    });
-
-    return {
-      success: true,
-      data: {
-        message: "Login successful",
-        user: userProfile,
-        token: token,
-      },
-      statusCode: 200,
-    };
-  } catch (error) {
-    console.error("Login service error:", error);
-    return {
-      success: false,
-      error: "Internal server error",
-      statusCode: 500,
-    };
   }
-}
 
-/**
- * Logout current user
- */
-export async function logoutUser(): Promise<ServiceResponse<LogoutResponse>> {
-  try {
-    const supabase = createServerClient();
+  /**
+   * Get current user data by ID from token
+   */
+  static async getCurrentUser(
+    userId: string
+  ): Promise<ServiceResponse<{ message: string; user: UserProfile }>> {
+    try {
+      if (!userId) {
+        return {
+          success: false,
+          error: "User ID is required",
+          statusCode: 400,
+        };
+      }
 
-    const { error } = await supabase.auth.signOut();
+      await dbConnect();
 
-    if (error) {
-      return {
-        success: false,
-        error: error.message,
-        statusCode: 400,
-      };
-    }
+      // Find user by ID
+      const user = await User.findById(userId).select("-password");
 
-    return {
-      success: true,
-      data: {
-        message: "Logout successful",
-      },
-      statusCode: 200,
-    };
-  } catch (error) {
-    console.error("Logout service error:", error);
-    return {
-      success: false,
-      error: "Internal server error",
-      statusCode: 500,
-    };
-  }
-}
-
-/**
- * Initiate Google OAuth authentication
- */
-export async function initiateGoogleAuth(): Promise<
-  ServiceResponse<GoogleAuthResponse>
-> {
-  try {
-    const supabase = createServerClient();
-
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${baseUrl}/auth/callback`,
-      },
-    });
-
-    if (error) {
-      return {
-        success: false,
-        error: error.message,
-        statusCode: 400,
-      };
-    }
-
-    if (!data.url) {
-      return {
-        success: false,
-        error: "Failed to generate OAuth URL",
-        statusCode: 400,
-      };
-    }
-
-    return {
-      success: true,
-      data: {
-        url: data.url,
-      },
-      statusCode: 200,
-    };
-  } catch (error) {
-    console.error("Google auth service error:", error);
-    return {
-      success: false,
-      error: "Internal server error",
-      statusCode: 500,
-    };
-  }
-}
-
-/**
- * Get current user data by ID from token
- */
-export async function getCurrentUser(
-  userId: string
-): Promise<ServiceResponse<AuthSuccessResponse>> {
-  try {
-    if (!userId) {
-      return {
-        success: false,
-        error: "User ID is required",
-        statusCode: 400,
-      };
-    }
-
-    const supabase = createServerClient();
-
-    // Fetch user from auth.users
-    const { data: authUser, error: authError } =
-      await supabase.auth.admin.getUserById(userId);
-
-    if (authError || !authUser.user) {
-      // Try getting from profiles table instead
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (profileError || !profile) {
+      if (!user) {
         return {
           success: false,
           error: "User not found",
@@ -299,14 +253,14 @@ export async function getCurrentUser(
       }
 
       const userProfile: UserProfile = {
-        id: profile.id,
-        email: profile.email,
-        name: profile.name || "",
-        avatar: profile.avatar_url || undefined,
-        university: profile.university || undefined,
-        studentId: profile.student_id || undefined,
-        verified: profile.verified || false,
-        role: profile.role || "student",
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        avatar: user.avatar,
+        university: user.university,
+        studentId: user.studentId,
+        verified: user.verified || false,
+        role: user.role || "student",
       };
 
       return {
@@ -317,46 +271,83 @@ export async function getCurrentUser(
         },
         statusCode: 200,
       };
+    } catch (error) {
+      console.error("Get current user service error:", error);
+      return {
+        success: false,
+        error: "Internal server error",
+        statusCode: 500,
+      };
     }
+  }
 
-    // Fetch role from profiles table
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role, verified, university, student_id")
-      .eq("id", userId)
-      .single();
+  /**
+   * Refresh access token using refresh token
+   */
+  static async refreshAccessToken(
+    refreshToken: string
+  ): Promise<ServiceResponse<RefreshTokenResponse>> {
+    try {
+      if (!refreshToken) {
+        return {
+          success: false,
+          error: "Refresh token is required",
+          statusCode: 400,
+        };
+      }
 
-    const userProfile: UserProfile = {
-      id: authUser.user.id,
-      email: authUser.user.email || "",
-      name:
-        authUser.user.user_metadata?.full_name ||
-        authUser.user.user_metadata?.name ||
-        authUser.user.email?.split("@")[0] ||
-        "User",
-      avatar: authUser.user.user_metadata?.avatar_url,
-      university:
-        profile?.university || authUser.user.user_metadata?.university,
-      studentId: profile?.student_id || authUser.user.user_metadata?.student_id,
-      verified:
-        profile?.verified || (authUser.user.email_confirmed_at ? true : false),
-      role: profile?.role || "student",
-    };
+      // Verify refresh token
+      const verifyResult = JWTService.verifyRefreshToken(refreshToken);
 
-    return {
-      success: true,
-      data: {
-        message: "User fetched successfully",
-        user: userProfile,
-      },
-      statusCode: 200,
-    };
-  } catch (error) {
-    console.error("Get current user service error:", error);
-    return {
-      success: false,
-      error: "Internal server error",
-      statusCode: 500,
-    };
+      if (!verifyResult.valid || !verifyResult.userId) {
+        return {
+          success: false,
+          error: verifyResult.error || "Invalid refresh token",
+          statusCode: 401,
+        };
+      }
+
+      await dbConnect();
+
+      // Fetch user to get email and role
+      const user = await User.findById(verifyResult.userId).select(
+        "email role"
+      );
+
+      if (!user) {
+        return {
+          success: false,
+          error: "User not found",
+          statusCode: 404,
+        };
+      }
+
+      // Generate new tokens
+      const tokens = JWTService.generateTokens({
+        userId: verifyResult.userId,
+        email: user.email,
+        role: user.role || "student",
+      });
+
+      // Revoke old refresh token
+      JWTService.revokeRefreshToken(refreshToken);
+
+      return {
+        success: true,
+        data: {
+          accessToken: tokens.accessToken,
+          expiresIn: tokens.expiresIn,
+          tokenType: "Bearer",
+        },
+        statusCode: 200,
+      };
+    } catch (error) {
+      console.error("Refresh token service error:", error);
+      return {
+        success: false,
+        error: "Internal server error",
+        statusCode: 500,
+      };
+    }
   }
 }

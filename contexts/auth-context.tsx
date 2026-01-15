@@ -6,13 +6,14 @@ import React, {
   useEffect,
   useState,
   useCallback,
+  useRef,
 } from "react";
 import type { UserProfile } from "@/types/auth.types";
 
 // Auth Context Type
 interface AuthContextType {
   user: UserProfile | null;
-  token: string | null;
+  accessToken: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -32,33 +33,96 @@ interface RegisterData {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const TOKEN_KEY = "campus_connect_token";
+const ACCESS_TOKEN_KEY = "campus_connect_access_token";
+const REFRESH_TOKEN_KEY = "campus_connect_refresh_token";
 const USER_KEY = "campus_connect_user";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Clear refresh timer on unmount
+  useEffect(() => {
+    return () => {
+      if (refreshTimerRef.current) {
+        clearTimeout(refreshTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Auto-refresh access token before expiry
+  const scheduleTokenRefresh = useCallback((expiresIn: number) => {
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+    }
+
+    // Refresh token 1 minute before expiry
+    const refreshTime = Math.max(0, (expiresIn - 60) * 1000);
+
+    refreshTimerRef.current = setTimeout(async () => {
+      await refreshAccessToken();
+    }, refreshTime);
+  }, []);
+
+  // Refresh access token using refresh token
+  const refreshAccessToken = useCallback(async () => {
+    try {
+      const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+
+      if (!storedRefreshToken) {
+        logout();
+        return;
+      }
+
+      const response = await fetch("/api/auth/refresh", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refreshToken: storedRefreshToken }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.accessToken) {
+          setAccessToken(data.accessToken);
+          localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
+
+          // Schedule next refresh
+          if (data.expiresIn) {
+            scheduleTokenRefresh(data.expiresIn);
+          }
+        }
+      } else {
+        // Refresh token is invalid or expired, logout user
+        logout();
+      }
+    } catch (error) {
+      console.error("Error refreshing access token:", error);
+      logout();
+    }
+  }, [scheduleTokenRefresh]);
 
   // Load user from localStorage and verify token on mount
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const storedToken = localStorage.getItem(TOKEN_KEY);
+        const storedAccessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
         const storedUser = localStorage.getItem(USER_KEY);
 
-        if (storedToken && storedUser) {
-          setToken(storedToken);
+        if (storedAccessToken && storedUser) {
+          setAccessToken(storedAccessToken);
           setUser(JSON.parse(storedUser));
 
           // Verify token and fetch fresh user data
-          await fetchCurrentUser(storedToken);
+          await fetchCurrentUser(storedAccessToken);
         }
       } catch (error) {
         console.error("Error loading user:", error);
         // Clear invalid data
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(USER_KEY);
+        clearAuthData();
       } finally {
         setIsLoading(false);
       }
@@ -84,11 +148,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.setItem(USER_KEY, JSON.stringify(data.user));
         }
       } else {
-        // Token is invalid, clear storage
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(USER_KEY);
-        setToken(null);
-        setUser(null);
+        // Token is invalid, try to refresh
+        await refreshAccessToken();
       }
     } catch (error) {
       console.error("Error fetching current user:", error);
@@ -97,10 +158,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Refresh user data
   const refreshUser = useCallback(async () => {
-    if (token) {
-      await fetchCurrentUser(token);
+    if (accessToken) {
+      await fetchCurrentUser(accessToken);
     }
-  }, [token]);
+  }, [accessToken]);
+
+  // Clear auth data
+  const clearAuthData = () => {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    setAccessToken(null);
+    setUser(null);
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+    }
+  };
 
   // Login function
   const login = async (email: string, password: string) => {
@@ -119,11 +192,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new Error(data.error || "Login failed");
       }
 
-      if (data.user && data.token) {
+      if (data.user && data.tokens) {
         setUser(data.user);
-        setToken(data.token);
-        localStorage.setItem(TOKEN_KEY, data.token);
+        setAccessToken(data.tokens.accessToken);
+        localStorage.setItem(ACCESS_TOKEN_KEY, data.tokens.accessToken);
+        localStorage.setItem(REFRESH_TOKEN_KEY, data.tokens.refreshToken);
         localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+
+        // Schedule token refresh
+        if (data.tokens.expiresIn) {
+          scheduleTokenRefresh(data.tokens.expiresIn);
+        }
       } else {
         throw new Error("Invalid response from server");
       }
@@ -186,17 +265,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Logout function
   const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    clearAuthData();
   };
 
   const value: AuthContextType = {
     user,
-    token,
+    accessToken,
     isLoading,
-    isAuthenticated: !!user && !!token,
+    isAuthenticated: !!user && !!accessToken,
     login,
     loginWithGoogle,
     register,

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentUser } from "@/services/auth.services";
 import { withAuth } from "@/middleware/with-auth";
 import { JwtPayload } from "@/types/jwt.types";
+import { AuthService } from "@/services/auth.services";
 
 export const GET = withAuth(async (req: NextRequest, user: JwtPayload) => {
   try {
-    const result = await getCurrentUser(user.id);
+    const result = await AuthService.getCurrentUser(user.userId);
 
     if (result.success && result.data) {
       return NextResponse.json(result.data, { status: result.statusCode });

@@ -12,6 +12,10 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
+
 // Auth Response Types
 export interface UserProfile {
   id: string;
@@ -24,22 +28,28 @@ export interface UserProfile {
   role: string;
 }
 
+export interface AuthTokens {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number; // in seconds
+  tokenType: "Bearer";
+}
+
 export interface AuthSuccessResponse {
   message: string;
   user: UserProfile;
-  token?: string;
+  tokens: AuthTokens;
 }
 
-export interface GoogleAuthResponse {
-  url: string;
-}
-
-export interface LogoutResponse {
-  message: string;
+export interface RefreshTokenResponse {
+  accessToken: string;
+  expiresIn: number;
+  tokenType: "Bearer";
 }
 
 export interface AuthErrorResponse {
   error: string;
+  message?: string;
 }
 
 // Service Response Types (for internal use)
