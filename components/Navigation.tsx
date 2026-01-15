@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import {
@@ -89,9 +90,13 @@ export default function Navigation() {
             {/* Logo */}
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-linear-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">CH</span>
-                </div>
+                <Image
+                  src="/logo/transparent-logo.png"
+                  alt="CircleHub JnU Logo"
+                  width={36}
+                  height={36}
+                  className="rounded-lg"
+                />
                 <span className="text-xl font-bold text-slate-900 dark:text-slate-100 hidden sm:block">
                   CircleHub JnU
                 </span>

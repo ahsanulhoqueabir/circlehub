@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import { useState, useEffect, useCallback } from "react";
 import {
   Search,
   MapPin,
@@ -10,11 +12,66 @@ import {
   Clock,
   ArrowRight,
   Star,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
+import type { HomeStats, RecentActivityItem } from "@/types/items.types";
 
 export default function Home() {
   const { isAuthenticated, user } = useAuth();
+  const [current_slide, set_current_slide] = useState(0);
+
+  // Home page data states
+  const [home_stats, set_home_stats] = useState<HomeStats | null>(null);
+  const [recent_activity, set_recent_activity] = useState<RecentActivityItem[]>(
+    []
+  );
+  const [is_loading_home_data, set_is_loading_home_data] = useState(true);
+
+  const banners = [
+    "/banner/banner-1.jpeg",
+    "/banner/banner-2.jpeg",
+    "/banner/banner-3.jpeg",
+  ];
+
+  const next_slide = useCallback(() => {
+    set_current_slide((prev) => (prev + 1) % banners.length);
+  }, [banners.length]);
+
+  const prev_slide = useCallback(() => {
+    set_current_slide((prev) => (prev - 1 + banners.length) % banners.length);
+  }, [banners.length]);
+
+  // Auto-slide every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      next_slide();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [next_slide]);
+
+  // Fetch home page data
+  useEffect(() => {
+    const fetch_home_data = async () => {
+      try {
+        set_is_loading_home_data(true);
+        const response = await fetch("/api/home?limit=5");
+        const data = await response.json();
+
+        if (data.success) {
+          set_home_stats(data.data.stats);
+          set_recent_activity(data.data.recent_activity);
+        }
+      } catch (error) {
+        console.error("Failed to fetch home data:", error);
+      } finally {
+        set_is_loading_home_data(false);
+      }
+    };
+
+    fetch_home_data();
+  }, []);
 
   const features = [
     {
@@ -44,90 +101,147 @@ export default function Home() {
     },
   ];
 
+  // Dynamic stats from API
   const stats = [
-    { label: "Items Recovered", value: "1,234", icon: MapPin },
-    { label: "Active Users", value: "5,678", icon: Users },
-    { label: "Items Shared", value: "2,890", icon: Share2 },
-    { label: "Success Rate", value: "87%", icon: Star },
-  ];
-
-  const recentActivity = [
     {
-      type: "found",
-      item: "Blue Backpack",
-      location: "Library Entrance",
-      time: "2 hours ago",
+      label: "Items Recovered",
+      value: home_stats ? home_stats.items_recovered.toLocaleString() : "--",
+      icon: MapPin,
     },
     {
-      type: "lost",
-      item: "iPhone 14 Pro",
-      location: "Engineering Building",
-      time: "4 hours ago",
+      label: "Active Users",
+      value: home_stats ? home_stats.active_users.toLocaleString() : "--",
+      icon: Users,
     },
     {
-      type: "share",
-      item: "Calculus Textbook",
-      location: "Student Center",
-      time: "6 hours ago",
+      label: "Items Shared",
+      value: home_stats ? home_stats.items_shared.toLocaleString() : "--",
+      icon: Share2,
+    },
+    {
+      label: "Success Rate",
+      value: home_stats ? `${home_stats.success_rate}%` : "--",
+      icon: Star,
     },
   ];
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-linear-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-800">
-        <div className="absolute inset-0 bg-grid-slate-100 dark:bg-grid-slate-700/25 bg-size-[20px_20px] mask-[radial-gradient(ellipse_800px_600px_at_center,white,transparent)]"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="text-center">
-            <h1 className="text-5xl md:text-6xl font-bold text-slate-900 dark:text-white mb-6">
-              CircleHub{" "}
-              <span className="text-blue-600 dark:text-blue-400">JnU</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 mb-8 max-w-3xl mx-auto">
-              The modern platform for JnU lost & found, sharing items, and
-              connecting with your campus community
-            </p>
+      {/* Hero Section with Carousel */}
+      <section className="relative h-[500px] md:h-[600px] overflow-hidden">
+        {/* Banner Carousel */}
+        <div className="absolute inset-0">
+          {banners.map((banner, index) => (
+            <div
+              key={index}
+              className={`absolute inset-0  transition-opacity duration-1000 ${
+                index === current_slide ? "opacity-80" : "opacity-0"
+              }`}
+            >
+              <Image
+                src={banner}
+                alt={`Campus Banner ${index + 1}`}
+                fill
+                className="object-cover"
+                priority={index === 0}
+              />
+            </div>
+          ))}
+          {/* Dark Overlay for better text readability */}
+          <div className="absolute inset-0 bg-linear-to-b from-black/70 via-black/60 to-black/80"></div>
+        </div>
 
-            {isAuthenticated ? (
-              <div className="space-y-4">
-                <p className="text-lg text-slate-700 dark:text-slate-300">
-                  Welcome back,{" "}
-                  <span className="font-semibold">{user?.name}</span>!
-                </p>
+        {/* Navigation Arrows */}
+        <button
+          onClick={prev_slide}
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/20 hover:bg-white/40 text-white transition-colors backdrop-blur-sm"
+          aria-label="Previous slide"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+        <button
+          onClick={next_slide}
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/20 hover:bg-white/40 text-white transition-colors backdrop-blur-sm"
+          aria-label="Next slide"
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
+
+        {/* Slide Indicators */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+          {banners.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => set_current_slide(index)}
+              className={`w-3 h-3 rounded-full transition-all ${
+                index === current_slide
+                  ? "bg-white w-8"
+                  : "bg-white/50 hover:bg-white/75"
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+
+        {/* Hero Content */}
+        <div className="relative z-10 h-full flex items-center justify-center">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div className="text-center">
+              <p
+                className="text-xl md:text-2xl text-white mb-8 max-w-3xl mx-auto"
+                style={{
+                  textShadow:
+                    "2px 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5)",
+                }}
+              >
+                The modern platform for JnU lost & found, sharing items, and
+                connecting with your campus community
+              </p>
+
+              {isAuthenticated ? (
+                <div className="space-y-4">
+                  <p
+                    className="text-lg text-white"
+                    style={{ textShadow: "2px 2px 6px rgba(0,0,0,0.8)" }}
+                  >
+                    Welcome back,{" "}
+                    <span className="font-semibold">{user?.name}</span>!
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Link
+                      href="/lost"
+                      className="inline-flex items-center px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors shadow-lg"
+                    >
+                      Report Lost Item
+                      <ArrowRight className="ml-2 w-4 h-4" />
+                    </Link>
+                    <Link
+                      href="/found"
+                      className="inline-flex items-center px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors shadow-lg"
+                    >
+                      Report Found Item
+                      <ArrowRight className="ml-2 w-4 h-4" />
+                    </Link>
+                  </div>
+                </div>
+              ) : (
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link
-                    href="/lost"
-                    className="inline-flex items-center px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors"
+                    href="/register"
+                    className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors text-lg shadow-lg"
                   >
-                    Report Lost Item
-                    <ArrowRight className="ml-2 w-4 h-4" />
+                    Get Started
+                    <ArrowRight className="ml-2 w-5 h-5" />
                   </Link>
                   <Link
-                    href="/found"
-                    className="inline-flex items-center px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+                    href="/login"
+                    className="inline-flex items-center px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-medium rounded-lg border border-white/30 hover:bg-white/20 transition-colors text-lg"
                   >
-                    Report Found Item
-                    <ArrowRight className="ml-2 w-4 h-4" />
+                    Sign In
                   </Link>
                 </div>
-              </div>
-            ) : (
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  href="/register"
-                  className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors text-lg"
-                >
-                  Get Started
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Link>
-                <Link
-                  href="/login"
-                  className="inline-flex items-center px-8 py-4 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-lg"
-                >
-                  Sign In
-                </Link>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -213,45 +327,65 @@ export default function Home() {
           </div>
 
           <div className="max-w-3xl mx-auto space-y-4">
-            {recentActivity.map((activity, index) => (
-              <div
-                key={index}
-                className="flex items-center p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
-              >
+            {is_loading_home_data ? (
+              // Loading skeleton
+              Array.from({ length: 3 }).map((_, index) => (
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 ${
-                    activity.type === "found"
-                      ? "bg-green-100 dark:bg-green-900/30"
-                      : activity.type === "lost"
-                      ? "bg-red-100 dark:bg-red-900/30"
-                      : "bg-yellow-100 dark:bg-yellow-900/30"
-                  }`}
+                  key={index}
+                  className="flex items-center p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 animate-pulse"
                 >
-                  {activity.type === "found" && (
-                    <MapPin className="w-5 h-5 text-green-600 dark:text-green-400" />
-                  )}
-                  {activity.type === "lost" && (
-                    <Search className="w-5 h-5 text-red-600 dark:text-red-400" />
-                  )}
-                  {activity.type === "share" && (
-                    <Share2 className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-medium text-slate-900 dark:text-white">
-                      {activity.item}
-                    </h3>
-                    <span className="text-sm text-slate-500 dark:text-slate-400">
-                      {activity.time}
-                    </span>
+                  <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 mr-4"></div>
+                  <div className="flex-1">
+                    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/3 mb-2"></div>
+                    <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/4"></div>
                   </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-300">
-                    {activity.location}
-                  </p>
                 </div>
+              ))
+            ) : recent_activity.length === 0 ? (
+              <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                No recent activity found
               </div>
-            ))}
+            ) : (
+              recent_activity.map((activity) => (
+                <div
+                  key={activity.id}
+                  className="flex items-center p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                >
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 ${
+                      activity.type === "found"
+                        ? "bg-green-100 dark:bg-green-900/30"
+                        : activity.type === "lost"
+                        ? "bg-red-100 dark:bg-red-900/30"
+                        : "bg-yellow-100 dark:bg-yellow-900/30"
+                    }`}
+                  >
+                    {activity.type === "found" && (
+                      <MapPin className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    )}
+                    {activity.type === "lost" && (
+                      <Search className="w-5 h-5 text-red-600 dark:text-red-400" />
+                    )}
+                    {activity.type === "share" && (
+                      <Share2 className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-medium text-slate-900 dark:text-white">
+                        {activity.title}
+                      </h3>
+                      <span className="text-sm text-slate-500 dark:text-slate-400">
+                        {activity.time}
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                      {activity.location}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           <div className="text-center mt-8">
