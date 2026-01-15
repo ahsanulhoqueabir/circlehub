@@ -13,13 +13,19 @@ import {
   CreateShareItemRequest,
 } from "@/types/items.types";
 import { useAuth } from "@/contexts/auth-context";
+import { useShareItems } from "@/contexts/data-context";
 import useAxios from "@/hooks/use-axios";
 
 export default function SharePage() {
   const axios = useAxios();
   const { isAuthenticated } = useAuth();
-  const [items, setItems] = useState<ShareItemWithProfile[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    items: context_items,
+    is_loading: context_loading,
+    error: context_error,
+    refetch: refetch_share_items,
+  } = useShareItems();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedCondition, setSelectedCondition] = useState("all");
@@ -32,28 +38,9 @@ export default function SharePage() {
   const [showAuthWarning, setShowAuthWarning] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  // Fetch items on mount
-  useEffect(() => {
-    fetchItems();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const fetchItems = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get("/api/items/share");
-      if (response.data.success) {
-        setItems(response.data.data.items);
-      }
-    } catch (error) {
-      console.error("Failed to fetch share items:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Client-side filtering
   const filteredItems = useMemo(() => {
-    return items.filter((item) => {
+    return context_items.filter((item) => {
       const matchesSearch =
         item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -80,7 +67,7 @@ export default function SharePage() {
       );
     });
   }, [
-    items,
+    context_items,
     searchTerm,
     selectedCategory,
     selectedCondition,
@@ -104,8 +91,8 @@ export default function SharePage() {
     try {
       const response = await axios.post("/api/items/share", itemData);
       if (response.data.success) {
-        // Refetch items to include the new one
-        await fetchItems();
+        // Refetch context data
+        await refetch_share_items();
         setIsReportFormOpen(false);
         alert("Item shared successfully!");
       }
@@ -120,7 +107,7 @@ export default function SharePage() {
     }
   };
 
-  if (loading) {
+  if (context_loading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
         <div className="text-center">
@@ -134,6 +121,14 @@ export default function SharePage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+        {/* Error State */}
+        {context_error && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <p className="text-red-600 dark:text-red-400 text-center">
+              {context_error}
+            </p>
+          </div>
+        )}
         {/* Header */}
         <div className="text-center mb-8 sm:mb-12">
           <div className="w-12 h-12 sm:w-16 sm:h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">

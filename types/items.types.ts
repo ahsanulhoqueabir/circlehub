@@ -301,6 +301,28 @@ export interface ItemStatistics {
   recentItems: number;
 }
 
+// Home Stats types
+export interface HomeStats {
+  items_recovered: number;
+  active_users: number;
+  items_shared: number;
+  success_rate: number;
+}
+
+export interface RecentActivityItem {
+  id: string;
+  type: "lost" | "found" | "share";
+  title: string;
+  location: string;
+  time: string;
+  created_at: Date | string;
+}
+
+export interface HomeData {
+  stats: HomeStats;
+  recent_activity: RecentActivityItem[];
+}
+
 // Error response
 export interface ErrorResponse {
   error: string;

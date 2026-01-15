@@ -16,10 +16,18 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
+import type { HomeStats, RecentActivityItem } from "@/types/items.types";
 
 export default function Home() {
   const { isAuthenticated, user } = useAuth();
   const [current_slide, set_current_slide] = useState(0);
+
+  // Home page data states
+  const [home_stats, set_home_stats] = useState<HomeStats | null>(null);
+  const [recent_activity, set_recent_activity] = useState<RecentActivityItem[]>(
+    []
+  );
+  const [is_loading_home_data, set_is_loading_home_data] = useState(true);
 
   const banners = [
     "/banner/banner-1.jpeg",
@@ -42,6 +50,28 @@ export default function Home() {
     }, 5000);
     return () => clearInterval(interval);
   }, [next_slide]);
+
+  // Fetch home page data
+  useEffect(() => {
+    const fetch_home_data = async () => {
+      try {
+        set_is_loading_home_data(true);
+        const response = await fetch("/api/home?limit=5");
+        const data = await response.json();
+
+        if (data.success) {
+          set_home_stats(data.data.stats);
+          set_recent_activity(data.data.recent_activity);
+        }
+      } catch (error) {
+        console.error("Failed to fetch home data:", error);
+      } finally {
+        set_is_loading_home_data(false);
+      }
+    };
+
+    fetch_home_data();
+  }, []);
 
   const features = [
     {
@@ -71,31 +101,27 @@ export default function Home() {
     },
   ];
 
+  // Dynamic stats from API
   const stats = [
-    { label: "Items Recovered", value: "1,234", icon: MapPin },
-    { label: "Active Users", value: "5,678", icon: Users },
-    { label: "Items Shared", value: "2,890", icon: Share2 },
-    { label: "Success Rate", value: "87%", icon: Star },
-  ];
-
-  const recentActivity = [
     {
-      type: "found",
-      item: "Blue Backpack",
-      location: "Library Entrance",
-      time: "2 hours ago",
+      label: "Items Recovered",
+      value: home_stats ? home_stats.items_recovered.toLocaleString() : "--",
+      icon: MapPin,
     },
     {
-      type: "lost",
-      item: "iPhone 14 Pro",
-      location: "Engineering Building",
-      time: "4 hours ago",
+      label: "Active Users",
+      value: home_stats ? home_stats.active_users.toLocaleString() : "--",
+      icon: Users,
     },
     {
-      type: "share",
-      item: "Calculus Textbook",
-      location: "Student Center",
-      time: "6 hours ago",
+      label: "Items Shared",
+      value: home_stats ? home_stats.items_shared.toLocaleString() : "--",
+      icon: Share2,
+    },
+    {
+      label: "Success Rate",
+      value: home_stats ? `${home_stats.success_rate}%` : "--",
+      icon: Star,
     },
   ];
 
@@ -301,45 +327,65 @@ export default function Home() {
           </div>
 
           <div className="max-w-3xl mx-auto space-y-4">
-            {recentActivity.map((activity, index) => (
-              <div
-                key={index}
-                className="flex items-center p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
-              >
+            {is_loading_home_data ? (
+              // Loading skeleton
+              Array.from({ length: 3 }).map((_, index) => (
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 ${
-                    activity.type === "found"
-                      ? "bg-green-100 dark:bg-green-900/30"
-                      : activity.type === "lost"
-                      ? "bg-red-100 dark:bg-red-900/30"
-                      : "bg-yellow-100 dark:bg-yellow-900/30"
-                  }`}
+                  key={index}
+                  className="flex items-center p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 animate-pulse"
                 >
-                  {activity.type === "found" && (
-                    <MapPin className="w-5 h-5 text-green-600 dark:text-green-400" />
-                  )}
-                  {activity.type === "lost" && (
-                    <Search className="w-5 h-5 text-red-600 dark:text-red-400" />
-                  )}
-                  {activity.type === "share" && (
-                    <Share2 className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-medium text-slate-900 dark:text-white">
-                      {activity.item}
-                    </h3>
-                    <span className="text-sm text-slate-500 dark:text-slate-400">
-                      {activity.time}
-                    </span>
+                  <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 mr-4"></div>
+                  <div className="flex-1">
+                    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/3 mb-2"></div>
+                    <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/4"></div>
                   </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-300">
-                    {activity.location}
-                  </p>
                 </div>
+              ))
+            ) : recent_activity.length === 0 ? (
+              <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                No recent activity found
               </div>
-            ))}
+            ) : (
+              recent_activity.map((activity) => (
+                <div
+                  key={activity.id}
+                  className="flex items-center p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                >
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 ${
+                      activity.type === "found"
+                        ? "bg-green-100 dark:bg-green-900/30"
+                        : activity.type === "lost"
+                        ? "bg-red-100 dark:bg-red-900/30"
+                        : "bg-yellow-100 dark:bg-yellow-900/30"
+                    }`}
+                  >
+                    {activity.type === "found" && (
+                      <MapPin className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    )}
+                    {activity.type === "lost" && (
+                      <Search className="w-5 h-5 text-red-600 dark:text-red-400" />
+                    )}
+                    {activity.type === "share" && (
+                      <Share2 className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-medium text-slate-900 dark:text-white">
+                        {activity.title}
+                      </h3>
+                      <span className="text-sm text-slate-500 dark:text-slate-400">
+                        {activity.time}
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                      {activity.location}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           <div className="text-center mt-8">
