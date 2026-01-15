@@ -285,6 +285,7 @@ export class LostItemsService {
         date_lost: new Date(dateLost),
         image_url: imageUrl || null,
         tags: tags || [],
+        reward_amount: rewardAmount || null,
         status: "active",
         views: 0,
       });
