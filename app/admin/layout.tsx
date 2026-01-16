@@ -6,6 +6,19 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  Users,
+  Search,
+  Sparkles,
+  Handshake,
+  ClipboardList,
+  AlertTriangle,
+  TrendingUp,
+  FileText,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 export default function AdminLayout({
   children,
@@ -32,15 +45,15 @@ export default function AdminLayout({
   }
 
   const nav_items = [
-    { name: "Dashboard", path: "/admin", icon: "📊" },
-    { name: "Users", path: "/admin/users", icon: "👥" },
-    { name: "Lost Items", path: "/admin/lost-items", icon: "🔍" },
-    { name: "Found Items", path: "/admin/found-items", icon: "✨" },
-    { name: "Share Items", path: "/admin/share-items", icon: "🤝" },
-    { name: "Claims", path: "/admin/claims", icon: "📋" },
-    { name: "Reports", path: "/admin/reports", icon: "⚠️" },
-    { name: "Analytics", path: "/admin/analytics", icon: "📈" },
-    { name: "Audit Logs", path: "/admin/logs", icon: "📝" },
+    { name: "Dashboard", path: "/admin", icon: LayoutDashboard },
+    { name: "Users", path: "/admin/users", icon: Users },
+    { name: "Lost Items", path: "/admin/lost-items", icon: Search },
+    { name: "Found Items", path: "/admin/found-items", icon: Sparkles },
+    { name: "Share Items", path: "/admin/share-items", icon: Handshake },
+    { name: "Claims", path: "/admin/claims", icon: ClipboardList },
+    { name: "Reports", path: "/admin/reports", icon: AlertTriangle },
+    { name: "Analytics", path: "/admin/analytics", icon: TrendingUp },
+    { name: "Audit Logs", path: "/admin/logs", icon: FileText },
   ];
 
   return (
@@ -62,7 +75,11 @@ export default function AdminLayout({
                 onClick={() => set_sidebar_open(!sidebar_open)}
                 className="p-2 rounded-lg hover:bg-gray-100"
               >
-                {sidebar_open ? "◀" : "▶"}
+                {sidebar_open ? (
+                  <ChevronLeft size={20} />
+                ) : (
+                  <ChevronRight size={20} />
+                )}
               </button>
             </div>
 
@@ -72,6 +89,7 @@ export default function AdminLayout({
                 const is_active =
                   pathname === item.path ||
                   (item.path !== "/admin" && pathname.startsWith(item.path));
+                const IconComponent = item.icon;
 
                 return (
                   <Link
@@ -83,7 +101,7 @@ export default function AdminLayout({
                         : "text-gray-700 hover:bg-gray-50"
                     }`}
                   >
-                    <span className="text-xl">{item.icon}</span>
+                    <IconComponent size={20} />
                     {sidebar_open && (
                       <span className="text-sm">{item.name}</span>
                     )}

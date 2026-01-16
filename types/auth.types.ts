@@ -25,7 +25,7 @@ export interface UserProfile {
   university?: string;
   studentId?: string;
   verified: boolean;
-  role: string;
+  role: "student" | "admin" | "moderator" | "support_staff";
 }
 
 export interface AuthTokens {

@@ -3,6 +3,7 @@
 import { useAdmin } from "@/contexts/admin-context";
 import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { RefreshCw } from "lucide-react";
 
 export default function ReportsPage() {
   const { reports, loading, fetch_reports, resolve_report } = useAdmin();
@@ -38,9 +39,10 @@ export default function ReportsPage() {
           onClick={() =>
             fetch_reports({ status: status_filter, priority: priority_filter })
           }
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2"
         >
-          🔄 Refresh
+          <RefreshCw size={16} />
+          Refresh
         </button>
       </div>
 

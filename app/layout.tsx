@@ -4,6 +4,7 @@ import "./globals.css";
 import Providers from "@/components/Providers";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { headers } from "next/headers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,22 +62,32 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+  const is_admin_route = pathname.startsWith("/admin");
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
-          <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
-            <Navigation />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
+          {is_admin_route ? (
+            // Admin routes - no header/footer
+            children
+          ) : (
+            // Regular routes - with header/footer
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
+              <Navigation />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </div>
+          )}
         </Providers>
       </body>
     </html>

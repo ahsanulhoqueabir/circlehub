@@ -3,6 +3,7 @@
 import { useAdmin } from "@/contexts/admin-context";
 import { useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { RefreshCw, Users, Package, ClipboardList, Zap } from "lucide-react";
 
 export default function AdminDashboard() {
   const { overview_stats, loading, fetch_overview } = useAdmin();
@@ -25,9 +26,10 @@ export default function AdminDashboard() {
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         <button
           onClick={fetch_overview}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2"
         >
-          🔄 Refresh
+          <RefreshCw size={16} />
+          Refresh
         </button>
       </div>
 
@@ -37,20 +39,20 @@ export default function AdminDashboard() {
           title="Total Users"
           value={overview_stats?.total_users || 0}
           trend={overview_stats?.user_growth}
-          icon="👥"
+          icon={Users}
           color="blue"
         />
         <StatCard
           title="Total Items"
           value={overview_stats?.total_items || 0}
           trend={overview_stats?.items_trend}
-          icon="📦"
+          icon={Package}
           color="green"
         />
         <StatCard
           title="Active Claims"
           value={overview_stats?.active_claims || 0}
-          icon="📋"
+          icon={ClipboardList}
           color="purple"
         />
         <StatCard
@@ -60,7 +62,7 @@ export default function AdminDashboard() {
             (overview_stats?.today_activity?.items_posted || 0) +
             (overview_stats?.today_activity?.claims_made || 0)
           }
-          icon="⚡"
+          icon={Zap}
           color="orange"
         />
       </div>
@@ -222,13 +224,13 @@ function StatCard({
   title,
   value,
   trend,
-  icon,
+  icon: Icon,
   color,
 }: {
   title: string;
   value: number;
   trend?: number;
-  icon: string;
+  icon: React.ElementType;
   color: string;
 }) {
   const color_classes = {
@@ -242,11 +244,11 @@ function StatCard({
     <div className="bg-white rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-4">
         <div
-          className={`w-12 h-12 rounded-lg flex items-center justify-center text-2xl ${
+          className={`w-12 h-12 rounded-lg flex items-center justify-center ${
             color_classes[color as keyof typeof color_classes]
           }`}
         >
-          {icon}
+          <Icon size={24} />
         </div>
         {trend !== undefined && (
           <span

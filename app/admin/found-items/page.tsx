@@ -3,6 +3,8 @@
 import { useAdmin } from "@/contexts/admin-context";
 import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { RefreshCw, Sparkles } from "lucide-react";
+import Image from "next/image";
 
 export default function FoundItemsPage() {
   const {
@@ -70,9 +72,10 @@ export default function FoundItemsPage() {
               category: category_filter,
             })
           }
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2"
         >
-          🔄 Refresh
+          <RefreshCw size={16} />
+          Refresh
         </button>
       </div>
 
@@ -134,14 +137,15 @@ export default function FoundItemsPage() {
                 }}
               >
                 {item.images?.[0] ? (
-                  <img
+                  <Image
+                    fill
                     src={item.images[0]}
                     alt={item.title}
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-4xl">
-                    ✨
+                  <div className="w-full h-full flex items-center justify-center text-gray-400">
+                    <Sparkles size={40} />
                   </div>
                 )}
               </div>
@@ -232,7 +236,8 @@ export default function FoundItemsPage() {
               </h3>
               <div className="grid grid-cols-2 gap-4 mb-4">
                 {selected_item.images?.map((img: string, idx: number) => (
-                  <img
+                  <Image
+                    fill
                     key={idx}
                     src={img}
                     alt=""

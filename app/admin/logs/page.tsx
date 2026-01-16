@@ -3,6 +3,7 @@
 import { useAdmin } from "@/contexts/admin-context";
 import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { RefreshCw } from "lucide-react";
 
 export default function LogsPage() {
   const { audit_logs, loading, fetch_audit_logs } = useAdmin();
@@ -19,9 +20,10 @@ export default function LogsPage() {
         <h1 className="text-2xl font-bold text-gray-900">Audit Logs</h1>
         <button
           onClick={() => fetch_audit_logs({ action: action_filter })}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2"
         >
-          🔄 Refresh
+          <RefreshCw size={16} />
+          Refresh
         </button>
       </div>
 

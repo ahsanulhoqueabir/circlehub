@@ -14,7 +14,6 @@
 import "@/models/users.m";
 
 // Admin models - depend on User model
-import "@/models/admin.m";
 import "@/models/audit-logs.m";
 import "@/models/reports.m";
 
