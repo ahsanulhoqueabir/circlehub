@@ -15,7 +15,7 @@ export interface IShareItem extends Document {
   location: string;
   image_url?: string;
   tags?: string[];
-  status: "available" | "reserved" | "shared";
+  status: "pending" | "available" | "reserved" | "shared" | "rejected";
   created_at: Date;
   updated_at: Date;
 }
@@ -103,10 +103,10 @@ const share_item_schema = new Schema<IShareItem>(
     status: {
       type: String,
       enum: {
-        values: ["available", "reserved", "shared"],
+        values: ["pending", "available", "reserved", "shared", "rejected"],
         message: "{VALUE} is not a valid status",
       },
-      default: "available",
+      default: "pending",
       index: true,
     },
   },

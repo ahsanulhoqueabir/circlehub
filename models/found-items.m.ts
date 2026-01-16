@@ -12,7 +12,7 @@ export interface IFoundItem extends Document {
   location: string;
   date_found: Date;
   image_url?: string;
-  status: "available" | "claimed" | "returned";
+  status: "pending" | "available" | "claimed" | "returned" | "rejected";
   tags?: string[];
   views: number;
   created_at: Date;
@@ -67,10 +67,10 @@ const found_item_schema = new Schema<IFoundItem>(
     status: {
       type: String,
       enum: {
-        values: ["available", "claimed", "returned"],
+        values: ["pending", "available", "claimed", "returned", "rejected"],
         message: "{VALUE} is not a valid status",
       },
-      default: "available",
+      default: "pending",
       index: true,
     },
     tags: {
