@@ -13,6 +13,11 @@
 // Core user model - must be first as other models reference it
 import "@/models/users.m";
 
+// Admin models - depend on User model
+import "@/models/admin.m";
+import "@/models/audit-logs.m";
+import "@/models/reports.m";
+
 // Item models - depend on User model
 import "@/models/lost-items.m";
 import "@/models/found-items.m";

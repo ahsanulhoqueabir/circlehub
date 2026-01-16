@@ -14,6 +14,11 @@ export interface IUser extends Document {
   student_id?: string;
   role: "admin" | "student";
   verified: boolean;
+  is_active: boolean;
+  is_banned: boolean;
+  ban_reason?: string;
+  ban_date?: Date;
+  last_active?: Date;
   created_at: Date;
   updated_at: Date;
 }
@@ -77,6 +82,30 @@ const user_schema = new Schema<IUser>(
       default: false,
       index: true,
     },
+    is_active: {
+      type: Boolean,
+      default: true,
+      index: true,
+    },
+    is_banned: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    ban_reason: {
+      type: String,
+      trim: true,
+      maxlength: [500, "Ban reason cannot exceed 500 characters"],
+    },
+    ban_date: {
+      type: Date,
+      index: true,
+    },
+    last_active: {
+      type: Date,
+      default: Date.now,
+      index: true,
+    },
   },
   {
     timestamps: {
@@ -90,6 +119,8 @@ const user_schema = new Schema<IUser>(
 // Indexes for better query performance
 // Note: email already has unique index from schema definition
 user_schema.index({ role: 1, verified: 1 });
+user_schema.index({ is_active: 1, is_banned: 1 });
+user_schema.index({ last_active: -1 });
 
 // Virtual for user's items
 user_schema.virtual("lost_items", {

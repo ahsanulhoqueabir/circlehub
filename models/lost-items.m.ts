@@ -12,7 +12,7 @@ export interface ILostItem extends Document {
   location: string;
   date_lost: Date;
   image_url?: string;
-  status: "active" | "found" | "closed";
+  status: "pending" | "active" | "found" | "closed" | "rejected";
   tags?: string[];
   reward_amount?: number | null;
   views: number;
@@ -68,10 +68,10 @@ const lost_item_schema = new Schema<ILostItem>(
     status: {
       type: String,
       enum: {
-        values: ["active", "found", "closed"],
+        values: ["pending", "active", "found", "closed", "rejected"],
         message: "{VALUE} is not a valid status",
       },
-      default: "active",
+      default: "pending",
       index: true,
     },
     tags: {
