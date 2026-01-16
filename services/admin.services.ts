@@ -1,5 +1,4 @@
 import dbConnect from "@/lib/mongodb";
-import { Admin } from "@/models/admin.m";
 import { AuditLog } from "@/models/audit-logs.m";
 import { Report } from "@/models/reports.m";
 import User from "@/models/users.m";
@@ -9,14 +8,12 @@ import ShareItem from "@/models/share-items.m";
 import FoundItemClaim from "@/models/found-item-claims.m";
 import type {
   ServiceResponse,
-  AdminFilters,
   UserFilters,
   ItemFilters,
   ClaimFilters,
   ReportFilters,
   AuditLogFilters,
   AuditLogExportFilters,
-  AdminUpdateData,
   UserUpdateData,
   ReportUpdateData,
   PaginatedResponse,
@@ -26,7 +23,6 @@ import type {
   ClaimQueryFilter,
   ReportQueryFilter,
   AuditLogQueryFilter,
-  AdminQueryFilter,
 } from "@/types/admin.types";
 
 /**
@@ -36,198 +32,11 @@ import type {
  */
 export class AdminService {
   // ==================== Admin User Management ====================
+  // Note: Admin-specific data (permissions, last_login) removed.
+  // All role information is now stored in users collection.
 
   /**
-   * Get admin by user ID
-   */
-  static async getAdminByUserId(
-    user_id: string
-  ): Promise<ServiceResponse<unknown>> {
-    try {
-      if (!user_id) {
-        return {
-          success: false,
-          error: "User ID is required",
-          statusCode: 400,
-        };
-      }
-
-      await dbConnect();
-
-      const admin = await Admin.findOne({ user_id })
-        .populate("user_id", "-password")
-        .lean();
-
-      if (!admin) {
-        return {
-          success: false,
-          error: "Admin not found",
-          statusCode: 404,
-        };
-      }
-
-      return {
-        success: true,
-        data: admin,
-        statusCode: 200,
-      };
-    } catch (error) {
-      console.error("Error fetching admin:", error);
-      return {
-        success: false,
-        error: "Failed to fetch admin",
-        statusCode: 500,
-      };
-    }
-  }
-
-  /**
-   * Create new admin
-   */
-  static async createAdmin(
-    user_id: string,
-    role: "super_admin" | "moderator" | "support_staff"
-  ): Promise<ServiceResponse<unknown>> {
-    try {
-      if (!user_id || !role) {
-        return {
-          success: false,
-          error: "User ID and role are required",
-          statusCode: 400,
-        };
-      }
-
-      await dbConnect();
-
-      // Check if user exists
-      const user = await User.findById(user_id);
-      if (!user) {
-        return {
-          success: false,
-          error: "User not found",
-          statusCode: 404,
-        };
-      }
-
-      // Check if admin already exists
-      const existing_admin = await Admin.findOne({ user_id });
-      if (existing_admin) {
-        return {
-          success: false,
-          error: "Admin already exists for this user",
-          statusCode: 409,
-        };
-      }
-
-      const admin = await Admin.create({
-        user_id,
-        role,
-        is_active: true,
-      });
-
-      return {
-        success: true,
-        data: admin,
-        statusCode: 201,
-      };
-    } catch (error) {
-      console.error("Error creating admin:", error);
-      return {
-        success: false,
-        error: "Failed to create admin",
-        statusCode: 500,
-      };
-    }
-  }
-
-  /**
-   * Update admin role or status
-   */
-  static async updateAdmin(
-    admin_id: string,
-    updates: AdminUpdateData
-  ): Promise<ServiceResponse<unknown>> {
-    try {
-      if (!admin_id) {
-        return {
-          success: false,
-          error: "Admin ID is required",
-          statusCode: 400,
-        };
-      }
-
-      if (!updates || Object.keys(updates).length === 0) {
-        return {
-          success: false,
-          error: "No updates provided",
-          statusCode: 400,
-        };
-      }
-
-      await dbConnect();
-
-      const admin = await Admin.findByIdAndUpdate(admin_id, updates, {
-        new: true,
-      }).populate("user_id", "-password");
-
-      if (!admin) {
-        return {
-          success: false,
-          error: "Admin not found",
-          statusCode: 404,
-        };
-      }
-
-      return {
-        success: true,
-        data: admin,
-        statusCode: 200,
-      };
-    } catch (error) {
-      console.error("Error updating admin:", error);
-      return {
-        success: false,
-        error: "Failed to update admin",
-        statusCode: 500,
-      };
-    }
-  }
-
-  /**
-   * Get all admins
-   */
-  static async getAllAdmins(
-    filters?: AdminFilters
-  ): Promise<ServiceResponse<unknown[]>> {
-    try {
-      await dbConnect();
-
-      const query: AdminQueryFilter = {};
-      if (filters?.role) query.role = filters.role;
-      if (filters?.is_active !== undefined) query.is_active = filters.is_active;
-
-      const admins = await Admin.find(query)
-        .populate("user_id", "-password")
-        .sort({ created_at: -1 })
-        .lean();
-
-      return {
-        success: true,
-        data: admins,
-        statusCode: 200,
-      };
-    } catch (error) {
-      console.error("Error fetching admins:", error);
-      return {
-        success: false,
-        error: "Failed to fetch admins",
-        statusCode: 500,
-      };
-    }
-  }
-
-  /**
-   * Check if user has permission
+   * Check if user has admin role
    */
   static async checkPermission(
     user_id: string,
@@ -236,9 +45,16 @@ export class AdminService {
     try {
       await dbConnect();
 
-      const admin = await Admin.findOne({ user_id, is_active: true });
-      if (!admin) return false;
-      return admin.permissions.includes(permission);
+      const user = await User.findById(user_id);
+      if (!user || !user.is_active) return false;
+
+      // Check if user has admin-level role
+      const admin_roles = ["admin", "moderator", "support_staff"];
+      if (!admin_roles.includes(user.role)) return false;
+
+      // Get permissions based on role
+      const permissions = this.getDefaultPermissionsByRole(user.role);
+      return permissions.includes(permission);
     } catch (error) {
       console.error("Error checking permission:", error);
       return false;
@@ -559,6 +375,278 @@ export class AdminService {
         error: "Failed to update user",
         statusCode: 500,
       };
+    }
+  }
+
+  /**
+   * Update user role
+   * Simply updates the role in users collection
+   */
+  static async updateUserRole(
+    user_id: string,
+    new_role: "student" | "admin" | "moderator" | "support_staff",
+    admin_id: string,
+    ip_address?: string,
+    user_agent?: string
+  ): Promise<ServiceResponse<unknown>> {
+    try {
+      if (!user_id || !admin_id || !new_role) {
+        return {
+          success: false,
+          error: "User ID, admin ID, and role are required",
+          statusCode: 400,
+        };
+      }
+
+      // Validate role
+      const valid_roles = ["student", "admin", "moderator", "support_staff"];
+      if (!valid_roles.includes(new_role)) {
+        return {
+          success: false,
+          error: "Invalid role",
+          statusCode: 400,
+        };
+      }
+
+      await dbConnect();
+
+      // Find the user
+      const user = await User.findById(user_id);
+      if (!user) {
+        return {
+          success: false,
+          error: "User not found",
+          statusCode: 404,
+        };
+      }
+
+      const old_role = user.role;
+
+      // Update user role
+      user.role = new_role;
+      await user.save();
+
+      // Log action
+      await AuditLog.create({
+        admin_id,
+        action: "update_user_role",
+        target_type: "user",
+        target_id: user_id,
+        details: { old_role, new_role },
+        ip_address,
+        user_agent,
+      });
+
+      return {
+        success: true,
+        data: {
+          message: `User role updated from ${old_role} to ${new_role}`,
+          user: {
+            id: user._id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+          },
+        },
+        statusCode: 200,
+      };
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      return {
+        success: false,
+        error: "Failed to update user role",
+        statusCode: 500,
+      };
+    }
+  }
+
+  /**
+   * Update user verification status
+   */
+  static async updateUserVerification(
+    user_id: string,
+    verified: boolean,
+    admin_id: string,
+    ip_address?: string,
+    user_agent?: string
+  ): Promise<ServiceResponse<unknown>> {
+    try {
+      if (!user_id || !admin_id || typeof verified !== "boolean") {
+        return {
+          success: false,
+          error: "User ID, admin ID, and verified status are required",
+          statusCode: 400,
+        };
+      }
+
+      await dbConnect();
+
+      // Find the user
+      const user = await User.findById(user_id);
+      if (!user) {
+        return {
+          success: false,
+          error: "User not found",
+          statusCode: 404,
+        };
+      }
+
+      const old_status = user.verified;
+
+      // Update verification status
+      user.verified = verified;
+      await user.save();
+
+      // Log action
+      await AuditLog.create({
+        admin_id,
+        action: verified ? "verify_user" : "unverify_user",
+        target_type: "user",
+        target_id: user_id,
+        details: { old_status, new_status: verified },
+        ip_address,
+        user_agent,
+      });
+
+      return {
+        success: true,
+        data: {
+          message: `User ${verified ? "verified" : "unverified"} successfully`,
+          user: {
+            id: user._id,
+            email: user.email,
+            name: user.name,
+            verified: user.verified,
+          },
+        },
+        statusCode: 200,
+      };
+    } catch (error) {
+      console.error("Error updating user verification:", error);
+      return {
+        success: false,
+        error: "Failed to update user verification",
+        statusCode: 500,
+      };
+    }
+  }
+
+  /**
+   * Update user active status
+   */
+  static async updateUserActiveStatus(
+    user_id: string,
+    is_active: boolean,
+    admin_id: string,
+    ip_address?: string,
+    user_agent?: string
+  ): Promise<ServiceResponse<unknown>> {
+    try {
+      if (!user_id || !admin_id || typeof is_active !== "boolean") {
+        return {
+          success: false,
+          error: "User ID, admin ID, and active status are required",
+          statusCode: 400,
+        };
+      }
+
+      await dbConnect();
+
+      // Find the user
+      const user = await User.findById(user_id);
+      if (!user) {
+        return {
+          success: false,
+          error: "User not found",
+          statusCode: 404,
+        };
+      }
+
+      const old_status = user.is_active;
+
+      // Update active status
+      user.is_active = is_active;
+      await user.save();
+
+      // Log action
+      await AuditLog.create({
+        admin_id,
+        action: is_active ? "activate_user" : "deactivate_user",
+        target_type: "user",
+        target_id: user_id,
+        details: { old_status, new_status: is_active },
+        ip_address,
+        user_agent,
+      });
+
+      return {
+        success: true,
+        data: {
+          message: `User ${
+            is_active ? "activated" : "deactivated"
+          } successfully`,
+          user: {
+            id: user._id,
+            email: user.email,
+            name: user.name,
+            is_active: user.is_active,
+          },
+        },
+        statusCode: 200,
+      };
+    } catch (error) {
+      console.error("Error updating user active status:", error);
+      return {
+        success: false,
+        error: "Failed to update user active status",
+        statusCode: 500,
+      };
+    }
+  }
+
+  /**
+   * Get default permissions based on role
+   */
+  private static getDefaultPermissionsByRole(role: string): string[] {
+    switch (role) {
+      case "admin":
+        return [
+          "users.view",
+          "users.edit",
+          "users.delete",
+          "users.ban",
+          "items.view",
+          "items.edit",
+          "items.delete",
+          "items.approve",
+          "claims.view",
+          "claims.manage",
+          "reports.view",
+          "reports.manage",
+          "analytics.view",
+          "logs.view",
+          "logs.export",
+          "admins.manage",
+          "settings.edit",
+        ];
+      case "moderator":
+        return [
+          "users.view",
+          "users.ban",
+          "items.view",
+          "items.edit",
+          "items.approve",
+          "items.delete",
+          "claims.view",
+          "claims.manage",
+          "reports.view",
+          "reports.manage",
+          "analytics.view",
+        ];
+      case "support_staff":
+        return ["users.view", "items.view", "claims.view", "reports.view"];
+      default:
+        return [];
     }
   }
 

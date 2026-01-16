@@ -2,6 +2,7 @@
 
 import { useAdmin } from "@/contexts/admin-context";
 import { useEffect } from "react";
+import { Users, Package, ClipboardList } from "lucide-react";
 
 export default function AnalyticsPage() {
   const {
@@ -96,7 +97,7 @@ export default function AnalyticsPage() {
             <span className="text-sm font-medium text-gray-600">
               Total Users
             </span>
-            <span className="text-2xl">👥</span>
+            <Users className="text-blue-600" size={24} />
           </div>
           <p className="text-3xl font-bold text-gray-900">
             {overview_stats?.total_users || 0}
@@ -119,7 +120,7 @@ export default function AnalyticsPage() {
             <span className="text-sm font-medium text-gray-600">
               Total Items
             </span>
-            <span className="text-2xl">📦</span>
+            <Package className="text-green-600" size={24} />
           </div>
           <p className="text-3xl font-bold text-gray-900">
             {overview_stats?.total_items || 0}
@@ -142,7 +143,7 @@ export default function AnalyticsPage() {
             <span className="text-sm font-medium text-gray-600">
               Active Claims
             </span>
-            <span className="text-2xl">📋</span>
+            <ClipboardList className="text-purple-600" size={24} />
           </div>
           <p className="text-3xl font-bold text-gray-900">
             {overview_stats?.active_claims || 0}
@@ -153,7 +154,7 @@ export default function AnalyticsPage() {
             <span className="text-sm font-medium text-gray-600">
               Share Items
             </span>
-            <span className="text-2xl">🤝</span>
+            <Package className="text-orange-600" size={24} />
           </div>
           <p className="text-3xl font-bold text-gray-900">
             {share_items.length}

@@ -26,7 +26,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
+    <footer className="bg-background border-t border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
         <div className="py-12 lg:py-16">
@@ -37,11 +37,11 @@ export default function Footer() {
                 <div className="w-10 h-10 bg-linear-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
                   <span className="text-white font-bold text-lg">CH</span>
                 </div>
-                <span className="text-xl font-bold text-slate-900 dark:text-white">
+                <span className="text-xl font-bold text-foreground">
                   CircleHub JnU
                 </span>
               </div>
-              <p className="text-slate-600 dark:text-slate-400 mb-6 max-w-md">
+              <p className="text-muted-foreground mb-6 max-w-md">
                 The modern platform connecting JnU students through lost & found
                 services, item sharing, and community building. Safe, secure,
                 and student-verified.
@@ -49,15 +49,15 @@ export default function Footer() {
 
               {/* Contact Info */}
               <div className="space-y-3">
-                <div className="flex items-center space-x-3 text-sm text-slate-600 dark:text-slate-400">
+                <div className="flex items-center space-x-3 text-sm text-muted-foreground">
                   <Mail className="w-4 h-4" />
                   <span>support@circlehub.jnu.edu</span>
                 </div>
-                <div className="flex items-center space-x-3 text-sm text-slate-600 dark:text-slate-400">
+                <div className="flex items-center space-x-3 text-sm text-muted-foreground">
                   <Phone className="w-4 h-4" />
                   <span>+88 (02) 123-4567</span>
                 </div>
-                <div className="flex items-center space-x-3 text-sm text-slate-600 dark:text-slate-400">
+                <div className="flex items-center space-x-3 text-sm text-muted-foreground">
                   <MapPin className="w-4 h-4" />
                   <span>JnU Campus, Dhaka</span>
                 </div>
@@ -66,7 +66,7 @@ export default function Footer() {
 
             {/* Platform Links */}
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">
+              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">
                 Platform
               </h3>
               <ul className="space-y-3">
@@ -74,7 +74,7 @@ export default function Footer() {
                   <li key={link.name}>
                     <Link
                       href={link.href}
-                      className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      className="text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     >
                       {link.name}
                     </Link>
@@ -85,7 +85,7 @@ export default function Footer() {
 
             {/* Support Links */}
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">
+              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">
                 Support
               </h3>
               <ul className="space-y-3">
@@ -93,7 +93,7 @@ export default function Footer() {
                   <li key={link.name}>
                     <Link
                       href={link.href}
-                      className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      className="text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     >
                       {link.name}
                     </Link>
@@ -104,7 +104,7 @@ export default function Footer() {
 
             {/* Legal Links */}
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">
+              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">
                 Legal
               </h3>
               <ul className="space-y-3">
@@ -112,7 +112,7 @@ export default function Footer() {
                   <li key={link.name}>
                     <Link
                       href={link.href}
-                      className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      className="text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     >
                       {link.name}
                     </Link>
@@ -124,13 +124,13 @@ export default function Footer() {
         </div>
 
         {/* Newsletter Signup */}
-        <div className="py-8 border-t border-slate-200 dark:border-slate-700">
+        <div className="py-8 border-t border-border">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div className="mb-4 lg:mb-0">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+              <h3 className="text-lg font-semibold text-foreground mb-2">
                 Stay Updated
               </h3>
-              <p className="text-slate-600 dark:text-slate-400">
+              <p className="text-muted-foreground">
                 Get notified about new features and JnU campus updates.
               </p>
             </div>
@@ -138,7 +138,7 @@ export default function Footer() {
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 px-4 py-2 border border-border rounded-lg bg-card text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                 Subscribe

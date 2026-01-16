@@ -71,7 +71,7 @@ const user_schema = new Schema<IUser>(
     role: {
       type: String,
       enum: {
-        values: ["admin", "student"],
+        values: ["student", "admin", "moderator", "support_staff"],
         message: "{VALUE} is not a valid role",
       },
       default: "student",

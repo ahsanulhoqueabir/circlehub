@@ -35,7 +35,7 @@ export default function AuthWarningModal({
         />
 
         {/* Modal */}
-        <div className="relative w-full max-w-md bg-white dark:bg-slate-800 rounded-lg shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div className="relative w-full max-w-md bg-card rounded-lg shadow-2xl border border-border overflow-hidden">
           {/* Header with warning color */}
           <div className="bg-warning/10 dark:bg-warning/20 border-b border-warning/20 dark:border-warning/30 p-6">
             <div className="flex items-start gap-4">
@@ -43,12 +43,12 @@ export default function AuthWarningModal({
                 <AlertTriangle className="w-6 h-6 text-warning" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                <h3 className="text-lg font-semibold text-foreground">
                   Authentication Required
                 </h3>
                 <button
                   onClick={onClose}
-                  className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -58,10 +58,8 @@ export default function AuthWarningModal({
 
           {/* Content */}
           <div className="p-6">
-            <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-              {message}
-            </p>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+            <p className="text-foreground leading-relaxed">{message}</p>
+            <p className="text-sm text-muted-foreground mt-2">
               Please log in to continue. You will be redirected back to this
               page after successful login.
             </p>
@@ -71,7 +69,7 @@ export default function AuthWarningModal({
           <div className="flex flex-col-reverse sm:flex-row gap-3 p-6 pt-0">
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 font-medium transition-colors"
+              className="flex-1 px-4 py-2.5 border border-border text-foreground rounded-lg hover:bg-muted font-medium transition-colors"
             >
               Cancel
             </button>

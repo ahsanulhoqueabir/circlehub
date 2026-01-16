@@ -3,6 +3,23 @@
 import { useAdmin } from "@/contexts/admin-context";
 import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { RefreshCw, Package } from "lucide-react";
+import Image from "next/image";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function LostItemsPage() {
   const {
@@ -15,8 +32,8 @@ export default function LostItemsPage() {
   } = useAdmin();
 
   const [search, set_search] = useState("");
-  const [status_filter, set_status_filter] = useState("");
-  const [category_filter, set_category_filter] = useState("");
+  const [status_filter, set_status_filter] = useState("all");
+  const [category_filter, set_category_filter] = useState("all");
   const [selected_item, set_selected_item] = useState<any>(null);
   const [action_modal, set_action_modal] = useState<
     "approve" | "reject" | "delete" | "view" | null
@@ -26,8 +43,8 @@ export default function LostItemsPage() {
   useEffect(() => {
     fetch_lost_items({
       search,
-      status: status_filter,
-      category: category_filter,
+      status: status_filter === "all" ? "" : status_filter,
+      category: category_filter === "all" ? "" : category_filter,
     });
   }, [fetch_lost_items, search, status_filter, category_filter]);
 
@@ -70,9 +87,10 @@ export default function LostItemsPage() {
               category: category_filter,
             })
           }
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2"
         >
-          🔄 Refresh
+          <RefreshCw size={16} />
+          Refresh
         </button>
       </div>
 
@@ -89,30 +107,32 @@ export default function LostItemsPage() {
             />
           </div>
           <div>
-            <select
-              value={status_filter}
-              onChange={(e) => set_status_filter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            >
-              <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="resolved">Resolved</option>
-              <option value="pending">Pending</option>
-            </select>
+            <Select value={status_filter} onValueChange={set_status_filter}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="resolved">Resolved</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div>
-            <select
-              value={category_filter}
-              onChange={(e) => set_category_filter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            >
-              <option value="">All Categories</option>
-              <option value="electronics">Electronics</option>
-              <option value="books">Books</option>
-              <option value="clothing">Clothing</option>
-              <option value="accessories">Accessories</option>
-              <option value="others">Others</option>
-            </select>
+            <Select value={category_filter} onValueChange={set_category_filter}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="electronics">Electronics</SelectItem>
+                <SelectItem value="books">Books</SelectItem>
+                <SelectItem value="clothing">Clothing</SelectItem>
+                <SelectItem value="accessories">Accessories</SelectItem>
+                <SelectItem value="others">Others</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex items-center">
             <span className="text-sm text-gray-600">
@@ -142,14 +162,15 @@ export default function LostItemsPage() {
                 }}
               >
                 {item.images?.[0] ? (
-                  <img
+                  <Image
+                    fill
                     src={item.images[0]}
                     alt={item.title}
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-4xl">
-                    📦
+                  <div className="w-full h-full flex items-center justify-center text-gray-400">
+                    <Package size={40} />
                   </div>
                 )}
               </div>
@@ -225,193 +246,220 @@ export default function LostItemsPage() {
       )}
 
       {/* Modals */}
-      {action_modal === "view" && selected_item && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-          onClick={() => set_action_modal(null)}
-        >
-          <div
-            className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                {selected_item.title}
-              </h3>
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                {selected_item.images?.map((img: string, idx: number) => (
-                  <img
-                    key={idx}
+      <Dialog
+        open={action_modal === "view" && !!selected_item}
+        onOpenChange={(open) => {
+          if (!open) {
+            set_action_modal(null);
+            set_selected_item(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selected_item?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              {selected_item?.images?.map((img: string, idx: number) => (
+                <div key={idx} className="relative w-full h-48">
+                  <Image
+                    fill
                     src={img}
                     alt=""
-                    className="w-full h-48 object-cover rounded-lg"
+                    className="object-cover rounded-lg"
                   />
-                ))}
+                </div>
+              ))}
+            </div>
+            <div className="space-y-3">
+              <div>
+                <span className="text-sm font-medium text-gray-700">
+                  Description:
+                </span>
+                <p className="text-sm text-gray-600 mt-1">
+                  {selected_item?.description}
+                </p>
               </div>
-              <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <span className="text-sm font-medium text-gray-700">
-                    Description:
-                  </span>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {selected_item.description}
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">
-                      Category:
-                    </span>
-                    <p className="text-sm text-gray-600">
-                      {selected_item.category}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">
-                      Status:
-                    </span>
-                    <p className="text-sm text-gray-600">
-                      {selected_item.status}
-                    </p>
-                  </div>
-                  {selected_item.location && (
-                    <div>
-                      <span className="text-sm font-medium text-gray-700">
-                        Location:
-                      </span>
-                      <p className="text-sm text-gray-600">
-                        {selected_item.location}
-                      </p>
-                    </div>
-                  )}
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">
-                      Posted:
-                    </span>
-                    <p className="text-sm text-gray-600">
-                      {formatDistanceToNow(new Date(selected_item.created_at), {
-                        addSuffix: true,
-                      })}
-                    </p>
-                  </div>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-gray-700">
-                    Posted by:
+                    Category:
                   </span>
                   <p className="text-sm text-gray-600">
-                    {selected_item.user_id?.name} (
-                    {selected_item.user_id?.email})
+                    {selected_item?.category}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-gray-700">
+                    Status:
+                  </span>
+                  <p className="text-sm text-gray-600">
+                    {selected_item?.status}
+                  </p>
+                </div>
+                {selected_item?.location && (
+                  <div>
+                    <span className="text-sm font-medium text-gray-700">
+                      Location:
+                    </span>
+                    <p className="text-sm text-gray-600">
+                      {selected_item.location}
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <span className="text-sm font-medium text-gray-700">
+                    Posted:
+                  </span>
+                  <p className="text-sm text-gray-600">
+                    {selected_item &&
+                      formatDistanceToNow(new Date(selected_item.created_at), {
+                        addSuffix: true,
+                      })}
                   </p>
                 </div>
               </div>
-              <button
-                onClick={() => set_action_modal(null)}
-                className="mt-6 w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-              >
-                Close
-              </button>
+              <div>
+                <span className="text-sm font-medium text-gray-700">
+                  Posted by:
+                </span>
+                <p className="text-sm text-gray-600">
+                  {selected_item?.user_id?.name} (
+                  {selected_item?.user_id?.email})
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+          <DialogFooter>
+            <button
+              onClick={() => set_action_modal(null)}
+              className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+            >
+              Close
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      {action_modal === "approve" && selected_item && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Approve Item
-            </h3>
-            <p className="text-sm text-gray-600 mb-6">
+      <Dialog
+        open={action_modal === "approve" && !!selected_item}
+        onOpenChange={(open) => {
+          if (!open) {
+            set_action_modal(null);
+            set_selected_item(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Approve Item</DialogTitle>
+            <DialogDescription>
               Are you sure you want to approve{" "}
-              <strong>{selected_item.title}</strong>?
-            </p>
-            <div className="flex items-center justify-end gap-3">
-              <button
-                onClick={() => set_action_modal(null)}
-                className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handle_approve}
-                className="px-4 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700"
-              >
-                Approve
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              <strong>{selected_item?.title}</strong>?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <button
+              onClick={() => set_action_modal(null)}
+              className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handle_approve}
+              className="px-4 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700"
+            >
+              Approve
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      {action_modal === "reject" && selected_item && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Reject Item
-            </h3>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Reason for rejection
-              </label>
-              <textarea
-                value={reject_reason}
-                onChange={(e) => set_reject_reason(e.target.value)}
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                placeholder="Enter reason..."
-              />
-            </div>
-            <div className="flex items-center justify-end gap-3">
-              <button
-                onClick={() => {
-                  set_action_modal(null);
-                  set_reject_reason("");
-                }}
-                className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handle_reject}
-                disabled={!reject_reason}
-                className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
-              >
-                Reject
-              </button>
-            </div>
+      <Dialog
+        open={action_modal === "reject" && !!selected_item}
+        onOpenChange={(open) => {
+          if (!open) {
+            set_action_modal(null);
+            set_reject_reason("");
+            set_selected_item(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reject Item</DialogTitle>
+            <DialogDescription>
+              Provide a reason for rejecting this item.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Reason for rejection
+            </label>
+            <textarea
+              value={reject_reason}
+              onChange={(e) => set_reject_reason(e.target.value)}
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              placeholder="Enter reason..."
+            />
           </div>
-        </div>
-      )}
+          <DialogFooter>
+            <button
+              onClick={() => {
+                set_action_modal(null);
+                set_reject_reason("");
+              }}
+              className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handle_reject}
+              disabled={!reject_reason}
+              className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
+            >
+              Reject
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      {action_modal === "delete" && selected_item && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Delete Item
-            </h3>
-            <p className="text-sm text-gray-600 mb-6">
+      <Dialog
+        open={action_modal === "delete" && !!selected_item}
+        onOpenChange={(open) => {
+          if (!open) {
+            set_action_modal(null);
+            set_selected_item(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Item</DialogTitle>
+            <DialogDescription>
               Are you sure you want to delete{" "}
-              <strong>{selected_item.title}</strong>? This action cannot be
+              <strong>{selected_item?.title}</strong>? This action cannot be
               undone.
-            </p>
-            <div className="flex items-center justify-end gap-3">
-              <button
-                onClick={() => set_action_modal(null)}
-                className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handle_delete}
-                className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <button
+              onClick={() => set_action_modal(null)}
+              className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handle_delete}
+              className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700"
+            >
+              Delete
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

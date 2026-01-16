@@ -56,7 +56,7 @@ export default function FilterBar({
   onOfferTypeChange,
 }: FilterBarProps) {
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-3 sm:p-4">
+    <div className="bg-card rounded-lg shadow-sm border border-border p-3 sm:p-4">
       <div className="flex items-center gap-2 mb-3 sm:mb-4">
         <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-slate-500" />
         <span className="text-sm sm:text-base font-medium text-slate-700 dark:text-slate-300">

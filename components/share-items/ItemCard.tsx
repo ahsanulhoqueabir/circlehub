@@ -59,7 +59,7 @@ export default function ItemCard({
   if (viewMode === "list") {
     return (
       <div
-        className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.01]"
+        className="bg-card rounded-lg shadow-sm border border-border overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.01]"
         onClick={onClick}
       >
         <div className="flex flex-col sm:flex-row">
@@ -108,7 +108,7 @@ export default function ItemCard({
                     </span>
                   )}
                 </div>
-                <h3 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white mb-2">
+                <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
                   {item.title}
                 </h3>
                 {item.offer_type === "sale" && item.price && (
@@ -120,7 +120,7 @@ export default function ItemCard({
               </div>
             </div>
 
-            <p className="text-slate-600 dark:text-slate-300 text-sm  sm:text-base mb-4 line-clamp-2">
+            <p className="text-foreground text-sm  sm:text-base mb-4 line-clamp-2">
               {item.description}
             </p>
 
@@ -149,13 +149,13 @@ export default function ItemCard({
                 {item.tags.slice(0, 4).map((tag, index) => (
                   <span
                     key={index}
-                    className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+                    className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-muted text-muted-foreground"
                   >
                     {tag}
                   </span>
                 ))}
                 {item.tags.length > 4 && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-muted text-muted-foreground">
                     +{item.tags.length - 4}
                   </span>
                 )}
@@ -169,7 +169,7 @@ export default function ItemCard({
 
   return (
     <div
-      className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] h-fit break-inside-avoid mb-3 sm:mb-4"
+      className="bg-card rounded-lg shadow-sm border border-border overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] h-fit break-inside-avoid mb-3 sm:mb-4"
       onClick={onClick}
     >
       {/* Image */}
@@ -216,7 +216,7 @@ export default function ItemCard({
         </div>
 
         {/* Title */}
-        <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white mb-2 line-clamp-2">
+        <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2 line-clamp-2">
           {item.title}
         </h3>
 
@@ -229,7 +229,7 @@ export default function ItemCard({
         )}
 
         {/* Description */}
-        <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm mb-3 line-clamp-2 sm:line-clamp-3">
+        <p className="text-foreground text-xs sm:text-sm mb-3 line-clamp-2 sm:line-clamp-3">
           {item.description}
         </p>
 
@@ -259,13 +259,13 @@ export default function ItemCard({
             {item.tags.slice(0, 3).map((tag, index) => (
               <span
                 key={index}
-                className="inline-flex items-center px-2 py-0.5 sm:py-1 rounded-md text-xs bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+                className="inline-flex items-center px-2 py-0.5 sm:py-1 rounded-md text-xs bg-muted text-muted-foreground"
               >
                 {tag}
               </span>
             ))}
             {item.tags.length > 3 && (
-              <span className="inline-flex items-center px-2 py-0.5 sm:py-1 rounded-md text-xs bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+              <span className="inline-flex items-center px-2 py-0.5 sm:py-1 rounded-md text-xs bg-muted text-muted-foreground">
                 +{item.tags.length - 3}
               </span>
             )}

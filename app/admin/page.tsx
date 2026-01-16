@@ -3,6 +3,7 @@
 import { useAdmin } from "@/contexts/admin-context";
 import { useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { RefreshCw, Users, Package, ClipboardList, Zap } from "lucide-react";
 
 export default function AdminDashboard() {
   const { overview_stats, loading, fetch_overview } = useAdmin();
@@ -22,12 +23,13 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
         <button
           onClick={fetch_overview}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2"
         >
-          🔄 Refresh
+          <RefreshCw size={16} />
+          Refresh
         </button>
       </div>
 
@@ -37,20 +39,20 @@ export default function AdminDashboard() {
           title="Total Users"
           value={overview_stats?.total_users || 0}
           trend={overview_stats?.user_growth}
-          icon="👥"
+          icon={Users}
           color="blue"
         />
         <StatCard
           title="Total Items"
           value={overview_stats?.total_items || 0}
           trend={overview_stats?.items_trend}
-          icon="📦"
+          icon={Package}
           color="green"
         />
         <StatCard
           title="Active Claims"
           value={overview_stats?.active_claims || 0}
-          icon="📋"
+          icon={ClipboardList}
           color="purple"
         />
         <StatCard
@@ -60,14 +62,14 @@ export default function AdminDashboard() {
             (overview_stats?.today_activity?.items_posted || 0) +
             (overview_stats?.today_activity?.claims_made || 0)
           }
-          icon="⚡"
+          icon={Zap}
           color="orange"
         />
       </div>
 
       {/* Today's Activity Details */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="bg-card rounded-lg shadow p-6">
+        <h2 className="text-lg font-semibold text-foreground mb-4">
           Today's Activity
         </h2>
         <div className="grid grid-cols-3 gap-4">
@@ -95,15 +97,15 @@ export default function AdminDashboard() {
       {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Items */}
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-card rounded-lg shadow">
           <div className="p-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-foreground">
               Recent Items
             </h2>
           </div>
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-border">
             {overview_stats?.recent_activity?.items?.map((item: any) => (
-              <div key={item._id} className="p-4 hover:bg-gray-50">
+              <div key={item._id} className="p-4 hover:bg-muted">
                 <div className="flex items-start gap-3">
                   {item.images?.[0] && (
                     <img
@@ -113,7 +115,7 @@ export default function AdminDashboard() {
                     />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                       {item.title}
                     </p>
                     <p className="text-xs text-gray-500">
@@ -141,21 +143,21 @@ export default function AdminDashboard() {
         </div>
 
         {/* Recent Users */}
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-card rounded-lg shadow">
           <div className="p-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-foreground">
               Recent Users
             </h2>
           </div>
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-border">
             {overview_stats?.recent_activity?.users?.map((user: any) => (
-              <div key={user._id} className="p-4 hover:bg-gray-50">
+              <div key={user._id} className="p-4 hover:bg-muted">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
                     {user.name?.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                       {user.name}
                     </p>
                     <p className="text-xs text-gray-500 truncate">
@@ -175,16 +177,18 @@ export default function AdminDashboard() {
       </div>
 
       {/* Recent Claims */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-card rounded-lg shadow">
         <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Recent Claims</h2>
+          <h2 className="text-lg font-semibold text-foreground">
+            Recent Claims
+          </h2>
         </div>
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-border">
           {overview_stats?.recent_activity?.claims?.map((claim: any) => (
-            <div key={claim._id} className="p-4 hover:bg-gray-50">
+            <div key={claim._id} className="p-4 hover:bg-muted">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium text-foreground">
                     {claim.item_id?.title || "Unknown Item"}
                   </p>
                   <p className="text-xs text-gray-500">
@@ -222,13 +226,13 @@ function StatCard({
   title,
   value,
   trend,
-  icon,
+  icon: Icon,
   color,
 }: {
   title: string;
   value: number;
   trend?: number;
-  icon: string;
+  icon: React.ElementType;
   color: string;
 }) {
   const color_classes = {
@@ -239,14 +243,14 @@ function StatCard({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-card rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-4">
         <div
-          className={`w-12 h-12 rounded-lg flex items-center justify-center text-2xl ${
+          className={`w-12 h-12 rounded-lg flex items-center justify-center ${
             color_classes[color as keyof typeof color_classes]
           }`}
         >
-          {icon}
+          <Icon size={24} />
         </div>
         {trend !== undefined && (
           <span
@@ -259,7 +263,7 @@ function StatCard({
         )}
       </div>
       <h3 className="text-sm font-medium text-gray-600 mb-1">{title}</h3>
-      <p className="text-3xl font-bold text-gray-900">
+      <p className="text-3xl font-bold text-foreground">
         {value.toLocaleString()}
       </p>
     </div>

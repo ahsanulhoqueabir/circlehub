@@ -3,6 +3,15 @@
 import { useAdmin } from "@/contexts/admin-context";
 import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { RefreshCw } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function ReportsPage() {
   const { reports, loading, fetch_reports, resolve_report } = useAdmin();
@@ -31,21 +40,22 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-foreground">
           Reports & Flagged Content
         </h1>
         <button
           onClick={() =>
             fetch_reports({ status: status_filter, priority: priority_filter })
           }
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2"
         >
-          🔄 Refresh
+          <RefreshCw size={16} />
+          Refresh
         </button>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-card rounded-lg shadow p-4">
         <div className="flex items-center gap-4">
           <select
             value={status_filter}
@@ -81,10 +91,10 @@ export default function ReportsPage() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-card rounded-lg shadow overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-muted">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Type & Target
@@ -109,11 +119,11 @@ export default function ReportsPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-card divide-y divide-border">
                 {reports.map((report) => (
-                  <tr key={report._id} className="hover:bg-gray-50">
+                  <tr key={report._id} className="hover:bg-muted">
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-foreground">
                         {report.reported_type}
                       </div>
                       <div className="text-xs text-gray-500">
@@ -121,7 +131,7 @@ export default function ReportsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-foreground">
                         {report.reporter_id?.name}
                       </div>
                       <div className="text-xs text-gray-500">
@@ -129,7 +139,7 @@ export default function ReportsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-foreground">
                         {report.reason}
                       </div>
                       <div className="text-xs text-gray-500 line-clamp-1">
@@ -157,7 +167,7 @@ export default function ReportsPage() {
                           report.status === "resolved"
                             ? "bg-green-100 text-green-700"
                             : report.status === "dismissed"
-                            ? "bg-gray-100 text-gray-700"
+                            ? "bg-muted text-foreground"
                             : report.status === "under_review"
                             ? "bg-blue-100 text-blue-700"
                             : "bg-yellow-100 text-yellow-700"
@@ -204,88 +214,110 @@ export default function ReportsPage() {
       )}
 
       {/* View Modal */}
-      {action_modal === "view" && selected_report && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-          onClick={() => set_action_modal(null)}
-        >
-          <div
-            className="bg-white rounded-lg max-w-2xl w-full p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-xl font-semibold mb-4">Report Details</h3>
-            <div className="space-y-3">
-              <div>
-                <span className="font-medium">Type:</span>{" "}
-                {selected_report.reported_type}
-              </div>
-              <div>
-                <span className="font-medium">Target ID:</span>{" "}
-                {selected_report.reported_id}
-              </div>
-              <div>
-                <span className="font-medium">Reporter:</span>{" "}
-                {selected_report.reporter_id?.name} (
-                {selected_report.reporter_id?.email})
-              </div>
-              <div>
-                <span className="font-medium">Reason:</span>{" "}
-                {selected_report.reason}
-              </div>
-              <div>
-                <span className="font-medium">Description:</span>
-                <p className="text-sm text-gray-600 mt-1">
-                  {selected_report.description}
-                </p>
-              </div>
-              <div>
-                <span className="font-medium">Priority:</span>{" "}
-                {selected_report.priority}
-              </div>
-              <div>
-                <span className="font-medium">Status:</span>{" "}
-                {selected_report.status}
-              </div>
+      <Dialog
+        open={action_modal === "view" && !!selected_report}
+        onOpenChange={(open) => {
+          if (!open) {
+            set_action_modal(null);
+            set_selected_report(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Report Details</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-3">
+            <div>
+              <span className="font-medium">Type:</span>{" "}
+              {selected_report?.reported_type}
             </div>
+            <div>
+              <span className="font-medium">Target ID:</span>{" "}
+              {selected_report?.reported_id}
+            </div>
+            <div>
+              <span className="font-medium">Reporter:</span>{" "}
+              {selected_report?.reporter_id?.name} (
+              {selected_report?.reporter_id?.email})
+            </div>
+            <div>
+              <span className="font-medium">Reason:</span>{" "}
+              {selected_report?.reason}
+            </div>
+            <div>
+              <span className="font-medium">Description:</span>
+              <p className="text-sm text-gray-600 mt-1">
+                {selected_report?.description}
+              </p>
+            </div>
+            <div>
+              <span className="font-medium">Priority:</span>{" "}
+              {selected_report?.priority}
+            </div>
+            <div>
+              <span className="font-medium">Status:</span>{" "}
+              {selected_report?.status}
+            </div>
+          </div>
+          <DialogFooter>
             <button
               onClick={() => set_action_modal(null)}
-              className="mt-6 w-full px-4 py-2 bg-gray-100 rounded-lg"
+              className="w-full px-4 py-2 bg-muted rounded-lg"
             >
               Close
             </button>
-          </div>
-        </div>
-      )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Resolve Modal */}
-      {action_modal === "resolve" && selected_report && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">Resolve Report</h3>
+      <Dialog
+        open={action_modal === "resolve" && !!selected_report}
+        onOpenChange={(open) => {
+          if (!open) {
+            set_action_modal(null);
+            set_resolution("");
+            set_selected_report(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Resolve Report</DialogTitle>
+            <DialogDescription>
+              Provide resolution notes for this report.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
             <textarea
               value={resolution}
               onChange={(e) => set_resolution(e.target.value)}
               rows={4}
-              className="w-full px-3 py-2 border rounded-lg mb-4"
+              className="w-full px-3 py-2 border rounded-lg"
               placeholder="Resolution notes..."
             />
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => {
-                  set_action_modal(null);
-                  set_resolution("");
-                }}
-                className="px-4 py-2 text-sm bg-gray-100 rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handle_resolve}
-                disabled={!resolution}
-                className="px-4 py-2 text-sm text-white bg-green-600 rounded-lg disabled:opacity-50"
-              >
-                Resolve
-              </button>
+          </div>
+          <DialogFooter>
+            <button
+              onClick={() => {
+                set_action_modal(null);
+                set_resolution("");
+              }}
+              className="px-4 py-2 text-sm bg-muted rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handle_resolve}
+              disabled={!resolution}
+              className="px-4 py-2 text-sm text-white bg-green-600 rounded-lg disabled:opacity-50"
+            >
+              Resolve
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
             </div>
           </div>
         </div>

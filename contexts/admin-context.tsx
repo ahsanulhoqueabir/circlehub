@@ -8,6 +8,7 @@ import React, {
   ReactNode,
 } from "react";
 import useAxios from "@/hooks/use-axios";
+import { useAuth } from "@/contexts/auth-context";
 
 // Types
 interface OverviewStats {
@@ -35,7 +36,8 @@ interface User {
   phone?: string;
   student_id?: string;
   role: string;
-  is_verified: boolean;
+  verified: boolean;
+  is_active: boolean;
   is_banned: boolean;
   created_at: string;
   last_active?: string;
@@ -128,6 +130,11 @@ interface AdminContextType {
 
   // Action functions
   update_user: (user_id: string, updates: any) => Promise<void>;
+  update_user_role: (user_id: string, new_role: string) => Promise<void>;
+  verify_user: (user_id: string) => Promise<void>;
+  unverify_user: (user_id: string) => Promise<void>;
+  activate_user: (user_id: string) => Promise<void>;
+  deactivate_user: (user_id: string) => Promise<void>;
   ban_user: (user_id: string, reason: string) => Promise<void>;
   unban_user: (user_id: string) => Promise<void>;
   approve_item: (item_id: string, type: string) => Promise<void>;
@@ -153,6 +160,7 @@ export const useAdmin = () => {
 
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
   const axios = useAxios();
+  const { logout } = useAuth();
 
   // State
   const [overview_stats, set_overview_stats] = useState<OverviewStats | null>(
@@ -175,6 +183,20 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     logs: false,
   });
 
+  // Error handler for API calls
+  const handle_error = useCallback(
+    (error: any, context: string) => {
+      console.error(`Error in ${context}:`, error);
+
+      // If 401, logout user
+      if (error.response?.status === 401) {
+        console.warn("Unauthorized access, logging out...");
+        logout();
+      }
+    },
+    [logout]
+  );
+
   // Fetch functions
   const fetch_overview = useCallback(async () => {
     set_loading((prev) => ({ ...prev, overview: true }));
@@ -182,11 +204,11 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       const response = await axios.get("/api/admin/dashboard");
       set_overview_stats(response.data.data);
     } catch (error) {
-      console.error("Error fetching overview:", error);
+      handle_error(error, "fetch_overview");
     } finally {
       set_loading((prev) => ({ ...prev, overview: false }));
     }
-  }, [axios]);
+  }, [axios, handle_error]);
 
   const fetch_users = useCallback(
     async (filters?: any) => {
@@ -196,12 +218,12 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         const response = await axios.get(`/api/admin/users/list?${params}`);
         set_users(response.data.data);
       } catch (error) {
-        console.error("Error fetching users:", error);
+        handle_error(error, "fetch_users");
       } finally {
         set_loading((prev) => ({ ...prev, users: false }));
       }
     },
-    [axios]
+    [axios, handle_error]
   );
 
   const fetch_lost_items = useCallback(
@@ -212,12 +234,12 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         const response = await axios.get(`/api/admin/items/lost?${params}`);
         set_lost_items(response.data.data);
       } catch (error) {
-        console.error("Error fetching lost items:", error);
+        handle_error(error, "fetch_lost_items");
       } finally {
         set_loading((prev) => ({ ...prev, items: false }));
       }
     },
-    [axios]
+    [axios, handle_error]
   );
 
   const fetch_found_items = useCallback(
@@ -228,12 +250,12 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         const response = await axios.get(`/api/admin/items/found?${params}`);
         set_found_items(response.data.data);
       } catch (error) {
-        console.error("Error fetching found items:", error);
+        handle_error(error, "fetch_found_items");
       } finally {
         set_loading((prev) => ({ ...prev, items: false }));
       }
     },
-    [axios]
+    [axios, handle_error]
   );
 
   const fetch_share_items = useCallback(
@@ -244,12 +266,12 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         const response = await axios.get(`/api/admin/items/share?${params}`);
         set_share_items(response.data.data);
       } catch (error) {
-        console.error("Error fetching share items:", error);
+        handle_error(error, "fetch_share_items");
       } finally {
         set_loading((prev) => ({ ...prev, items: false }));
       }
     },
-    [axios]
+    [axios, handle_error]
   );
 
   const fetch_claims = useCallback(
@@ -260,12 +282,12 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         const response = await axios.get(`/api/admin/claims/list?${params}`);
         set_claims(response.data.data);
       } catch (error) {
-        console.error("Error fetching claims:", error);
+        handle_error(error, "fetch_claims");
       } finally {
         set_loading((prev) => ({ ...prev, claims: false }));
       }
     },
-    [axios]
+    [axios, handle_error]
   );
 
   const fetch_reports = useCallback(
@@ -276,12 +298,12 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         const response = await axios.get(`/api/admin/reports/list?${params}`);
         set_reports(response.data.data);
       } catch (error) {
-        console.error("Error fetching reports:", error);
+        handle_error(error, "fetch_reports");
       } finally {
         set_loading((prev) => ({ ...prev, reports: false }));
       }
     },
-    [axios]
+    [axios, handle_error]
   );
 
   const fetch_audit_logs = useCallback(
@@ -292,18 +314,66 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         const response = await axios.get(`/api/admin/logs/list?${params}`);
         set_audit_logs(response.data.data);
       } catch (error) {
-        console.error("Error fetching audit logs:", error);
+        handle_error(error, "fetch_audit_logs");
       } finally {
         set_loading((prev) => ({ ...prev, logs: false }));
       }
     },
-    [axios]
+    [axios, handle_error]
   );
 
   // Action functions
   const update_user = useCallback(
     async (user_id: string, updates: any) => {
       await axios.patch(`/api/admin/users/${user_id}`, updates);
+      await fetch_users();
+    },
+    [axios, fetch_users]
+  );
+
+  const update_user_role = useCallback(
+    async (user_id: string, new_role: string) => {
+      await axios.patch(`/api/admin/users/${user_id}/role`, { role: new_role });
+      await fetch_users();
+    },
+    [axios, fetch_users]
+  );
+
+  const verify_user = useCallback(
+    async (user_id: string) => {
+      await axios.patch(`/api/admin/users/${user_id}/verify`, {
+        verified: true,
+      });
+      await fetch_users();
+    },
+    [axios, fetch_users]
+  );
+
+  const unverify_user = useCallback(
+    async (user_id: string) => {
+      await axios.patch(`/api/admin/users/${user_id}/verify`, {
+        verified: false,
+      });
+      await fetch_users();
+    },
+    [axios, fetch_users]
+  );
+
+  const activate_user = useCallback(
+    async (user_id: string) => {
+      await axios.patch(`/api/admin/users/${user_id}/activate`, {
+        is_active: true,
+      });
+      await fetch_users();
+    },
+    [axios, fetch_users]
+  );
+
+  const deactivate_user = useCallback(
+    async (user_id: string) => {
+      await axios.patch(`/api/admin/users/${user_id}/activate`, {
+        is_active: false,
+      });
       await fetch_users();
     },
     [axios, fetch_users]
@@ -422,6 +492,11 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     fetch_reports,
     fetch_audit_logs,
     update_user,
+    update_user_role,
+    verify_user,
+    unverify_user,
+    activate_user,
+    deactivate_user,
     ban_user,
     unban_user,
     approve_item,

@@ -211,14 +211,14 @@ export default function ReportLostItemForm({
         />
 
         {/* Modal */}
-        <div className="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700">
+        <div className="relative w-full max-w-2xl bg-card rounded-lg shadow-xl border border-border">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-destructive/10 dark:bg-destructive/20 rounded-full flex items-center justify-center">
                 <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
               </div>
-              <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">
+              <h2 className="text-lg sm:text-xl font-semibold text-foreground">
                 Report Lost Item
               </h2>
             </div>
@@ -239,7 +239,7 @@ export default function ReportLostItemForm({
             >
               {/* Title */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Item Title *
                 </label>
                 <input
@@ -247,10 +247,8 @@ export default function ReportLostItemForm({
                   value={formData.title}
                   onChange={(e) => handleInputChange("title", e.target.value)}
                   placeholder="e.g., iPhone 14 Pro Max - Space Black"
-                  className={`w-full px-4 py-3 border rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    errors.title
-                      ? "border-red-500"
-                      : "border-slate-300 dark:border-slate-600"
+                  className={`w-full px-4 py-3 border rounded-lg bg-card text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.title ? "border-red-500" : "border-border"
                   }`}
                 />
                 {errors.title && (
@@ -263,7 +261,7 @@ export default function ReportLostItemForm({
               {/* Category and Location */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Category *
                   </label>
                   <Select
@@ -295,7 +293,7 @@ export default function ReportLostItemForm({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Location Lost *
                   </label>
                   <Select
@@ -329,7 +327,7 @@ export default function ReportLostItemForm({
 
               {/* Date Lost */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Date Lost *
                 </label>
                 <DatePicker
@@ -349,7 +347,7 @@ export default function ReportLostItemForm({
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Description *
                 </label>
                 <textarea
@@ -359,10 +357,8 @@ export default function ReportLostItemForm({
                   }
                   rows={4}
                   placeholder="Provide detailed description of the item, where you think you lost it, distinctive features, etc."
-                  className={`w-full px-4 py-3 border rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-primary focus:border-transparent resize-none ${
-                    errors.description
-                      ? "border-destructive"
-                      : "border-slate-300 dark:border-slate-600"
+                  className={`w-full px-4 py-3 border rounded-lg bg-card text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent resize-none ${
+                    errors.description ? "border-destructive" : "border-border"
                   }`}
                 />
                 {errors.description && (
@@ -375,7 +371,7 @@ export default function ReportLostItemForm({
               {/* Contact Information */}
               {/* Image Upload */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Item Image (Optional)
                 </label>
 
@@ -390,10 +386,10 @@ export default function ReportLostItemForm({
                     />
                     <label
                       htmlFor="image-upload"
-                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-muted transition-colors"
                     >
                       <Upload className="w-8 h-8 text-slate-400 mb-2" />
-                      <span className="text-sm text-slate-600 dark:text-slate-400">
+                      <span className="text-sm text-muted-foreground">
                         Click to upload image
                       </span>
                       <span className="text-xs text-slate-500 dark:text-slate-500 mt-1">
@@ -403,7 +399,7 @@ export default function ReportLostItemForm({
                   </div>
                 ) : (
                   <div className="relative">
-                    <div className="relative w-full h-48 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-600">
+                    <div className="relative w-full h-48 rounded-lg overflow-hidden border border-border">
                       <Image
                         src={imagePreview}
                         alt="Preview"
@@ -418,7 +414,7 @@ export default function ReportLostItemForm({
                     >
                       <X className="w-4 h-4" />
                     </button>
-                    <div className="mt-2 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                    <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
                       <ImageIcon className="w-4 h-4" />
                       <span>{imageFile?.name}</span>
                       <span className="text-slate-500">
@@ -437,7 +433,7 @@ export default function ReportLostItemForm({
 
               {/* Tags */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Tags (Optional)
                 </label>
                 <div className="space-y-3">
@@ -448,13 +444,13 @@ export default function ReportLostItemForm({
                       onChange={(e) => setCurrentTag(e.target.value)}
                       onKeyPress={handleKeyPress}
                       placeholder="e.g., black, phone, leather-case"
-                      className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="flex-1 px-4 py-2 border border-border rounded-lg bg-card text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                     <button
                       type="button"
                       onClick={addTag}
                       disabled={!currentTag.trim()}
-                      className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="px-4 py-2 bg-muted text-muted-foreground rounded-lg hover:bg-muted/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       Add
                     </button>
@@ -488,12 +484,12 @@ export default function ReportLostItemForm({
           </div>
 
           {/* Form Actions */}
-          <div className="flex flex-col sm:flex-row gap-3 p-4 sm:p-6 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+          <div className="flex flex-col sm:flex-row gap-3 p-4 sm:p-6 border-t border-border bg-card">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 px-6 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 font-medium transition-colors disabled:opacity-50"
+              className="flex-1 px-6 py-3 border border-border text-foreground rounded-lg hover:bg-muted font-medium transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
