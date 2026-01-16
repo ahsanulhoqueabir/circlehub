@@ -12,12 +12,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function ClaimsPage() {
   const { claims, loading, fetch_claims, approve_claim, reject_claim } =
     useAdmin();
 
-  const [status_filter, set_status_filter] = useState("");
+  const [status_filter, set_status_filter] = useState("all");
   const [selected_claim, set_selected_claim] = useState<any>(null);
   const [action_modal, set_action_modal] = useState<
     "approve" | "reject" | "view" | null
@@ -25,7 +32,7 @@ export default function ClaimsPage() {
   const [reject_reason, set_reject_reason] = useState("");
 
   useEffect(() => {
-    fetch_claims({ status: status_filter });
+    fetch_claims({ status: status_filter === "all" ? "" : status_filter });
   }, [fetch_claims, status_filter]);
 
   const handle_approve = async () => {
@@ -61,18 +68,19 @@ export default function ClaimsPage() {
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4">
         <div className="flex items-center gap-4">
-          <select
-            value={status_filter}
-            onChange={(e) => set_status_filter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-          >
-            <option value="">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="processing">Processing</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-            <option value="completed">Completed</option>
-          </select>
+          <Select value={status_filter} onValueChange={set_status_filter}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="processing">Processing</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+            </SelectContent>
+          </Select>
           <span className="text-sm text-gray-600">
             Total: <strong>{claims.length}</strong> claims
           </span>
@@ -216,9 +224,7 @@ export default function ClaimsPage() {
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div>
-              <span className="text-sm font-medium text-gray-700">
-                Item:
-              </span>
+              <span className="text-sm font-medium text-gray-700">Item:</span>
               <p className="text-sm text-gray-900">
                 {selected_claim?.item_id?.title}
               </p>
@@ -233,23 +239,15 @@ export default function ClaimsPage() {
               </p>
             </div>
             <div>
-              <span className="text-sm font-medium text-gray-700">
-                Status:
-              </span>
-              <p className="text-sm text-gray-900">
-                {selected_claim?.status}
-              </p>
+              <span className="text-sm font-medium text-gray-700">Status:</span>
+              <p className="text-sm text-gray-900">{selected_claim?.status}</p>
             </div>
             <div>
               <span className="text-sm font-medium text-gray-700">
                 Verification Answers:
               </span>
               <pre className="text-xs text-gray-600 bg-gray-50 p-3 rounded mt-1 overflow-auto">
-                {JSON.stringify(
-                  selected_claim?.verification_answers,
-                  null,
-                  2
-                )}
+                {JSON.stringify(selected_claim?.verification_answers, null, 2)}
               </pre>
             </div>
           </div>
@@ -278,8 +276,8 @@ export default function ClaimsPage() {
           <DialogHeader>
             <DialogTitle>Approve Claim</DialogTitle>
             <DialogDescription>
-              Approve claim for <strong>{selected_claim?.item_id?.title}</strong>
-              ?
+              Approve claim for{" "}
+              <strong>{selected_claim?.item_id?.title}</strong>?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -345,10 +343,6 @@ export default function ClaimsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

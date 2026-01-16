@@ -12,6 +12,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function UsersPage() {
   const {
@@ -28,17 +36,28 @@ export default function UsersPage() {
   } = useAdmin();
 
   const [search, set_search] = useState("");
-  const [status_filter, set_status_filter] = useState("");
-  const [role_filter, set_role_filter] = useState("");
+  const [status_filter, set_status_filter] = useState("all");
+  const [role_filter, set_role_filter] = useState("all");
   const [selected_user, set_selected_user] = useState<any>(null);
   const [action_modal, set_action_modal] = useState<
     "ban" | "unban" | "edit" | "role" | null
   >(null);
   const [ban_reason, set_ban_reason] = useState("");
   const [new_role, set_new_role] = useState("");
+  const [confirm_dialog, set_confirm_dialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void | Promise<void>;
+    variant?: "default" | "danger" | "warning" | "success";
+  }>({ open: false, title: "", description: "", onConfirm: () => {} });
 
   useEffect(() => {
-    fetch_users({ search, status: status_filter, role: role_filter });
+    fetch_users({
+      search,
+      status: status_filter === "all" ? "" : status_filter,
+      role: role_filter === "all" ? "" : role_filter,
+    });
   }, [fetch_users, search, status_filter, role_filter]);
 
   const handle_ban = async () => {
@@ -97,28 +116,30 @@ export default function UsersPage() {
             />
           </div>
           <div>
-            <select
-              value={status_filter}
-              onChange={(e) => set_status_filter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="banned">Banned</option>
-            </select>
+            <Select value={status_filter} onValueChange={set_status_filter}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="banned">Banned</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div>
-            <select
-              value={role_filter}
-              onChange={(e) => set_role_filter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">All Roles</option>
-              <option value="student">Student</option>
-              <option value="admin">Admin</option>
-              <option value="moderator">Moderator</option>
-              <option value="support_staff">Support Staff</option>
-            </select>
+            <Select value={role_filter} onValueChange={set_role_filter}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="All Roles" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Roles</SelectItem>
+                <SelectItem value="student">Student</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="moderator">Moderator</SelectItem>
+                <SelectItem value="support_staff">Support Staff</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">
@@ -253,14 +274,16 @@ export default function UsersPage() {
                         {/* Verification Toggle */}
                         {user.verified ? (
                           <button
-                            onClick={async () => {
-                              if (
-                                confirm(
-                                  `Are you sure you want to unverify ${user.name}?`
-                                )
-                              ) {
-                                await unverify_user(user._id);
-                              }
+                            onClick={() => {
+                              set_confirm_dialog({
+                                open: true,
+                                title: "Unverify User",
+                                description: `Are you sure you want to unverify ${user.name}? This will remove their verified status.`,
+                                onConfirm: async () => {
+                                  await unverify_user(user._id);
+                                },
+                                variant: "warning",
+                              });
                             }}
                             className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200"
                             title="Unverify User"
@@ -282,14 +305,16 @@ export default function UsersPage() {
                         {/* Active/Deactivate Toggle */}
                         {user.is_active ? (
                           <button
-                            onClick={async () => {
-                              if (
-                                confirm(
-                                  `Are you sure you want to deactivate ${user.name}? They won't be able to login.`
-                                )
-                              ) {
-                                await deactivate_user(user._id);
-                              }
+                            onClick={() => {
+                              set_confirm_dialog({
+                                open: true,
+                                title: "Deactivate User",
+                                description: `Are you sure you want to deactivate ${user.name}? They won't be able to login until reactivated.`,
+                                onConfirm: async () => {
+                                  await deactivate_user(user._id);
+                                },
+                                variant: "warning",
+                              });
                             }}
                             className="px-2 py-1 text-xs bg-orange-100 text-orange-700 rounded hover:bg-orange-200"
                             title="Deactivate User"
@@ -499,6 +524,20 @@ export default function UsersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        open={confirm_dialog.open}
+        onOpenChange={(open) =>
+          set_confirm_dialog((prev) => ({ ...prev, open }))
+        }
+        title={confirm_dialog.title}
+        description={confirm_dialog.description}
+        onConfirm={confirm_dialog.onConfirm}
+        variant={confirm_dialog.variant}
+        confirmText="Confirm"
+        cancelText="Cancel"
+      />
     </div>
   );
 }

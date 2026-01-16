@@ -13,6 +13,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function FoundItemsPage() {
   const {
@@ -25,8 +32,8 @@ export default function FoundItemsPage() {
   } = useAdmin();
 
   const [search, set_search] = useState("");
-  const [status_filter, set_status_filter] = useState("");
-  const [category_filter, set_category_filter] = useState("");
+  const [status_filter, set_status_filter] = useState("all");
+  const [category_filter, set_category_filter] = useState("all");
   const [selected_item, set_selected_item] = useState<any>(null);
   const [action_modal, set_action_modal] = useState<
     "approve" | "reject" | "delete" | "view" | null
@@ -36,8 +43,8 @@ export default function FoundItemsPage() {
   useEffect(() => {
     fetch_found_items({
       search,
-      status: status_filter,
-      category: category_filter,
+      status: status_filter === "all" ? "" : status_filter,
+      category: category_filter === "all" ? "" : category_filter,
     });
   }, [fetch_found_items, search, status_filter, category_filter]);
 
@@ -97,28 +104,30 @@ export default function FoundItemsPage() {
             onChange={(e) => set_search(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
           />
-          <select
-            value={status_filter}
-            onChange={(e) => set_status_filter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-          >
-            <option value="">All Status</option>
-            <option value="active">Active</option>
-            <option value="claimed">Claimed</option>
-            <option value="pending">Pending</option>
-          </select>
-          <select
-            value={category_filter}
-            onChange={(e) => set_category_filter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-          >
-            <option value="">All Categories</option>
-            <option value="electronics">Electronics</option>
-            <option value="books">Books</option>
-            <option value="clothing">Clothing</option>
-            <option value="accessories">Accessories</option>
-            <option value="others">Others</option>
-          </select>
+          <Select value={status_filter} onValueChange={set_status_filter}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="claimed">Claimed</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={category_filter} onValueChange={set_category_filter}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="electronics">Electronics</SelectItem>
+              <SelectItem value="books">Books</SelectItem>
+              <SelectItem value="clothing">Clothing</SelectItem>
+              <SelectItem value="accessories">Accessories</SelectItem>
+              <SelectItem value="others">Others</SelectItem>
+            </SelectContent>
+          </Select>
           <span className="text-sm text-gray-600 flex items-center">
             Total: <strong className="ml-1">{found_items.length}</strong> items
           </span>

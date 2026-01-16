@@ -2,6 +2,13 @@
 
 import { useState } from "react";
 import { Filter, ChevronDown } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface FilterBarProps {
   categories: string[];
@@ -31,10 +38,10 @@ export default function FilterBar({
   const [isOpen, setIsOpen] = useState(false);
 
   const dateRangeOptions = [
-    { label: "All time", value: 0 },
-    { label: "Last 7 days", value: 7 },
-    { label: "Last 14 days", value: 14 },
-    { label: "Last 30 days", value: 30 },
+    { label: "All time", value: "0" },
+    { label: "Last 7 days", value: "7" },
+    { label: "Last 14 days", value: "14" },
+    { label: "Last 30 days", value: "30" },
   ];
 
   const sortOptions = [
@@ -85,18 +92,19 @@ export default function FilterBar({
               <label className="block text-sm font-medium text-foreground mb-2">
                 Category
               </label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => onCategoryChange(e.target.value)}
-                className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">All Categories</option>
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
+              <Select value={selectedCategory} onValueChange={onCategoryChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Location Filter */}
@@ -104,18 +112,19 @@ export default function FilterBar({
               <label className="block text-sm font-medium text-foreground mb-2">
                 Location
               </label>
-              <select
-                value={selectedLocation}
-                onChange={(e) => onLocationChange(e.target.value)}
-                className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">All Locations</option>
-                {locations.map((location) => (
-                  <option key={location} value={location}>
-                    {location}
-                  </option>
-                ))}
-              </select>
+              <Select value={selectedLocation} onValueChange={onLocationChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="All Locations" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Locations</SelectItem>
+                  {locations.map((location) => (
+                    <SelectItem key={location} value={location}>
+                      {location}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Date Range Filter */}
@@ -123,17 +132,21 @@ export default function FilterBar({
               <label className="block text-sm font-medium text-foreground mb-2">
                 Date Range
               </label>
-              <select
-                value={selectedDateRange}
-                onChange={(e) => onDateRangeChange(Number(e.target.value))}
-                className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              <Select
+                value={selectedDateRange.toString()}
+                onValueChange={(value) => onDateRangeChange(Number(value))}
               >
-                {dateRangeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="All time" />
+                </SelectTrigger>
+                <SelectContent>
+                  {dateRangeOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Sort By */}
@@ -141,24 +154,37 @@ export default function FilterBar({
               <label className="block text-sm font-medium text-foreground mb-2">
                 Sort By
               </label>
-              <select
-                value={selectedSort}
-                onChange={(e) => onSortChange(e.target.value)}
-                className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                {sortOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              <Select value={selectedSort} onValueChange={onSortChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Newest first" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sortOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
+        </div>
 
-          {/* Clear Filters */}
-          {hasActiveFilters && (
-            <div className="mt-4 flex justify-end">
-              <button
+        {/* Clear Filters Button */}
+        {hasActiveFilters && (
+          <div className="flex items-end lg:items-center">
+            <button
+              onClick={clearFilters}
+              className="px-4 py-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Clear Filters
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
                 onClick={clearFilters}
                 className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
               >

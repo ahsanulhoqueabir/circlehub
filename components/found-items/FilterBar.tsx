@@ -1,6 +1,13 @@
 "use client";
 
-import { Filter, ChevronDown } from "lucide-react";
+import { Filter } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface FilterBarProps {
   categories: string[];
@@ -28,10 +35,10 @@ export default function FilterBar({
   selectedSort,
 }: FilterBarProps) {
   const dateRangeOptions = [
-    { label: "All time", value: 0 },
-    { label: "Last 7 days", value: 7 },
-    { label: "Last 30 days", value: 30 },
-    { label: "Last 90 days", value: 90 },
+    { label: "All time", value: "0" },
+    { label: "Last 7 days", value: "7" },
+    { label: "Last 30 days", value: "30" },
+    { label: "Last 90 days", value: "90" },
   ];
 
   const sortOptions = [
@@ -56,21 +63,19 @@ export default function FilterBar({
           <label className="block text-sm font-medium text-foreground mb-2">
             Category
           </label>
-          <div className="relative">
-            <select
-              value={selectedCategory}
-              onChange={(e) => onCategoryChange(e.target.value)}
-              className="w-full appearance-none px-3 py-2 border border-border rounded-md bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            >
-              <option value="all">All Categories</option>
+          <Select value={selectedCategory} onValueChange={onCategoryChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
               {categories.map((category) => (
-                <option key={category} value={category}>
+                <SelectItem key={category} value={category}>
                   {category}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-          </div>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Location Filter */}
@@ -78,21 +83,19 @@ export default function FilterBar({
           <label className="block text-sm font-medium text-foreground mb-2">
             Location
           </label>
-          <div className="relative">
-            <select
-              value={selectedLocation}
-              onChange={(e) => onLocationChange(e.target.value)}
-              className="w-full appearance-none px-3 py-2 border border-border rounded-md bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            >
-              <option value="all">All Locations</option>
+          <Select value={selectedLocation} onValueChange={onLocationChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="All Locations" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Locations</SelectItem>
               {locations.map((location) => (
-                <option key={location} value={location}>
+                <SelectItem key={location} value={location}>
                   {location}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-          </div>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Date Range Filter */}
@@ -100,20 +103,21 @@ export default function FilterBar({
           <label className="block text-sm font-medium text-foreground mb-2">
             Date Found
           </label>
-          <div className="relative">
-            <select
-              value={selectedDateRange}
-              onChange={(e) => onDateRangeChange(Number(e.target.value))}
-              className="w-full appearance-none px-3 py-2 border border-border rounded-md bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            >
+          <Select
+            value={selectedDateRange.toString()}
+            onValueChange={(value) => onDateRangeChange(Number(value))}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="All time" />
+            </SelectTrigger>
+            <SelectContent>
               {dateRangeOptions.map((option) => (
-                <option key={option.value} value={option.value}>
+                <SelectItem key={option.value} value={option.value}>
                   {option.label}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-          </div>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Sort */}
@@ -121,20 +125,18 @@ export default function FilterBar({
           <label className="block text-sm font-medium text-foreground mb-2">
             Sort by
           </label>
-          <div className="relative">
-            <select
-              value={selectedSort}
-              onChange={(e) => onSortChange(e.target.value)}
-              className="w-full appearance-none px-3 py-2 border border-border rounded-md bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            >
+          <Select value={selectedSort} onValueChange={onSortChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Newest first" />
+            </SelectTrigger>
+            <SelectContent>
               {sortOptions.map((option) => (
-                <option key={option.value} value={option.value}>
+                <SelectItem key={option.value} value={option.value}>
                   {option.label}
-                </option>
+                </SelectItem>
               ))}
-            </select>
-            <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-          </div>
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </div>
