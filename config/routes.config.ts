@@ -113,21 +113,22 @@ export const USER_ROUTES: RouteConfig[] = [
 ];
 
 /**
- * Admin dashboard routes (only for admin role)
- * Path: /dashboard/**
+ * Admin dashboard routes (for admin, moderator, support_staff roles)
+ * Path: /admin/**
+ * Sidebar will filter based on user role permissions
  */
 export const ADMIN_DASHBOARD_ROUTES: RouteConfig[] = [
   {
     name: "Dashboard",
-    href: "/dashboard",
+    href: "/admin",
     icon: LayoutDashboard,
-    roles: ["admin"],
+    roles: ["admin", "moderator", "support_staff"],
     showInNav: true,
     description: "Admin dashboard overview",
   },
   {
     name: "Users",
-    href: "/dashboard/users",
+    href: "/admin/users",
     icon: Users,
     roles: ["admin"],
     showInNav: true,
@@ -135,47 +136,47 @@ export const ADMIN_DASHBOARD_ROUTES: RouteConfig[] = [
   },
   {
     name: "Lost Items",
-    href: "/dashboard/lost-items",
+    href: "/admin/lost-items",
     icon: Search,
-    roles: ["admin"],
+    roles: ["admin", "moderator", "support_staff"],
     showInNav: true,
     description: "Manage lost items",
   },
   {
     name: "Found Items",
-    href: "/dashboard/found-items",
+    href: "/admin/found-items",
     icon: Sparkles,
-    roles: ["admin"],
+    roles: ["admin", "moderator", "support_staff"],
     showInNav: true,
     description: "Manage found items",
   },
   {
     name: "Share Items",
-    href: "/dashboard/share-items",
+    href: "/admin/share-items",
     icon: Handshake,
-    roles: ["admin"],
+    roles: ["admin", "moderator"],
     showInNav: true,
     description: "Manage shared items",
   },
   {
     name: "Claims",
-    href: "/dashboard/claims",
+    href: "/admin/claims",
     icon: ClipboardList,
-    roles: ["admin"],
+    roles: ["admin", "moderator", "support_staff"],
     showInNav: true,
     description: "Manage item claims",
   },
   {
     name: "Reports",
-    href: "/dashboard/reports",
+    href: "/admin/reports",
     icon: AlertTriangle,
-    roles: ["admin"],
+    roles: ["admin", "moderator"],
     showInNav: true,
     description: "View user reports",
   },
   {
     name: "Analytics",
-    href: "/dashboard/analytics",
+    href: "/admin/analytics",
     icon: TrendingUp,
     roles: ["admin"],
     showInNav: true,
@@ -183,11 +184,19 @@ export const ADMIN_DASHBOARD_ROUTES: RouteConfig[] = [
   },
   {
     name: "Audit Logs",
-    href: "/dashboard/logs",
+    href: "/admin/logs",
     icon: FileText,
     roles: ["admin"],
     showInNav: true,
     description: "View audit logs",
+  },
+  {
+    name: "Support",
+    href: "/admin/support",
+    icon: MessageSquare,
+    roles: ["support_staff"],
+    showInNav: true,
+    description: "Support tickets (support staff only)",
   },
 ];
 
@@ -267,7 +276,6 @@ export function getAccessibleRoutes(role: UserRole | null): RouteConfig[] {
     ...PUBLIC_ROUTES,
     ...USER_ROUTES,
     ...ADMIN_DASHBOARD_ROUTES,
-    ...MODERATOR_ROUTES,
   ];
 
   // Filter by role
@@ -315,7 +323,6 @@ export function getDashboardRoutes(role: UserRole): RouteConfig[] {
 export function getDefaultRedirectPath(role: UserRole): string {
   switch (role) {
     case "admin":
-      return "/dashboard";
     case "moderator":
     case "support_staff":
       return "/admin";

@@ -38,13 +38,6 @@ export function getLoginRedirectPath(role: UserRole): string {
 }
 
 /**
- * Check if route is a dashboard route
- */
-export function isDashboardRoute(path: string): boolean {
-  return path.startsWith("/dashboard");
-}
-
-/**
  * Check if route is an admin panel route
  */
 export function isAdminRoute(path: string): boolean {
@@ -58,25 +51,6 @@ export function shouldRedirectUser(
   role: UserRole,
   currentPath: string
 ): { shouldRedirect: boolean; redirectTo: string | null } {
-  // Admin trying to access /admin/** should be redirected to /dashboard
-  if (
-    role === "admin" &&
-    isAdminRoute(currentPath) &&
-    !isDashboardRoute(currentPath)
-  ) {
-    const dashboard_path = currentPath.replace("/admin", "/dashboard");
-    return { shouldRedirect: true, redirectTo: dashboard_path };
-  }
-
-  // Moderator/Support staff trying to access /dashboard/** should be redirected to /admin
-  if (
-    (role === "moderator" || role === "support_staff") &&
-    isDashboardRoute(currentPath)
-  ) {
-    const admin_path = currentPath.replace("/dashboard", "/admin");
-    return { shouldRedirect: true, redirectTo: admin_path };
-  }
-
   // Check if user has access to the current route
   if (!canAccessRoute(currentPath, role)) {
     return { shouldRedirect: true, redirectTo: getLoginRedirectPath(role) };

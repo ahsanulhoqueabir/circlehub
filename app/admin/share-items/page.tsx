@@ -5,6 +5,14 @@ import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { RefreshCw, Handshake } from "lucide-react";
 import Image from "next/image";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function ShareItemsPage() {
   const {
@@ -217,118 +225,153 @@ export default function ShareItemsPage() {
         </div>
       )}
 
-      {/* Modals - Same structure */}
-      {action_modal === "view" && selected_item && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-          onClick={() => set_action_modal(null)}
-        >
-          <div
-            className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                {selected_item.title}
-              </h3>
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                {selected_item.images?.map((img: string, idx: number) => (
+      {/* Modals */}
+      <Dialog
+        open={action_modal === "view" && !!selected_item}
+        onOpenChange={(open) => {
+          if (!open) {
+            set_action_modal(null);
+            set_selected_item(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selected_item?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              {selected_item?.images?.map((img: string, idx: number) => (
+                <div key={idx} className="relative w-full h-48">
                   <Image
                     fill
-                    key={idx}
                     src={img}
                     alt=""
-                    className="w-full h-48 object-cover rounded-lg"
+                    className="object-cover rounded-lg"
                   />
-                ))}
-              </div>
-              <button
-                onClick={() => set_action_modal(null)}
-                className="mt-6 w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-              >
-                Close
-              </button>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      )}
+          <DialogFooter>
+            <button
+              onClick={() => set_action_modal(null)}
+              className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+            >
+              Close
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      {action_modal === "approve" && selected_item && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Approve Item
-            </h3>
-            <p className="text-sm text-gray-600 mb-6">Are you sure?</p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => set_action_modal(null)}
-                className="px-4 py-2 text-sm bg-gray-100 rounded-lg hover:bg-gray-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handle_approve}
-                className="px-4 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700"
-              >
-                Approve
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Dialog
+        open={action_modal === "approve" && !!selected_item}
+        onOpenChange={(open) => {
+          if (!open) {
+            set_action_modal(null);
+            set_selected_item(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Approve Item</DialogTitle>
+            <DialogDescription>Are you sure?</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <button
+              onClick={() => set_action_modal(null)}
+              className="px-4 py-2 text-sm bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handle_approve}
+              className="px-4 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700"
+            >
+              Approve
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      {action_modal === "reject" && selected_item && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">Reject Item</h3>
+      <Dialog
+        open={action_modal === "reject" && !!selected_item}
+        onOpenChange={(open) => {
+          if (!open) {
+            set_action_modal(null);
+            set_reject_reason("");
+            set_selected_item(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reject Item</DialogTitle>
+            <DialogDescription>
+              Provide a reason for rejecting this item.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
             <textarea
               value={reject_reason}
               onChange={(e) => set_reject_reason(e.target.value)}
               rows={4}
-              className="w-full px-3 py-2 border rounded-lg mb-4"
+              className="w-full px-3 py-2 border rounded-lg"
               placeholder="Reason..."
             />
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => {
-                  set_action_modal(null);
-                  set_reject_reason("");
-                }}
-                className="px-4 py-2 text-sm bg-gray-100 rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handle_reject}
-                disabled={!reject_reason}
-                className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg disabled:opacity-50"
-              >
-                Reject
-              </button>
-            </div>
           </div>
-        </div>
-      )}
+          <DialogFooter>
+            <button
+              onClick={() => {
+                set_action_modal(null);
+                set_reject_reason("");
+              }}
+              className="px-4 py-2 text-sm bg-gray-100 rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handle_reject}
+              disabled={!reject_reason}
+              className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg disabled:opacity-50"
+            >
+              Reject
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      {action_modal === "delete" && selected_item && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">Delete Item</h3>
-            <p className="text-sm text-gray-600 mb-6">This cannot be undone.</p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => set_action_modal(null)}
-                className="px-4 py-2 text-sm bg-gray-100 rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handle_delete}
-                className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg"
-              >
-                Delete
-              </button>
+      <Dialog
+        open={action_modal === "delete" && !!selected_item}
+        onOpenChange={(open) => {
+          if (!open) {
+            set_action_modal(null);
+            set_selected_item(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Item</DialogTitle>
+            <DialogDescription>This cannot be undone.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <button
+              onClick={() => set_action_modal(null)}
+              className="px-4 py-2 text-sm bg-gray-100 rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handle_delete}
+              className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg"
+            >
+              Delete
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
             </div>
           </div>
         </div>

@@ -4,6 +4,14 @@ import { useAdmin } from "@/contexts/admin-context";
 import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { RefreshCw } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function ClaimsPage() {
   const { claims, loading, fetch_claims, approve_claim, reject_claim } =
@@ -193,122 +201,150 @@ export default function ClaimsPage() {
       )}
 
       {/* View Modal */}
-      {action_modal === "view" && selected_claim && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-          onClick={() => set_action_modal(null)}
-        >
-          <div
-            className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6">
-              <h3 className="text-xl font-semibold mb-4">Claim Details</h3>
-              <div className="space-y-4">
-                <div>
-                  <span className="text-sm font-medium text-gray-700">
-                    Item:
-                  </span>
-                  <p className="text-sm text-gray-900">
-                    {selected_claim.item_id?.title}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-gray-700">
-                    Claimant:
-                  </span>
-                  <p className="text-sm text-gray-900">
-                    {selected_claim.claimant_id?.name} (
-                    {selected_claim.claimant_id?.email})
-                  </p>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-gray-700">
-                    Status:
-                  </span>
-                  <p className="text-sm text-gray-900">
-                    {selected_claim.status}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-gray-700">
-                    Verification Answers:
-                  </span>
-                  <pre className="text-xs text-gray-600 bg-gray-50 p-3 rounded mt-1 overflow-auto">
-                    {JSON.stringify(
-                      selected_claim.verification_answers,
-                      null,
-                      2
-                    )}
-                  </pre>
-                </div>
-              </div>
-              <button
-                onClick={() => set_action_modal(null)}
-                className="mt-6 w-full px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
-              >
-                Close
-              </button>
+      <Dialog
+        open={action_modal === "view" && !!selected_claim}
+        onOpenChange={(open) => {
+          if (!open) {
+            set_action_modal(null);
+            set_selected_claim(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Claim Details</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div>
+              <span className="text-sm font-medium text-gray-700">
+                Item:
+              </span>
+              <p className="text-sm text-gray-900">
+                {selected_claim?.item_id?.title}
+              </p>
+            </div>
+            <div>
+              <span className="text-sm font-medium text-gray-700">
+                Claimant:
+              </span>
+              <p className="text-sm text-gray-900">
+                {selected_claim?.claimant_id?.name} (
+                {selected_claim?.claimant_id?.email})
+              </p>
+            </div>
+            <div>
+              <span className="text-sm font-medium text-gray-700">
+                Status:
+              </span>
+              <p className="text-sm text-gray-900">
+                {selected_claim?.status}
+              </p>
+            </div>
+            <div>
+              <span className="text-sm font-medium text-gray-700">
+                Verification Answers:
+              </span>
+              <pre className="text-xs text-gray-600 bg-gray-50 p-3 rounded mt-1 overflow-auto">
+                {JSON.stringify(
+                  selected_claim?.verification_answers,
+                  null,
+                  2
+                )}
+              </pre>
             </div>
           </div>
-        </div>
-      )}
+          <DialogFooter>
+            <button
+              onClick={() => set_action_modal(null)}
+              className="w-full px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+            >
+              Close
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Approve/Reject Modals */}
-      {action_modal === "approve" && selected_claim && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">Approve Claim</h3>
-            <p className="text-sm text-gray-600 mb-6">
-              Approve claim for <strong>{selected_claim.item_id?.title}</strong>
+      <Dialog
+        open={action_modal === "approve" && !!selected_claim}
+        onOpenChange={(open) => {
+          if (!open) {
+            set_action_modal(null);
+            set_selected_claim(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Approve Claim</DialogTitle>
+            <DialogDescription>
+              Approve claim for <strong>{selected_claim?.item_id?.title}</strong>
               ?
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => set_action_modal(null)}
-                className="px-4 py-2 text-sm bg-gray-100 rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handle_approve}
-                className="px-4 py-2 text-sm text-white bg-green-600 rounded-lg"
-              >
-                Approve
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <button
+              onClick={() => set_action_modal(null)}
+              className="px-4 py-2 text-sm bg-gray-100 rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handle_approve}
+              className="px-4 py-2 text-sm text-white bg-green-600 rounded-lg"
+            >
+              Approve
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      {action_modal === "reject" && selected_claim && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">Reject Claim</h3>
+      <Dialog
+        open={action_modal === "reject" && !!selected_claim}
+        onOpenChange={(open) => {
+          if (!open) {
+            set_action_modal(null);
+            set_reject_reason("");
+            set_selected_claim(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reject Claim</DialogTitle>
+            <DialogDescription>
+              Provide a reason for rejecting this claim.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
             <textarea
               value={reject_reason}
               onChange={(e) => set_reject_reason(e.target.value)}
               rows={4}
-              className="w-full px-3 py-2 border rounded-lg mb-4"
+              className="w-full px-3 py-2 border rounded-lg"
               placeholder="Rejection reason..."
             />
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => {
-                  set_action_modal(null);
-                  set_reject_reason("");
-                }}
-                className="px-4 py-2 text-sm bg-gray-100 rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handle_reject}
-                disabled={!reject_reason}
-                className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg disabled:opacity-50"
-              >
-                Reject
-              </button>
+          </div>
+          <DialogFooter>
+            <button
+              onClick={() => {
+                set_action_modal(null);
+                set_reject_reason("");
+              }}
+              className="px-4 py-2 text-sm bg-gray-100 rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handle_reject}
+              disabled={!reject_reason}
+              className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg disabled:opacity-50"
+            >
+              Reject
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
             </div>
           </div>
         </div>

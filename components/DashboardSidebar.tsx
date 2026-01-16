@@ -24,11 +24,11 @@ export default function DashboardSidebar({
 
   return (
     <aside
-      className={`bg-background border-r border-border transition-all duration-300 sticky top-0 h-screen ${
+      className={`bg-background border-r border-border transition-all duration-300 ${
         sidebar_open ? "w-64" : "w-20"
       }`}
     >
-      <div className="h-full flex flex-col">
+      <div className="sticky top-0 h-screen flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-border flex items-center justify-between">
           {sidebar_open && (
@@ -63,9 +63,7 @@ export default function DashboardSidebar({
           {nav_items.map((item) => {
             const is_active =
               pathname === item.href ||
-              (item.href !== "/dashboard" &&
-                item.href !== "/admin" &&
-                pathname.startsWith(item.href));
+              (item.href !== "/admin" && pathname.startsWith(item.href));
             const IconComponent = item.icon;
 
             return (

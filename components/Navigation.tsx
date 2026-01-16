@@ -37,12 +37,12 @@ export default function Navigation() {
   const dashboardLink = useMemo(() => {
     if (!user || !isAuthenticated) return null;
 
+    // All admin roles go to /admin
     switch (user.role) {
       case "admin":
-        return { href: "/dashboard", label: "Dashboard" };
       case "moderator":
       case "support_staff":
-        return { href: "/admin", label: "Admin Panel" };
+        return { href: "/admin", label: "Dashboard" };
       default:
         return null;
     }

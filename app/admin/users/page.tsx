@@ -4,6 +4,14 @@ import { useAdmin } from "@/contexts/admin-context";
 import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { RefreshCw } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function UsersPage() {
   const {
@@ -12,7 +20,6 @@ export default function UsersPage() {
     fetch_users,
     ban_user,
     unban_user,
-    update_user,
     update_user_role,
     verify_user,
     unverify_user,
@@ -229,17 +236,18 @@ export default function UsersPage() {
                       })}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        {/* Change Role Button */}
                         <button
                           onClick={() => {
                             set_selected_user(user);
                             set_new_role(user.role);
                             set_action_modal("role");
                           }}
-                          className="text-blue-600 hover:text-blue-900 text-xs"
+                          className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
                           title="Change Role"
                         >
-                          Role
+                          Change Role
                         </button>
 
                         {/* Verification Toggle */}
@@ -254,7 +262,7 @@ export default function UsersPage() {
                                 await unverify_user(user._id);
                               }
                             }}
-                            className="text-purple-600 hover:text-purple-900 text-xs"
+                            className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200"
                             title="Unverify User"
                           >
                             Unverify
@@ -264,7 +272,7 @@ export default function UsersPage() {
                             onClick={async () => {
                               await verify_user(user._id);
                             }}
-                            className="text-purple-600 hover:text-purple-900 text-xs"
+                            className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200"
                             title="Verify User"
                           >
                             Verify
@@ -283,7 +291,7 @@ export default function UsersPage() {
                                 await deactivate_user(user._id);
                               }
                             }}
-                            className="text-orange-600 hover:text-orange-900 text-xs"
+                            className="px-2 py-1 text-xs bg-orange-100 text-orange-700 rounded hover:bg-orange-200"
                             title="Deactivate User"
                           >
                             Deactivate
@@ -293,7 +301,7 @@ export default function UsersPage() {
                             onClick={async () => {
                               await activate_user(user._id);
                             }}
-                            className="text-green-600 hover:text-green-900 text-xs"
+                            className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200"
                             title="Activate User"
                           >
                             Activate
@@ -307,7 +315,8 @@ export default function UsersPage() {
                               set_selected_user(user);
                               set_action_modal("unban");
                             }}
-                            className="text-green-600 hover:text-green-900 text-xs"
+                            className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200"
+                            title="Unban User"
                           >
                             Unban
                           </button>
@@ -317,7 +326,8 @@ export default function UsersPage() {
                               set_selected_user(user);
                               set_action_modal("ban");
                             }}
-                            className="text-red-600 hover:text-red-900 text-xs"
+                            className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200"
+                            title="Ban User"
                           >
                             Ban
                           </button>
@@ -333,139 +343,162 @@ export default function UsersPage() {
       </div>
 
       {/* Ban Modal */}
-      {action_modal === "ban" && selected_user && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-card rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4">
-              Ban User: {selected_user.name}
-            </h3>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Reason for banning
-              </label>
-              <textarea
-                value={ban_reason}
-                onChange={(e) => set_ban_reason(e.target.value)}
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                placeholder="Enter reason for banning this user..."
-              />
-            </div>
-            <div className="flex items-center justify-end gap-3">
-              <button
-                onClick={() => {
-                  set_action_modal(null);
-                  set_ban_reason("");
-                  set_selected_user(null);
-                }}
-                className="px-4 py-2 text-sm text-foreground bg-muted rounded-lg hover:bg-muted/80"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handle_ban}
-                disabled={!ban_reason}
-                className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Ban User
-              </button>
-            </div>
+      <Dialog
+        open={action_modal === "ban" && !!selected_user}
+        onOpenChange={(open) => {
+          if (!open) {
+            set_action_modal(null);
+            set_ban_reason("");
+            set_selected_user(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Ban User: {selected_user?.name}</DialogTitle>
+            <DialogDescription>
+              Provide a reason for banning this user.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Reason for banning
+            </label>
+            <textarea
+              value={ban_reason}
+              onChange={(e) => set_ban_reason(e.target.value)}
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              placeholder="Enter reason for banning this user..."
+            />
           </div>
-        </div>
-      )}
+          <DialogFooter>
+            <button
+              onClick={() => {
+                set_action_modal(null);
+                set_ban_reason("");
+                set_selected_user(null);
+              }}
+              className="px-4 py-2 text-sm text-foreground bg-muted rounded-lg hover:bg-muted/80"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handle_ban}
+              disabled={!ban_reason}
+              className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Ban User
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Unban Modal */}
-      {action_modal === "unban" && selected_user && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-card rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4">
-              Unban User: {selected_user.name}
-            </h3>
-            <p className="text-sm text-gray-600 mb-6">
+      <Dialog
+        open={action_modal === "unban" && !!selected_user}
+        onOpenChange={(open) => {
+          if (!open) {
+            set_action_modal(null);
+            set_selected_user(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Unban User: {selected_user?.name}</DialogTitle>
+            <DialogDescription>
               Are you sure you want to unban this user? They will regain full
               access to the platform.
-            </p>
-            <div className="flex items-center justify-end gap-3">
-              <button
-                onClick={() => {
-                  set_action_modal(null);
-                  set_selected_user(null);
-                }}
-                className="px-4 py-2 text-sm text-foreground bg-muted rounded-lg hover:bg-muted/80"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handle_unban}
-                className="px-4 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700"
-              >
-                Unban User
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <button
+              onClick={() => {
+                set_action_modal(null);
+                set_selected_user(null);
+              }}
+              className="px-4 py-2 text-sm text-foreground bg-muted rounded-lg hover:bg-muted/80"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handle_unban}
+              className="px-4 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700"
+            >
+              Unban User
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Role Change Modal */}
-      {action_modal === "role" && selected_user && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-card rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4">
-              Change User Role: {selected_user.name}
-            </h3>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Current Role:{" "}
-                <span className="font-bold text-blue-600">
-                  {selected_user.role}
-                </span>
-              </label>
-              <label className="block text-sm font-medium text-foreground mb-2 mt-4">
-                Select New Role
-              </label>
-              <select
-                value={new_role}
-                onChange={(e) => set_new_role(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="student">Student</option>
-                <option value="admin">Admin</option>
-                <option value="moderator">Moderator</option>
-                <option value="support_staff">Support Staff</option>
-              </select>
-              <p className="text-xs text-gray-500 mt-2">
-                {new_role === "admin" &&
-                  "Admin has full access to all features and can manage all users."}
-                {new_role === "moderator" &&
-                  "Moderator can manage items, claims, and reports but has limited user management."}
-                {new_role === "support_staff" &&
-                  "Support Staff can view and assist with claims and reports."}
-                {new_role === "student" &&
-                  "Student has basic user access to post and claim items."}
-              </p>
-            </div>
-            <div className="flex items-center justify-end gap-3">
-              <button
-                onClick={() => {
-                  set_action_modal(null);
-                  set_new_role("");
-                  set_selected_user(null);
-                }}
-                className="px-4 py-2 text-sm text-foreground bg-muted rounded-lg hover:bg-muted/80"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handle_role_change}
-                disabled={!new_role || new_role === selected_user.role}
-                className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Update Role
-              </button>
-            </div>
+      <Dialog
+        open={action_modal === "role" && !!selected_user}
+        onOpenChange={(open) => {
+          if (!open) {
+            set_action_modal(null);
+            set_new_role("");
+            set_selected_user(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Change User Role: {selected_user?.name}</DialogTitle>
+            <DialogDescription>
+              Current Role:{" "}
+              <span className="font-bold text-blue-600">
+                {selected_user?.role}
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Select New Role
+            </label>
+            <select
+              value={new_role}
+              onChange={(e) => set_new_role(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="student">Student</option>
+              <option value="admin">Admin</option>
+              <option value="moderator">Moderator</option>
+              <option value="support_staff">Support Staff</option>
+            </select>
+            <p className="text-xs text-gray-500 mt-2">
+              {new_role === "admin" &&
+                "Admin has full access to all features and can manage all users."}
+              {new_role === "moderator" &&
+                "Moderator can manage items, claims, and reports but has limited user management."}
+              {new_role === "support_staff" &&
+                "Support Staff can view and assist with claims and reports."}
+              {new_role === "student" &&
+                "Student has basic user access to post and claim items."}
+            </p>
           </div>
-        </div>
-      )}
+          <DialogFooter>
+            <button
+              onClick={() => {
+                set_action_modal(null);
+                set_new_role("");
+                set_selected_user(null);
+              }}
+              className="px-4 py-2 text-sm text-foreground bg-muted rounded-lg hover:bg-muted/80"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handle_role_change}
+              disabled={!new_role || new_role === selected_user?.role}
+              className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Update Role
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

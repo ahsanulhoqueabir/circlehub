@@ -4,6 +4,14 @@ import { useAdmin } from "@/contexts/admin-context";
 import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { RefreshCw } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function ReportsPage() {
   const { reports, loading, fetch_reports, resolve_report } = useAdmin();
@@ -206,88 +214,110 @@ export default function ReportsPage() {
       )}
 
       {/* View Modal */}
-      {action_modal === "view" && selected_report && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-          onClick={() => set_action_modal(null)}
-        >
-          <div
-            className="bg-card rounded-lg max-w-2xl w-full p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-xl font-semibold mb-4">Report Details</h3>
-            <div className="space-y-3">
-              <div>
-                <span className="font-medium">Type:</span>{" "}
-                {selected_report.reported_type}
-              </div>
-              <div>
-                <span className="font-medium">Target ID:</span>{" "}
-                {selected_report.reported_id}
-              </div>
-              <div>
-                <span className="font-medium">Reporter:</span>{" "}
-                {selected_report.reporter_id?.name} (
-                {selected_report.reporter_id?.email})
-              </div>
-              <div>
-                <span className="font-medium">Reason:</span>{" "}
-                {selected_report.reason}
-              </div>
-              <div>
-                <span className="font-medium">Description:</span>
-                <p className="text-sm text-gray-600 mt-1">
-                  {selected_report.description}
-                </p>
-              </div>
-              <div>
-                <span className="font-medium">Priority:</span>{" "}
-                {selected_report.priority}
-              </div>
-              <div>
-                <span className="font-medium">Status:</span>{" "}
-                {selected_report.status}
-              </div>
+      <Dialog
+        open={action_modal === "view" && !!selected_report}
+        onOpenChange={(open) => {
+          if (!open) {
+            set_action_modal(null);
+            set_selected_report(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Report Details</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-3">
+            <div>
+              <span className="font-medium">Type:</span>{" "}
+              {selected_report?.reported_type}
             </div>
+            <div>
+              <span className="font-medium">Target ID:</span>{" "}
+              {selected_report?.reported_id}
+            </div>
+            <div>
+              <span className="font-medium">Reporter:</span>{" "}
+              {selected_report?.reporter_id?.name} (
+              {selected_report?.reporter_id?.email})
+            </div>
+            <div>
+              <span className="font-medium">Reason:</span>{" "}
+              {selected_report?.reason}
+            </div>
+            <div>
+              <span className="font-medium">Description:</span>
+              <p className="text-sm text-gray-600 mt-1">
+                {selected_report?.description}
+              </p>
+            </div>
+            <div>
+              <span className="font-medium">Priority:</span>{" "}
+              {selected_report?.priority}
+            </div>
+            <div>
+              <span className="font-medium">Status:</span>{" "}
+              {selected_report?.status}
+            </div>
+          </div>
+          <DialogFooter>
             <button
               onClick={() => set_action_modal(null)}
-              className="mt-6 w-full px-4 py-2 bg-muted rounded-lg"
+              className="w-full px-4 py-2 bg-muted rounded-lg"
             >
               Close
             </button>
-          </div>
-        </div>
-      )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Resolve Modal */}
-      {action_modal === "resolve" && selected_report && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-card rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">Resolve Report</h3>
+      <Dialog
+        open={action_modal === "resolve" && !!selected_report}
+        onOpenChange={(open) => {
+          if (!open) {
+            set_action_modal(null);
+            set_resolution("");
+            set_selected_report(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Resolve Report</DialogTitle>
+            <DialogDescription>
+              Provide resolution notes for this report.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
             <textarea
               value={resolution}
               onChange={(e) => set_resolution(e.target.value)}
               rows={4}
-              className="w-full px-3 py-2 border rounded-lg mb-4"
+              className="w-full px-3 py-2 border rounded-lg"
               placeholder="Resolution notes..."
             />
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => {
-                  set_action_modal(null);
-                  set_resolution("");
-                }}
-                className="px-4 py-2 text-sm bg-muted rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handle_resolve}
-                disabled={!resolution}
-                className="px-4 py-2 text-sm text-white bg-green-600 rounded-lg disabled:opacity-50"
-              >
-                Resolve
-              </button>
+          </div>
+          <DialogFooter>
+            <button
+              onClick={() => {
+                set_action_modal(null);
+                set_resolution("");
+              }}
+              className="px-4 py-2 text-sm bg-muted rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handle_resolve}
+              disabled={!resolution}
+              className="px-4 py-2 text-sm text-white bg-green-600 rounded-lg disabled:opacity-50"
+            >
+              Resolve
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
             </div>
           </div>
         </div>

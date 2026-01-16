@@ -69,8 +69,7 @@ export default async function RootLayout({
 }>) {
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "";
-  const is_admin_route =
-    pathname.startsWith("/admin") || pathname.startsWith("/dashboard");
+  const is_admin_route = pathname.startsWith("/admin");
 
   return (
     <html lang="en" suppressHydrationWarning>

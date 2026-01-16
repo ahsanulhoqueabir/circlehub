@@ -26,6 +26,8 @@ export default function AdminLayout({
   const role_display = useMemo(() => {
     if (!user) return "";
     switch (user.role) {
+      case "admin":
+        return "Administrator";
       case "moderator":
         return "Moderator";
       case "support_staff":
@@ -38,7 +40,7 @@ export default function AdminLayout({
   useEffect(() => {
     if (
       !isLoading &&
-      (!user || (user.role !== "moderator" && user.role !== "support_staff"))
+      (!user || !["admin", "moderator", "support_staff"].includes(user.role))
     ) {
       router.push("/login");
     }
@@ -47,7 +49,7 @@ export default function AdminLayout({
   if (
     isLoading ||
     !user ||
-    (user.role !== "moderator" && user.role !== "support_staff")
+    !["admin", "moderator", "support_staff"].includes(user.role)
   ) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -62,12 +64,12 @@ export default function AdminLayout({
         {/* Sidebar */}
         <DashboardSidebar
           nav_items={nav_items}
-          title="Admin Panel"
+          title={user.role === "admin" ? "Admin Dashboard" : "Admin Panel"}
           user_role_label={role_display}
         />
 
         {/* Main Content */}
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1">
           <div className="p-6">{children}</div>
         </main>
       </div>
