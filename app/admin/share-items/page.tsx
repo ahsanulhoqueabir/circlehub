@@ -381,10 +381,6 @@ export default function ShareItemsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
