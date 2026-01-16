@@ -97,9 +97,9 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
+        <div className="bg-card shadow rounded-lg overflow-hidden">
           {/* Header */}
           <div className="bg-linear-to-r from-orange-600 to-red-600 px-6 py-8">
             <div className="flex items-center space-x-6">
@@ -122,7 +122,7 @@ export default function NotificationsPage() {
                 <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
                   <Bell className="w-8 h-8 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-medium text-foreground mb-2">
                   No notifications yet
                 </h3>
                 <p className="text-gray-500 dark:text-gray-400">
@@ -139,9 +139,9 @@ export default function NotificationsPage() {
                       notification.type
                     )} ${
                       notification.read
-                        ? "bg-gray-50 dark:bg-slate-700"
-                        : "bg-white dark:bg-slate-800"
-                    } p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600`}
+                        ? "bg-muted"
+                        : "bg-card"
+                    } p-4 rounded-lg shadow-sm border border-border">
                   >
                     <div className="flex items-start space-x-3">
                       {getNotificationIcon(notification.type)}
@@ -151,7 +151,7 @@ export default function NotificationsPage() {
                             className={`text-sm font-medium ${
                               notification.read
                                 ? "text-gray-600 dark:text-gray-400"
-                                : "text-gray-900 dark:text-white"
+                              : "text-foreground"
                             }`}
                           >
                             {notification.title}
@@ -197,7 +197,7 @@ export default function NotificationsPage() {
 
           {/* Actions */}
           {notifications.length > 0 && (
-            <div className="bg-gray-50 dark:bg-slate-700 px-6 py-4">
+            <div className="bg-muted px-6 py-4">
               <div className="flex justify-between items-center">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   {notifications.filter((n) => !n.read).length} unread

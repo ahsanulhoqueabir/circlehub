@@ -8,14 +8,14 @@ import Link from "next/link";
 
 const EmptyState = ({ type }: { type: "lost" | "found" }) => (
   <div className="text-center py-12">
-    <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+    <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
       {type === "lost" ? (
         <Search className="w-8 h-8 text-gray-400" />
       ) : (
         <MapPin className="w-8 h-8 text-gray-400" />
       )}
     </div>
-    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+    <h3 className="text-lg font-medium text-foreground mb-2">
       No {type} items yet
     </h3>
     <p className="text-gray-500 dark:text-gray-400 mb-6">
@@ -70,9 +70,9 @@ export default function MyItemsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
+        <div className="bg-card shadow rounded-lg overflow-hidden">
           {/* Header */}
           <div className="bg-linear-to-r from-green-600 to-blue-600 px-6 py-8">
             <div className="flex items-center space-x-6">
@@ -89,7 +89,7 @@ export default function MyItemsPage() {
           </div>
 
           {/* Tabs */}
-          <div className="border-b border-gray-200 dark:border-gray-700">
+          <div className="border-b border-border">
             <nav className="-mb-px flex space-x-8 px-6">
               <button
                 onClick={() => setActiveTab("lost")}
@@ -134,10 +134,10 @@ export default function MyItemsPage() {
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-gray-50 dark:bg-slate-700 px-6 py-4">
+          <div className="bg-muted px-6 py-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
               <div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                <h3 className="text-lg font-medium text-foreground">
                   Quick Actions
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -153,7 +153,7 @@ export default function MyItemsPage() {
                 </Link>
                 <Link
                   href="/lost"
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex items-center px-4 py-2 border border-border text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-card hover:bg-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   <Eye className="w-4 h-4 mr-2" />
                   Browse Items

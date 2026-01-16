@@ -80,19 +80,19 @@ export default function ShareItemsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-card rounded-lg shadow p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <input
             type="text"
             placeholder="Search items..."
             value={search}
             onChange={(e) => set_search(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+            className="px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
           />
           <select
             value={status_filter}
             onChange={(e) => set_status_filter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+            className="px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
           >
             <option value="">All Status</option>
             <option value="available">Available</option>
@@ -102,7 +102,7 @@ export default function ShareItemsPage() {
           <select
             value={category_filter}
             onChange={(e) => set_category_filter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+            className="px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
           >
             <option value="">All Categories</option>
             <option value="electronics">Electronics</option>
@@ -127,7 +127,7 @@ export default function ShareItemsPage() {
           {share_items.map((item) => (
             <div
               key={item._id}
-              className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
+              className="bg-card rounded-lg shadow hover:shadow-lg transition-shadow"
             >
               <div
                 className="aspect-square bg-gray-200 rounded-t-lg overflow-hidden cursor-pointer"
@@ -151,7 +151,7 @@ export default function ShareItemsPage() {
               </div>
               <div className="p-4">
                 <div className="flex items-start justify-between mb-2">
-                  <h3 className="text-sm font-semibold text-gray-900 line-clamp-1">
+                  <h3 className="text-sm font-semibold text-foreground line-clamp-1">
                     {item.title}
                   </h3>
                   <span
@@ -224,11 +224,11 @@ export default function ShareItemsPage() {
           onClick={() => set_action_modal(null)}
         >
           <div
-            className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-card rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+              <h3 className="text-xl font-semibold text-foreground mb-4">
                 {selected_item.title}
               </h3>
               <div className="grid grid-cols-2 gap-4 mb-4">
@@ -255,8 +255,8 @@ export default function ShareItemsPage() {
 
       {action_modal === "approve" && selected_item && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-card rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">
               Approve Item
             </h3>
             <p className="text-sm text-gray-600 mb-6">Are you sure?</p>

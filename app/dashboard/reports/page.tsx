@@ -47,12 +47,12 @@ export default function ReportsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-card rounded-lg shadow p-4">
         <div className="flex items-center gap-4">
           <select
             value={status_filter}
             onChange={(e) => set_status_filter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm"
+            className="px-4 py-2 border border-border rounded-lg text-sm"
           >
             <option value="">All Status</option>
             <option value="new">New</option>
@@ -63,7 +63,7 @@ export default function ReportsPage() {
           <select
             value={priority_filter}
             onChange={(e) => set_priority_filter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm"
+            className="px-4 py-2 border border-border rounded-lg text-sm"
           >
             <option value="">All Priority</option>
             <option value="critical">Critical</option>
@@ -83,7 +83,7 @@ export default function ReportsPage() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-card rounded-lg shadow overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -111,11 +111,11 @@ export default function ReportsPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-background divide-y divide-border">
                 {reports.map((report) => (
-                  <tr key={report._id} className="hover:bg-gray-50">
+                  <tr key={report._id} className="hover:bg-muted">
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-foreground">
                         {report.reported_type}
                       </div>
                       <div className="text-xs text-gray-500">
@@ -212,7 +212,7 @@ export default function ReportsPage() {
           onClick={() => set_action_modal(null)}
         >
           <div
-            className="bg-white rounded-lg max-w-2xl w-full p-6"
+            className="bg-card rounded-lg max-w-2xl w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-xl font-semibold mb-4">Report Details</h3>
@@ -262,7 +262,7 @@ export default function ReportsPage() {
       {/* Resolve Modal */}
       {action_modal === "resolve" && selected_report && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="bg-card rounded-lg max-w-md w-full p-6">
             <h3 className="text-lg font-semibold mb-4">Resolve Report</h3>
             <textarea
               value={resolution}

@@ -34,7 +34,7 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
 
   return (
     <div
-      className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 cursor-pointer group h-fit"
+      className="bg-card rounded-lg shadow-sm border border-border overflow-hidden hover:shadow-md hover:border-border transition-all duration-200 cursor-pointer group h-fit"
       onClick={() => onClick(item)}
     >
       {/* Image */}
@@ -54,11 +54,11 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+            <h3 className="font-semibold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
               {item.title}
             </h3>
             <div className="flex items-center gap-2 mt-1">
-              <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full">
+              <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-muted text-foreground rounded-full">
                 {item.category}
               </span>
               {item.reward_amount && (
@@ -69,39 +69,39 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
             </div>
           </div>
 
-          <div className="flex flex-col items-end text-xs text-slate-500 dark:text-slate-400">
+          <div className="flex flex-col items-end text-xs text-muted-foreground">
             <span>{getTimeAgo(item.created_at)}</span>
           </div>
         </div>
 
         {/* Description */}
-        <p className="text-slate-600 dark:text-slate-300 text-sm line-clamp-2">
+        <p className="text-muted-foreground text-sm line-clamp-2">
           {item.description}
         </p>
 
         {/* Details */}
         <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <MapPin className="w-4 h-4 shrink-0" />
             <span className="truncate">{item.location}</span>
           </div>
 
-          <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <Calendar className="w-4 h-4 shrink-0" />
             <span className="truncate">{formatDate(item.date_lost)}</span>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
+        <div className="flex items-center justify-between pt-2 border-t border-border">
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <User className="w-3 h-3" />
               <span>{item.profile?.name || "Anonymous"}</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
               <Eye className="w-3 h-3" />
               <span>{item.views || 0}</span>
@@ -119,13 +119,13 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
             {item.tags.slice(0, 3).map((tag, index) => (
               <span
                 key={index}
-                className="inline-block px-2 py-1 text-xs bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 rounded"
+                className="inline-block px-2 py-1 text-xs bg-muted text-muted-foreground rounded"
               >
                 #{tag}
               </span>
             ))}
             {item.tags.length > 3 && (
-              <span className="text-xs text-slate-500 dark:text-slate-400">
+              <span className="text-xs text-muted-foreground">
                 +{item.tags.length - 3} more
               </span>
             )}

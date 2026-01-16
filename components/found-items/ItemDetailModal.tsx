@@ -96,7 +96,7 @@ const StatusBadge = ({
       >
         {config.label}
       </span>
-      <p className="text-xs text-slate-600 dark:text-slate-400">
+      <p className="text-xs text-muted-foreground">
         {config.description}
       </p>
     </div>
@@ -243,14 +243,14 @@ export default function ItemDetailModal({
       className="fixed inset-0 backdrop-blur-lg bg-black/20 z-50 flex items-center justify-center p-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white dark:bg-slate-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden border border-slate-200 dark:border-slate-700 shadow-xl">
+      <div className="bg-card rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden border border-border shadow-xl">
         {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+        <div className="flex items-start justify-between p-6 border-b border-border">
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+            <h2 className="text-2xl font-bold text-foreground mb-2">
               {item.title}
             </h2>
-            <div className="flex items-center gap-4 text-slate-600 dark:text-slate-400 text-sm">
+            <div className="flex items-center gap-4 text-muted-foreground text-sm">
               <div className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
                 <span>Found {formatDateDistance(item.date_found)} ago</span>
@@ -264,14 +264,14 @@ export default function ItemDetailModal({
           <div className="flex items-center gap-2 ml-4">
             <button
               onClick={handleShare}
-              className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="p-2 text-muted-foreground hover:text-foreground transition-colors"
               title="Share this found item"
             >
               <Share2 className="w-5 h-5" />
             </button>
             <button
               onClick={onClose}
-              className="p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+              className="p-2 text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -283,7 +283,7 @@ export default function ItemDetailModal({
             {/* Left Column - Image and Status */}
             <div className="lg:col-span-1">
               {item.image_url && (
-                <div className="aspect-square overflow-hidden bg-slate-100 dark:bg-slate-700 rounded-lg mb-6">
+                <div className="aspect-square overflow-hidden bg-muted rounded-lg mb-6">
                   <Image
                     src={item.image_url}
                     alt={item.title}
@@ -300,10 +300,10 @@ export default function ItemDetailModal({
             <div className="lg:col-span-2 space-y-6">
               {/* Description */}
               <div>
-                <h3 className="font-semibold text-slate-900 dark:text-white mb-3">
+                <h3 className="font-semibold text-foreground mb-3">
                   Description
                 </h3>
-                <p className="text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
                   {item.description}
                 </p>
               </div>
@@ -311,40 +311,40 @@ export default function ItemDetailModal({
               {/* Details Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                  <div className="flex items-center gap-2 text-muted-foreground">
                     <Tag className="w-4 h-4 shrink-0" />
                     <div>
                       <span className="text-sm font-medium">Category</span>
-                      <p className="text-slate-900 dark:text-white">
+                      <p className="text-foreground">
                         {item.category}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                  <div className="flex items-center gap-2 text-muted-foreground">
                     <MapPin className="w-4 h-4 shrink-0" />
                     <div>
                       <span className="text-sm font-medium">Found at</span>
-                      <p className="text-slate-900 dark:text-white">
+                      <p className="text-foreground">
                         {item.location}
                       </p>
                     </div>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                  <div className="flex items-center gap-2 text-muted-foreground">
                     <Calendar className="w-4 h-4 shrink-0" />
                     <div>
                       <span className="text-sm font-medium">Date found</span>
-                      <p className="text-slate-900 dark:text-white">
+                      <p className="text-foreground">
                         {formatFullDate(item.date_found)}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                  <div className="flex items-center gap-2 text-muted-foreground">
                     <User className="w-4 h-4 shrink-0" />
                     <div>
                       <span className="text-sm font-medium">Found by</span>
-                      <p className="text-slate-900 dark:text-white">
+                      <p className="text-foreground">
                         {contact.name}
                       </p>
                     </div>
@@ -355,14 +355,14 @@ export default function ItemDetailModal({
               {/* Tags */}
               {item.tags && item.tags.length > 0 && (
                 <div>
-                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3">
+                  <h3 className="font-semibold text-foreground mb-3">
                     Tags
                   </h3>
                   <div className="flex gap-2 flex-wrap">
                     {item.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm rounded-md"
+                        className="px-3 py-1 bg-muted text-muted-foreground text-sm rounded-md">
                       >
                         {tag}
                       </span>
@@ -374,7 +374,7 @@ export default function ItemDetailModal({
               {/* Contact Information or Claim Button */}
               {item.status === "available" && (
                 <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 sm:p-6">
-                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3">
+                  <h3 className="font-semibold text-foreground mb-3">
                     {user && user.id !== item.user_id
                       ? "Claim This Item"
                       : "Contact Finder"}
@@ -385,7 +385,7 @@ export default function ItemDetailModal({
                     <div className="text-center">
                       {!hasClaimed ? (
                         <>
-                          <p className="text-slate-600 dark:text-slate-400 mb-4">
+                          <p className="text-muted-foreground mb-4">
                             Is this your item? Submit a claim request to the
                             finder.
                           </p>
@@ -403,7 +403,7 @@ export default function ItemDetailModal({
                             <CheckCircle className="w-5 h-5" />
                             <span className="font-medium">Claim Submitted</span>
                           </div>
-                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                          <p className="text-sm text-muted-foreground">
                             The finder will review your claim request
                           </p>
                         </div>
@@ -412,7 +412,7 @@ export default function ItemDetailModal({
                   ) : !showContactInfo ? (
                     // Contact info for item owner
                     <div className="text-center">
-                      <p className="text-slate-600 dark:text-slate-400 mb-4">
+                      <p className="text-muted-foreground mb-4">
                         Is this your item? Contact the finder to claim it.
                       </p>
                       <button
@@ -448,7 +448,7 @@ export default function ItemDetailModal({
                         </div>
                       )}
                       {!contact.email && !contact.phone && (
-                        <p className="text-slate-700 dark:text-slate-300">
+                        <p className="text-muted-foreground">
                           No contact information available
                         </p>
                       )}
@@ -463,10 +463,10 @@ export default function ItemDetailModal({
 
               {item.status === "claimed" && (
                 <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
-                  <h3 className="font-semibold text-slate-900 dark:text-white mb-2">
+                  <h3 className="font-semibold text-foreground mb-2">
                     Item Claimed
                   </h3>
-                  <p className="text-slate-600 dark:text-slate-400">
+                  <p className="text-muted-foreground">
                     This item has been successfully returned to its owner.
                   </p>
                 </div>
@@ -479,14 +479,14 @@ export default function ItemDetailModal({
       {/* Claim Modal */}
       {showClaimModal && (
         <div className="fixed inset-0 backdrop-blur-lg bg-black/40 z-60 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-800 rounded-lg max-w-md w-full border border-slate-200 dark:border-slate-700 shadow-xl">
-            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700">
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+          <div className="bg-card rounded-lg max-w-md w-full border border-border shadow-xl">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
+              <h3 className="text-xl font-bold text-foreground">
                 Submit Claim Request
               </h3>
               <button
                 onClick={() => setShowClaimModal(false)}
-                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -494,7 +494,7 @@ export default function ItemDetailModal({
 
             <div className="p-4 sm:p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Why do you think this is your item?
                 </label>
                 <textarea
@@ -502,12 +502,12 @@ export default function ItemDetailModal({
                   onChange={(e) => setClaimMessage(e.target.value)}
                   rows={4}
                   placeholder="Describe the item features, where you lost it, or any identifying marks..."
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                  className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Contact Phone (Optional)
                 </label>
                 <input
@@ -515,7 +515,7 @@ export default function ItemDetailModal({
                   value={contactPhone}
                   onChange={(e) => setContactPhone(e.target.value)}
                   placeholder="+1234567890"
-                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-border rounded-lg bg-card text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-green-500 focus:border-transparent"
                 />
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   Providing a phone number helps the finder contact you faster
@@ -523,7 +523,7 @@ export default function ItemDetailModal({
               </div>
 
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                <p className="text-sm text-slate-700 dark:text-slate-300">
+                <p className="text-sm text-muted-foreground">
                   <strong>Note:</strong> The finder will review your claim and
                   may contact you for verification. Be prepared to describe the
                   item in detail.
@@ -531,11 +531,11 @@ export default function ItemDetailModal({
               </div>
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row gap-3 p-4 sm:p-6 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 p-4 sm:p-6 border-t border-border">
               <button
                 onClick={() => setShowClaimModal(false)}
                 disabled={isSubmittingClaim}
-                className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 font-medium transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2 border border-border text-foreground rounded-lg hover:bg-muted font-medium transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>

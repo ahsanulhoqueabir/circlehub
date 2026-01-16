@@ -35,9 +35,9 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
+        <div className="bg-card shadow rounded-lg overflow-hidden">
           {/* Header */}
           <div className="bg-linear-to-r from-purple-600 to-blue-600 px-6 py-8">
             <div className="flex items-center space-x-6">
@@ -94,14 +94,14 @@ export default function SettingsPage() {
 
             {/* Privacy & Security */}
             <section>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center">
                 <Shield className="w-5 h-5 mr-2" />
                 Privacy & Security
               </h2>
-              <div className="bg-gray-50 dark:bg-slate-700 rounded-lg p-4 space-y-3">
+              <div className="bg-muted rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
+                    <p className="font-medium text-foreground">
                       Account Verification
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-300">
@@ -118,7 +118,7 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
+                    <p className="font-medium text-foreground">
                       Two-Factor Authentication
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-300">
@@ -134,17 +134,17 @@ export default function SettingsPage() {
 
             {/* Notifications */}
             <section>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center">
                 <Bell className="w-5 h-5 mr-2" />
                 Notifications
               </h2>
-              <div className="bg-gray-50 dark:bg-slate-700 rounded-lg p-4 space-y-3">
+              <div className="bg-muted rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
+                    <p className="font-medium text-foreground">
                       Email Notifications
                     </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                    <p className="text-sm text-muted-foreground">
                       Receive updates about your lost/found items
                     </p>
                   </div>
@@ -154,16 +154,16 @@ export default function SettingsPage() {
                       className="sr-only peer"
                       defaultChecked
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-ring rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-card after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-card after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                   </label>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
+                    <p className="font-medium text-foreground">
                       Push Notifications
                     </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                    <p className="text-sm text-muted-foreground">
                       Get notified when someone matches your lost items
                     </p>
                   </div>
@@ -173,7 +173,7 @@ export default function SettingsPage() {
                       className="sr-only peer"
                       defaultChecked
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-ring rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-card after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-card after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                   </label>
                 </div>
               </div>
@@ -181,7 +181,7 @@ export default function SettingsPage() {
 
             {/* Appearance */}
             <section>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center">
                 {actualTheme === "light" ? (
                   <Sun className="w-5 h-5 mr-2" />
                 ) : (
@@ -189,16 +189,19 @@ export default function SettingsPage() {
                 )}
                 Appearance
               </h2>
-              <div className="bg-gray-50 dark:bg-slate-700 rounded-lg p-4">
+              <div className="bg-muted rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
+                    <p className="font-medium text-foreground">
                       Theme
                     </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                    <p className="text-sm text-muted-foreground">
                       Current theme:{" "}
                       {actualTheme === "light" ? "Light" : "Dark"}
-                    </p>
+                    </p>", "oldString": "                    <p className=\"text-sm text-gray-600 dark:text-gray-300\">
+                      Current theme:{" "}
+                      {actualTheme === "light" ? "Light" : "Dark"}
+                    </p>"
                   </div>
                   <button
                     onClick={handleThemeToggle}

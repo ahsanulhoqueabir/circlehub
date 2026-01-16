@@ -1,10 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import "@/lib/mongodb";
 import "@/lib/init-models";
 import {
   with_admin_auth,
   AdminAuthRequest,
-  get_client_info,
 } from "@/middleware/with-admin-auth";
 import { AdminService } from "@/services/admin.services";
 

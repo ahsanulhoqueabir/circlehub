@@ -80,7 +80,7 @@ export default function LostItemsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-card rounded-lg shadow p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <input
@@ -135,7 +135,7 @@ export default function LostItemsPage() {
           {lost_items.map((item) => (
             <div
               key={item._id}
-              className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
+              className="bg-card rounded-lg shadow hover:shadow-lg transition-shadow"
             >
               <div
                 className="aspect-square bg-gray-200 rounded-t-lg overflow-hidden cursor-pointer"
@@ -235,7 +235,7 @@ export default function LostItemsPage() {
           onClick={() => set_action_modal(null)}
         >
           <div
-            className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-card rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6">
@@ -323,8 +323,8 @@ export default function LostItemsPage() {
 
       {action_modal === "approve" && selected_item && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-card rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">
               Approve Item
             </h3>
             <p className="text-sm text-gray-600 mb-6">
@@ -351,8 +351,8 @@ export default function LostItemsPage() {
 
       {action_modal === "reject" && selected_item && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-card rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">
               Reject Item
             </h3>
             <div className="mb-4">
@@ -391,8 +391,8 @@ export default function LostItemsPage() {
 
       {action_modal === "delete" && selected_item && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-card rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">
               Delete Item
             </h3>
             <p className="text-sm text-gray-600 mb-6">

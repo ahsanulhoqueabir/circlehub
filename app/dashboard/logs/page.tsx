@@ -28,7 +28,7 @@ export default function LogsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-card rounded-lg shadow p-4">
         <div className="flex items-center gap-4">
           <select
             value={action_filter}
@@ -58,10 +58,10 @@ export default function LogsPage() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-card rounded-lg shadow overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-muted">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Admin
@@ -83,9 +83,9 @@ export default function LogsPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-card divide-y divide-border">
                 {audit_logs.map((log) => (
-                  <tr key={log._id} className="hover:bg-gray-50">
+                  <tr key={log._id} className="hover:bg-muted">
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-900">
                         {log.admin_id?.name}

@@ -78,15 +78,15 @@ export default function ItemDetailModal({
         />
 
         {/* Modal */}
-        <div className="relative w-full max-w-4xl bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700">
+        <div className="relative w-full max-w-4xl bg-card rounded-lg shadow-xl border border-border">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex items-center justify-between p-6 border-b border-border">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
                 <MapPin className="w-6 h-6 text-red-600 dark:text-red-400" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+                <h2 className="text-xl font-semibold text-foreground">
                   Lost Item Details
                 </h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -97,7 +97,7 @@ export default function ItemDetailModal({
 
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
             >
               <X className="w-6 h-6" />
             </button>
@@ -108,7 +108,7 @@ export default function ItemDetailModal({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Image */}
               {item.image_url && (
-                <div className="aspect-video w-full overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+                <div className="aspect-video w-full overflow-hidden rounded-lg border border-border">
                   <Image
                     src={item.image_url}
                     alt={item.title}
@@ -126,12 +126,12 @@ export default function ItemDetailModal({
                 }`}
               >
                 <div>
-                  <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+                  <h1 className="text-2xl font-bold text-foreground mb-2">
                     {item.title}
                   </h1>
 
                   <div className="flex flex-wrap items-center gap-2 mb-4">
-                    <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full">
+                    <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-muted text-foreground rounded-full">
                       {item.category}
                     </span>
                     <span
@@ -151,19 +151,19 @@ export default function ItemDetailModal({
                   </div>
                 </div>
 
-                <div className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                <div className="text-muted-foreground leading-relaxed">
                   {item.description}
                 </div>
 
                 {/* Details Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
                   <div className="flex items-center gap-3">
                     <MapPin className="w-5 h-5 text-slate-500 dark:text-slate-400 shrink-0" />
                     <div>
-                      <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      <p className="text-sm font-medium text-foreground">
                         Location
                       </p>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                      <p className="text-sm text-muted-foreground">
                         {item.location}
                       </p>
                     </div>
@@ -172,10 +172,10 @@ export default function ItemDetailModal({
                   <div className="flex items-center gap-3">
                     <Calendar className="w-5 h-5 text-slate-500 dark:text-slate-400 shrink-0" />
                     <div>
-                      <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      <p className="text-sm font-medium text-foreground">
                         Date Lost
                       </p>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                      <p className="text-sm text-muted-foreground">
                         {formatDate(item.date_lost)}
                       </p>
                     </div>
@@ -184,10 +184,10 @@ export default function ItemDetailModal({
                   <div className="flex items-center gap-3">
                     <Eye className="w-5 h-5 text-slate-500 dark:text-slate-400 shrink-0" />
                     <div>
-                      <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      <p className="text-sm font-medium text-foreground">
                         Views
                       </p>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                      <p className="text-sm text-muted-foreground">
                         {item.views} views
                       </p>
                     </div>
@@ -196,10 +196,10 @@ export default function ItemDetailModal({
                   <div className="flex items-center gap-3">
                     <Clock className="w-5 h-5 text-slate-500 dark:text-slate-400 shrink-0" />
                     <div>
-                      <p className="text-sm font-medium text-slate-900 dark:text-white">
+                      <p className="text-sm font-medium text-foreground">
                         Posted
                       </p>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                      <p className="text-sm text-muted-foreground">
                         {formatDate(item.created_at || "")}
                       </p>
                     </div>
@@ -209,7 +209,7 @@ export default function ItemDetailModal({
                 {/* Tags */}
                 {item.tags && item.tags.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-medium text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                    <h3 className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
                       <Tag className="w-4 h-4" />
                       Tags
                     </h3>
@@ -217,7 +217,7 @@ export default function ItemDetailModal({
                       {item.tags.map((tag, index) => (
                         <span
                           key={index}
-                          className="inline-block px-2 py-1 text-sm bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md"
+                          className="inline-block px-2 py-1 text-sm bg-muted text-muted-foreground rounded-md">
                         >
                           #{tag}
                         </span>
@@ -229,10 +229,10 @@ export default function ItemDetailModal({
             </div>
 
             {/* Reporter Info & Contact */}
-            <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
+            <div className="border-t border-border pt-6">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
                     {item.profile?.avatar_url ? (
                       <Image
                         src={item.profile.avatar_url}
@@ -242,15 +242,15 @@ export default function ItemDetailModal({
                         className="w-full h-full rounded-full object-cover"
                       />
                     ) : (
-                      <User className="w-6 h-6 text-slate-600 dark:text-slate-400" />
+                      <User className="w-6 h-6 text-muted-foreground" />
                     )}
                   </div>
 
                   <div>
-                    <h3 className="font-medium text-slate-900 dark:text-white">
+                    <h3 className="font-medium text-foreground">
                       Reported by {contact.name}
                     </h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
+                    <p className="text-sm text-muted-foreground mb-3">
                       Posted {getTimeAgo(item.created_at || "")} •{" "}
                       {item.views || 0} views
                     </p>
@@ -289,7 +289,7 @@ export default function ItemDetailModal({
                           </div>
                         )}
                         {!contact.email && !contact.phone && (
-                          <div className="text-sm text-slate-600 dark:text-slate-400">
+                          <div className="text-sm text-muted-foreground">
                             No contact information available
                           </div>
                         )}

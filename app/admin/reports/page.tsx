@@ -32,7 +32,7 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-foreground">
           Reports & Flagged Content
         </h1>
         <button
@@ -47,7 +47,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-card rounded-lg shadow p-4">
         <div className="flex items-center gap-4">
           <select
             value={status_filter}
@@ -83,10 +83,10 @@ export default function ReportsPage() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-card rounded-lg shadow overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-muted">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Type & Target
@@ -111,11 +111,11 @@ export default function ReportsPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-card divide-y divide-border">
                 {reports.map((report) => (
-                  <tr key={report._id} className="hover:bg-gray-50">
+                  <tr key={report._id} className="hover:bg-muted">
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium text-foreground">
                         {report.reported_type}
                       </div>
                       <div className="text-xs text-gray-500">
@@ -123,7 +123,7 @@ export default function ReportsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-foreground">
                         {report.reporter_id?.name}
                       </div>
                       <div className="text-xs text-gray-500">
@@ -131,7 +131,7 @@ export default function ReportsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">
+                      <div className="text-sm text-foreground">
                         {report.reason}
                       </div>
                       <div className="text-xs text-gray-500 line-clamp-1">
@@ -159,7 +159,7 @@ export default function ReportsPage() {
                           report.status === "resolved"
                             ? "bg-green-100 text-green-700"
                             : report.status === "dismissed"
-                            ? "bg-gray-100 text-gray-700"
+                            ? "bg-muted text-foreground"
                             : report.status === "under_review"
                             ? "bg-blue-100 text-blue-700"
                             : "bg-yellow-100 text-yellow-700"
@@ -212,7 +212,7 @@ export default function ReportsPage() {
           onClick={() => set_action_modal(null)}
         >
           <div
-            className="bg-white rounded-lg max-w-2xl w-full p-6"
+            className="bg-card rounded-lg max-w-2xl w-full p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-xl font-semibold mb-4">Report Details</h3>
@@ -251,7 +251,7 @@ export default function ReportsPage() {
             </div>
             <button
               onClick={() => set_action_modal(null)}
-              className="mt-6 w-full px-4 py-2 bg-gray-100 rounded-lg"
+              className="mt-6 w-full px-4 py-2 bg-muted rounded-lg"
             >
               Close
             </button>
@@ -262,7 +262,7 @@ export default function ReportsPage() {
       {/* Resolve Modal */}
       {action_modal === "resolve" && selected_report && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="bg-card rounded-lg max-w-md w-full p-6">
             <h3 className="text-lg font-semibold mb-4">Resolve Report</h3>
             <textarea
               value={resolution}
@@ -277,7 +277,7 @@ export default function ReportsPage() {
                   set_action_modal(null);
                   set_resolution("");
                 }}
-                className="px-4 py-2 text-sm bg-gray-100 rounded-lg"
+                className="px-4 py-2 text-sm bg-muted rounded-lg"
               >
                 Cancel
               </button>

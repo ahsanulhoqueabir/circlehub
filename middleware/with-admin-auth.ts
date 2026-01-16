@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { JWTService } from "@/services/jwt.services";
-import { AdminService } from "@/services/admin.services";
+import dbConnect from "@/lib/mongodb";
+import User from "@/models/users.m";
 
 interface AdminData {
   _id: string;
@@ -20,6 +21,34 @@ export interface AdminAuthRequest extends NextRequest {
   admin_id?: string;
   admin_role?: string;
   permissions?: string[];
+}
+
+/**
+ * Get default permissions based on user role
+ */
+function getDefaultPermissionsByRole(role: string): string[] {
+  const permission_map: Record<string, string[]> = {
+    admin: [
+      "manage_users",
+      "manage_items",
+      "manage_claims",
+      "manage_reports",
+      "view_analytics",
+      "manage_admins",
+      "view_audit_logs",
+      "system_settings",
+    ],
+    moderator: [
+      "manage_items",
+      "manage_claims",
+      "manage_reports",
+      "view_analytics",
+      "view_audit_logs",
+    ],
+    support_staff: ["manage_claims", "manage_reports", "view_analytics"],
+  };
+
+  return permission_map[role] || [];
 }
 
 /**
@@ -68,24 +97,36 @@ export function with_admin_auth<T = unknown>(
         );
       }
 
-      // Get admin details
-      const admin_response = await AdminService.getAdminByUserId(
-        decoded.payload.userId
+      // Connect to database and get user details
+      await dbConnect();
+      const user = await User.findById(decoded.payload.userId).select(
+        "-password"
       );
-      if (!admin_response.success || !admin_response.data) {
+
+      if (!user) {
         return NextResponse.json(
           {
             success: false,
-            message: admin_response.error || "User is not an admin",
+            message: "User not found",
           },
-          { status: admin_response.statusCode || 403 }
+          { status: 404 }
         );
       }
 
-      const admin = admin_response.data as AdminData;
+      // Check if user has admin role
+      const admin_roles = ["admin", "moderator", "support_staff"];
+      if (!admin_roles.includes(user.role)) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "User is not an admin",
+          },
+          { status: 403 }
+        );
+      }
 
-      // Check if admin is active
-      if (!admin.is_active) {
+      // Check if user is active
+      if (!user.is_active) {
         return NextResponse.json(
           {
             success: false,
@@ -95,9 +136,12 @@ export function with_admin_auth<T = unknown>(
         );
       }
 
+      // Get permissions based on role
+      const permissions = getDefaultPermissionsByRole(user.role);
+
       // Check specific permission if required
       if (required_permission) {
-        if (!admin.permissions.includes(required_permission)) {
+        if (!permissions.includes(required_permission)) {
           return NextResponse.json(
             {
               success: false,
@@ -111,9 +155,9 @@ export function with_admin_auth<T = unknown>(
       // Add admin info to request
       const admin_req = req as AdminAuthRequest;
       admin_req.user_id = decoded.payload.userId;
-      admin_req.admin_id = admin._id.toString();
-      admin_req.admin_role = admin.role;
-      admin_req.permissions = admin.permissions;
+      admin_req.admin_id = user._id.toString();
+      admin_req.admin_role = user.role;
+      admin_req.permissions = permissions;
 
       // Call the handler with context if provided
       return await handler(admin_req, context as T);
@@ -165,24 +209,36 @@ export function with_admin_auth_any<T = unknown>(
         );
       }
 
-      // Get admin details
-      const admin_response = await AdminService.getAdminByUserId(
-        decoded.payload?.userId
+      // Connect to database and get user details
+      await dbConnect();
+      const user = await User.findById(decoded.payload.userId).select(
+        "-password"
       );
-      if (!admin_response.success || !admin_response.data) {
+
+      if (!user) {
         return NextResponse.json(
           {
             success: false,
-            message: admin_response.error || "User is not an admin",
+            message: "User not found",
           },
-          { status: admin_response.statusCode || 403 }
+          { status: 404 }
         );
       }
 
-      const admin = admin_response.data as AdminData;
+      // Check if user has admin role
+      const admin_roles = ["admin", "moderator", "support_staff"];
+      if (!admin_roles.includes(user.role)) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "User is not an admin",
+          },
+          { status: 403 }
+        );
+      }
 
-      // Check if admin is active
-      if (!admin.is_active) {
+      // Check if user is active
+      if (!user.is_active) {
         return NextResponse.json(
           {
             success: false,
@@ -192,9 +248,12 @@ export function with_admin_auth_any<T = unknown>(
         );
       }
 
+      // Get permissions based on role
+      const permissions = getDefaultPermissionsByRole(user.role);
+
       // Check if admin has at least one of the required permissions
       const has_permission = required_permissions.some((perm) =>
-        admin.permissions.includes(perm)
+        permissions.includes(perm)
       );
 
       if (!has_permission) {
@@ -212,9 +271,9 @@ export function with_admin_auth_any<T = unknown>(
       // Add admin info to request
       const admin_req = req as AdminAuthRequest;
       admin_req.user_id = decoded.payload.userId;
-      admin_req.admin_id = admin._id.toString();
-      admin_req.admin_role = admin.role;
-      admin_req.permissions = admin.permissions;
+      admin_req.admin_id = user._id.toString();
+      admin_req.admin_role = user.role;
+      admin_req.permissions = permissions;
 
       // Call the handler with context if provided
       return await handler(admin_req, context);
@@ -266,24 +325,36 @@ export function with_admin_role<T = unknown>(
         );
       }
 
-      // Get admin details
-      const admin_response = await AdminService.getAdminByUserId(
-        decoded.payload?.userId
+      // Connect to database and get user details
+      await dbConnect();
+      const user = await User.findById(decoded.payload.userId).select(
+        "-password"
       );
-      if (!admin_response.success || !admin_response.data) {
+
+      if (!user) {
         return NextResponse.json(
           {
             success: false,
-            message: admin_response.error || "User is not an admin",
+            message: "User not found",
           },
-          { status: admin_response.statusCode || 403 }
+          { status: 404 }
         );
       }
 
-      const admin = admin_response.data as AdminData;
+      // Check if user has admin role
+      const admin_roles = ["admin", "moderator", "support_staff"];
+      if (!admin_roles.includes(user.role)) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "User is not an admin",
+          },
+          { status: 403 }
+        );
+      }
 
-      // Check if admin is active
-      if (!admin.is_active) {
+      // Check if user is active
+      if (!user.is_active) {
         return NextResponse.json(
           {
             success: false,
@@ -294,7 +365,7 @@ export function with_admin_role<T = unknown>(
       }
 
       // Check role
-      if (admin.role !== required_role) {
+      if (user.role !== required_role) {
         return NextResponse.json(
           {
             success: false,
@@ -304,12 +375,15 @@ export function with_admin_role<T = unknown>(
         );
       }
 
+      // Get permissions based on role
+      const permissions = getDefaultPermissionsByRole(user.role);
+
       // Add admin info to request
       const admin_req = req as AdminAuthRequest;
       admin_req.user_id = decoded.payload?.userId;
-      admin_req.admin_id = admin._id.toString();
-      admin_req.admin_role = admin.role;
-      admin_req.permissions = admin.permissions;
+      admin_req.admin_id = user._id.toString();
+      admin_req.admin_role = user.role;
+      admin_req.permissions = permissions;
 
       // Call the handler with context if provided
       return await handler(admin_req, context);

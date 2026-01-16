@@ -92,7 +92,7 @@ export default function AnalyticsPage() {
 
       {/* Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-card rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-600">
               Total Users
@@ -115,7 +115,7 @@ export default function AnalyticsPage() {
             </p>
           )}
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-card rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-600">
               Total Items
@@ -138,7 +138,7 @@ export default function AnalyticsPage() {
             </p>
           )}
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-card rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-600">
               Active Claims
@@ -149,7 +149,7 @@ export default function AnalyticsPage() {
             {overview_stats?.active_claims || 0}
           </p>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-card rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-600">
               Share Items
@@ -163,7 +163,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* User Analytics */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-card rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           User Analytics
         </h2>
@@ -190,18 +190,18 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Items by Category */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-card rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Items by Category
         </h2>
         <div className="space-y-4">
           {Object.entries(category_stats).map(([category, stats]) => (
             <div key={category} className="flex items-center gap-4">
-              <div className="w-32 capitalize text-sm font-medium text-gray-700">
+              <div className="w-32 capitalize text-sm font-medium text-foreground">
                 {category}
               </div>
               <div className="flex-1 flex items-center gap-2">
-                <div className="flex-1 bg-gray-200 rounded-full h-8 relative overflow-hidden">
+                <div className="flex-1 bg-muted rounded-full h-8 relative overflow-hidden">
                   <div
                     className="absolute left-0 top-0 h-full bg-blue-500 rounded-full flex items-center justify-end pr-2"
                     style={{
@@ -215,7 +215,7 @@ export default function AnalyticsPage() {
                     </span>
                   </div>
                 </div>
-                <div className="flex-1 bg-gray-200 rounded-full h-8 relative overflow-hidden">
+                <div className="flex-1 bg-muted rounded-full h-8 relative overflow-hidden">
                   <div
                     className="absolute left-0 top-0 h-full bg-green-500 rounded-full flex items-center justify-end pr-2"
                     style={{
@@ -236,7 +236,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Claims Status */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-card rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Claims Status
         </h2>
@@ -276,7 +276,7 @@ export default function AnalyticsPage() {
 
       {/* Item Status Breakdown */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-card rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Lost Items
           </h3>
@@ -305,7 +305,7 @@ export default function AnalyticsPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-card rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Found Items
           </h3>
@@ -334,7 +334,7 @@ export default function AnalyticsPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-card rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Share Items
           </h3>

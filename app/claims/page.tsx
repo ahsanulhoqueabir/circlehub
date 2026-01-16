@@ -74,11 +74,11 @@ const ClaimCard = ({
   onReject?: (claimId: string) => void;
 }) => {
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 sm:p-6 hover:shadow-md transition-shadow">
+    <div className="bg-card rounded-lg border border-border p-4 sm:p-6 hover:shadow-md transition-shadow">
       <div className="flex flex-col sm:flex-row gap-4">
         {/* Item Image */}
         {claim.found_item?.image_url && (
-          <div className="w-full sm:w-24 h-24 shrink-0 bg-slate-100 dark:bg-slate-700 rounded-lg overflow-hidden">
+          <div className="w-full sm:w-24 h-24 shrink-0 bg-muted rounded-lg overflow-hidden">
             <Image
               src={claim.found_item.image_url}
               alt={claim.found_item.title}
@@ -93,7 +93,7 @@ const ClaimCard = ({
         <div className="flex-1 min-w-0">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-1 line-clamp-1">
+              <h3 className="text-lg font-semibold text-foreground mb-1 line-clamp-1">
                 {claim.found_item?.title || "Unknown Item"}
               </h3>
               <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm text-slate-600 dark:text-slate-400">
@@ -122,14 +122,14 @@ const ClaimCard = ({
                   {claim.found_item.location}
                 </span>
               </div>
-              <span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded-md text-xs">
+              <span className="px-2 py-1 bg-muted rounded-md text-xs">
                 {claim.found_item.category}
               </span>
             </div>
           )}
 
           {claim.message && (
-            <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3 mb-3">
+            <div className="bg-muted/50 rounded-lg p-3 mb-3">
               <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
                 {claim.message}
               </p>
@@ -192,10 +192,10 @@ const ClaimCard = ({
 
 const EmptyState = ({ type }: { type: "made" | "received" }) => (
   <div className="text-center py-12 sm:py-16">
-    <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center">
+    <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
       <Package className="w-8 h-8 sm:w-10 sm:h-10 text-slate-400" />
     </div>
-    <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
+    <h3 className="text-lg font-medium text-foreground mb-2">
       No claims {type === "made" ? "made" : "received"}
     </h3>
     <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto px-4">
@@ -245,11 +245,12 @@ export default function ClaimsPage() {
       setClaimsReceived(receivedResponse.data.claims || []);
     } catch (error) {
       console.error("Error fetching claims:", error);
-      const err = error as { response?: { data?: { error?: string } }; message?: string };
+      const err = error as {
+        response?: { data?: { error?: string } };
+        message?: string;
+      };
       setError(
-        err?.response?.data?.error ||
-          err?.message ||
-          "Failed to load claims"
+        err?.response?.data?.error || err?.message || "Failed to load claims"
       );
     } finally {
       setIsLoading(false);
@@ -274,11 +275,12 @@ export default function ClaimsPage() {
       fetchClaims();
     } catch (error) {
       console.error("Error approving claim:", error);
-      const err = error as { response?: { data?: { error?: string } }; message?: string };
+      const err = error as {
+        response?: { data?: { error?: string } };
+        message?: string;
+      };
       alert(
-        err?.response?.data?.error ||
-          err?.message ||
-          "Failed to approve claim"
+        err?.response?.data?.error || err?.message || "Failed to approve claim"
       );
     }
   };
@@ -297,18 +299,19 @@ export default function ClaimsPage() {
       fetchClaims();
     } catch (error) {
       console.error("Error rejecting claim:", error);
-      const err = error as { response?: { data?: { error?: string } }; message?: string };
+      const err = error as {
+        response?: { data?: { error?: string } };
+        message?: string;
+      };
       alert(
-        err?.response?.data?.error ||
-          err?.message ||
-          "Failed to reject claim"
+        err?.response?.data?.error || err?.message || "Failed to reject claim"
       );
     }
   };
 
   if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-b-2 border-blue-600"></div>
       </div>
     );
@@ -326,11 +329,11 @@ export default function ClaimsPage() {
   const currentClaims = activeTab === "made" ? claimsMade : claimsReceived;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 py-6 sm:py-8">
+    <div className="min-h-screen bg-background py-6 sm:py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
             My Claims
           </h1>
           <p className="text-slate-600 dark:text-slate-400">
@@ -339,8 +342,8 @@ export default function ClaimsPage() {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 mb-6">
-          <div className="flex border-b border-slate-200 dark:border-slate-700">
+        <div className="bg-card rounded-lg border border-border mb-6">
+          <div className="flex border-b border-border">
             <button
               onClick={() => setActiveTab("made")}
               className={`flex-1 px-4 py-3 sm:px-6 sm:py-4 border-b-2 font-medium text-sm sm:text-base transition-colors ${

@@ -247,10 +247,10 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white dark:bg-slate-900">
+      <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               How CircleHub JnU Works
             </h2>
             <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
@@ -266,14 +266,14 @@ export default function Home() {
                 <Link
                   key={index}
                   href={feature.href}
-                  className="group p-8 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 transition-colors bg-white dark:bg-slate-800 hover:shadow-lg"
+                  className="group p-8 rounded-xl border border-border hover:border-blue-300 dark:hover:border-blue-600 transition-colors bg-card hover:shadow-lg"
                 >
                   <div
                     className={`w-12 h-12 ${feature.bgColor} rounded-lg flex items-center justify-center mb-6`}
                   >
                     <Icon className={`w-6 h-6 ${feature.color}`} />
                   </div>
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  <h3 className="text-xl font-semibold text-foreground mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                     {feature.title}
                   </h3>
                   <p className="text-slate-600 dark:text-slate-300 mb-4">
@@ -291,7 +291,7 @@ export default function Home() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-slate-50 dark:bg-slate-800">
+      <section className="py-16 bg-muted">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => {
@@ -301,7 +301,7 @@ export default function Home() {
                   <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-3">
                     <Icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-1">
+                  <div className="text-2xl md:text-3xl font-bold text-foreground mb-1">
                     {stat.value}
                   </div>
                   <div className="text-sm text-slate-600 dark:text-slate-300">
@@ -315,10 +315,10 @@ export default function Home() {
       </section>
 
       {/* Recent Activity Section */}
-      <section className="py-20 bg-white dark:bg-slate-900">
+      <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
+            <h2 className="text-3xl font-bold text-foreground mb-4">
               Recent Activity
             </h2>
             <p className="text-lg text-slate-600 dark:text-slate-300">
@@ -332,12 +332,12 @@ export default function Home() {
               Array.from({ length: 3 }).map((_, index) => (
                 <div
                   key={index}
-                  className="flex items-center p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 animate-pulse"
+                  className="flex items-center p-4 rounded-lg border border-border bg-card animate-pulse"
                 >
-                  <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 mr-4"></div>
+                  <div className="w-10 h-10 rounded-full bg-muted mr-4"></div>
                   <div className="flex-1">
-                    <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/3 mb-2"></div>
-                    <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/4"></div>
+                    <div className="h-4 bg-muted rounded w-1/3 mb-2"></div>
+                    <div className="h-3 bg-muted rounded w-1/4"></div>
                   </div>
                 </div>
               ))
@@ -349,7 +349,7 @@ export default function Home() {
               recent_activity.map((activity) => (
                 <div
                   key={activity.id}
-                  className="flex items-center p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
+                  className="flex items-center p-4 rounded-lg border border-border bg-card"
                 >
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 ${
@@ -372,7 +372,7 @@ export default function Home() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-medium text-slate-900 dark:text-white">
+                      <h3 className="font-medium text-foreground">
                         {activity.title}
                       </h3>
                       <span className="text-sm text-slate-500 dark:text-slate-400">
@@ -391,7 +391,7 @@ export default function Home() {
           <div className="text-center mt-8">
             <Link
               href="/activity"
-              className="inline-flex items-center px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-medium rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              className="inline-flex items-center px-6 py-3 bg-muted text-foreground font-medium rounded-lg hover:bg-muted/80 transition-colors"
             >
               View All Activity
               <ArrowRight className="ml-2 w-4 h-4" />
@@ -401,12 +401,12 @@ export default function Home() {
       </section>
 
       {/* Trust & Security Section */}
-      <section className="py-16 bg-slate-50 dark:bg-slate-800">
+      <section className="py-16 bg-muted">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
             <Shield className="w-8 h-8 text-blue-600 dark:text-blue-400" />
           </div>
-          <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
             Secure & Trusted Platform
           </h2>
           <p className="text-lg text-slate-600 dark:text-slate-300 mb-8">

@@ -43,6 +43,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Clear auth data function (defined early for use in other functions)
+  const clearAuthData = useCallback(() => {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    setAccessToken(null);
+    setUser(null);
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+    }
+  }, []);
+
+  // Logout function (defined early for use in other functions)
+  const logout = useCallback(() => {
+    clearAuthData();
+  }, [clearAuthData]);
+
   // Clear refresh timer on unmount
   useEffect(() => {
     return () => {
@@ -50,20 +67,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         clearTimeout(refreshTimerRef.current);
       }
     };
-  }, []);
-
-  // Auto-refresh access token before expiry
-  const scheduleTokenRefresh = useCallback((expiresIn: number) => {
-    if (refreshTimerRef.current) {
-      clearTimeout(refreshTimerRef.current);
-    }
-
-    // Refresh token 1 minute before expiry
-    const refreshTime = Math.max(0, (expiresIn - 60) * 1000);
-
-    refreshTimerRef.current = setTimeout(async () => {
-      await refreshAccessToken();
-    }, refreshTime);
   }, []);
 
   // Refresh access token using refresh token
@@ -89,11 +92,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (data.accessToken) {
           setAccessToken(data.accessToken);
           localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
-
-          // Schedule next refresh
-          if (data.expiresIn) {
-            scheduleTokenRefresh(data.expiresIn);
-          }
+          return data;
+        } else {
+          logout();
         }
       } else {
         // Refresh token is invalid or expired, logout user
@@ -103,86 +104,170 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Error refreshing access token:", error);
       logout();
     }
-  }, [scheduleTokenRefresh]);
+  }, [logout]);
+
+  // Auto-refresh access token before expiry
+  const scheduleTokenRefresh = useCallback(
+    (expiresIn: number) => {
+      if (refreshTimerRef.current) {
+        clearTimeout(refreshTimerRef.current);
+      }
+
+      // Refresh token 1 minute before expiry
+      const refreshTime = Math.max(0, (expiresIn - 60) * 1000);
+
+      refreshTimerRef.current = setTimeout(async () => {
+        const refreshResult = await refreshAccessToken();
+        // Schedule next refresh if successful
+        if (refreshResult?.expiresIn) {
+          scheduleTokenRefresh(refreshResult.expiresIn);
+        }
+      }, refreshTime);
+    },
+    [refreshAccessToken]
+  );
+
+  // Fetch current user from API using token
+  const fetchCurrentUser = useCallback(
+    async (authToken: string) => {
+      console.log("Auth: Fetching current user...");
+      try {
+        const response = await fetch("/api/auth/me", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
+
+        console.log("Auth: /api/auth/me response:", {
+          status: response.status,
+          ok: response.ok,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Auth: Current user data received:", {
+            hasUser: !!data.user,
+            userId: data.user?.id,
+          });
+          if (data.user) {
+            setUser(data.user);
+            localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+            return true;
+          }
+        } else if (response.status === 401) {
+          console.warn("Auth: Token invalid (401), attempting refresh...");
+          // Token is invalid, try to refresh
+          const refreshResult = await refreshAccessToken();
+          if (refreshResult?.accessToken) {
+            // Retry with new token
+            console.log("Auth: Token refreshed, retrying fetchCurrentUser");
+            return await fetchCurrentUser(refreshResult.accessToken);
+          } else {
+            console.error("Auth: Token refresh failed");
+          }
+        } else {
+          console.error("Auth: Unexpected response status:", response.status);
+        }
+        return false;
+      } catch (error) {
+        console.error("Auth: Error fetching current user:", error);
+        return false;
+      }
+    },
+    [refreshAccessToken]
+  );
 
   // Load user from localStorage and verify token on mount
   useEffect(() => {
-    const loadUser = () => {
+    let mounted = true;
+
+    const loadUser = async () => {
       try {
         const storedAccessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
         const storedUser = localStorage.getItem(USER_KEY);
 
+        console.log("Auth: Loading user from localStorage", {
+          hasToken: !!storedAccessToken,
+          hasUser: !!storedUser,
+        });
+
         if (storedAccessToken && storedUser) {
           const parsedUser = JSON.parse(storedUser);
 
-          // Set user, token and loading state together
+          // Only update state if component is still mounted
+          if (!mounted) return;
+
+          // Set user and token immediately for better UX
           setAccessToken(storedAccessToken);
           setUser(parsedUser);
           setIsLoading(false);
 
-          // Verify token and fetch fresh user data in background
-          fetchCurrentUser(storedAccessToken).catch((err) => {
-            console.error("Failed to verify user:", err);
-            // Don't clear user data if verification fails, token might still be valid
+          console.log("Auth: User loaded from localStorage", {
+            userId: parsedUser.id,
+            role: parsedUser.role,
           });
+
+          // Verify token in background - but don't clear auth if it fails
+          // Token might still be valid even if API call fails temporarily
+          try {
+            const response = await fetch("/api/auth/me", {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${storedAccessToken}`,
+              },
+            });
+
+            console.log("Auth: /api/auth/me response:", {
+              status: response.status,
+              ok: response.ok,
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              if (data.user && mounted) {
+                setUser(data.user);
+                localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+              }
+            }
+            // Don't clear auth on failure - token might still be valid
+          } catch (err) {
+            console.warn("Auth: Background verification failed:", err);
+            // Keep user logged in even if verification fails
+          }
         } else {
-          setIsLoading(false);
+          console.log("Auth: No stored credentials found");
+          if (mounted) {
+            setIsLoading(false);
+          }
         }
       } catch (error) {
-        console.error("Error loading user:", error);
-        // Clear invalid data
-        clearAuthData();
-        setIsLoading(false);
+        console.error("Auth: Error loading user:", error);
+        if (mounted) {
+          // Clear invalid data
+          localStorage.removeItem(ACCESS_TOKEN_KEY);
+          localStorage.removeItem(REFRESH_TOKEN_KEY);
+          localStorage.removeItem(USER_KEY);
+          setAccessToken(null);
+          setUser(null);
+          setIsLoading(false);
+        }
       }
     };
 
     loadUser();
-  }, []);
 
-  // Fetch current user from API using token
-  const fetchCurrentUser = async (authToken: string) => {
-    try {
-      const response = await fetch("/api/auth/me", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.user) {
-          setUser(data.user);
-          localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-        }
-      } else {
-        // Token is invalid, try to refresh
-        await refreshAccessToken();
-      }
-    } catch (error) {
-      console.error("Error fetching current user:", error);
-      throw error;
-    }
-  };
+    return () => {
+      mounted = false;
+    };
+  }, []); // Empty dependency array - only run once on mount
 
   // Refresh user data
   const refreshUser = useCallback(async () => {
     if (accessToken) {
       await fetchCurrentUser(accessToken);
     }
-  }, [accessToken]);
-
-  // Clear auth data
-  const clearAuthData = () => {
-    localStorage.removeItem(ACCESS_TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-    setAccessToken(null);
-    setUser(null);
-    if (refreshTimerRef.current) {
-      clearTimeout(refreshTimerRef.current);
-    }
-  };
+  }, [accessToken, fetchCurrentUser]);
 
   // Login function
   const login = async (email: string, password: string) => {
@@ -202,6 +287,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (data.user && data.tokens) {
+        console.log("Login successful:", {
+          user: data.user,
+          hasTokens: !!data.tokens,
+        });
         setUser(data.user);
         setAccessToken(data.tokens.accessToken);
         localStorage.setItem(ACCESS_TOKEN_KEY, data.tokens.accessToken);
@@ -272,11 +361,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Logout function
-  const logout = () => {
-    clearAuthData();
-  };
-
   const value: AuthContextType = {
     user,
     accessToken,
@@ -288,6 +372,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     logout,
     refreshUser,
   };
+
+  // Debug: Log auth state changes
+  useEffect(() => {
+    console.log("Auth State Changed:", {
+      isLoading,
+      isAuthenticated: !!user && !!accessToken,
+      hasUser: !!user,
+      hasToken: !!accessToken,
+      userId: user?.id,
+    });
+  }, [user, accessToken, isLoading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

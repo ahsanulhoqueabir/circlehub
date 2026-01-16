@@ -6,20 +6,33 @@ import { formatDistanceToNow } from "date-fns";
 import { RefreshCw } from "lucide-react";
 
 export default function UsersPage() {
-  const { users, loading, fetch_users, ban_user, unban_user, update_user } =
-    useAdmin();
+  const {
+    users,
+    loading,
+    fetch_users,
+    ban_user,
+    unban_user,
+    update_user,
+    update_user_role,
+    verify_user,
+    unverify_user,
+    activate_user,
+    deactivate_user,
+  } = useAdmin();
 
   const [search, set_search] = useState("");
   const [status_filter, set_status_filter] = useState("");
+  const [role_filter, set_role_filter] = useState("");
   const [selected_user, set_selected_user] = useState<any>(null);
   const [action_modal, set_action_modal] = useState<
-    "ban" | "unban" | "edit" | null
+    "ban" | "unban" | "edit" | "role" | null
   >(null);
   const [ban_reason, set_ban_reason] = useState("");
+  const [new_role, set_new_role] = useState("");
 
   useEffect(() => {
-    fetch_users({ search, status: status_filter });
-  }, [fetch_users, search, status_filter]);
+    fetch_users({ search, status: status_filter, role: role_filter });
+  }, [fetch_users, search, status_filter, role_filter]);
 
   const handle_ban = async () => {
     if (selected_user && ban_reason) {
@@ -38,10 +51,23 @@ export default function UsersPage() {
     }
   };
 
+  const handle_role_change = async () => {
+    if (selected_user && new_role) {
+      try {
+        await update_user_role(selected_user._id, new_role);
+        set_action_modal(null);
+        set_new_role("");
+        set_selected_user(null);
+      } catch (error) {
+        console.error("Failed to update user role:", error);
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
+        <h1 className="text-2xl font-bold text-foreground">User Management</h1>
         <button
           onClick={() => fetch_users({ search, status: status_filter })}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2"
@@ -52,8 +78,8 @@ export default function UsersPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-card rounded-lg shadow p-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <input
               type="text"
@@ -74,6 +100,19 @@ export default function UsersPage() {
               <option value="banned">Banned</option>
             </select>
           </div>
+          <div>
+            <select
+              value={role_filter}
+              onChange={(e) => set_role_filter(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">All Roles</option>
+              <option value="student">Student</option>
+              <option value="admin">Admin</option>
+              <option value="moderator">Moderator</option>
+              <option value="support_staff">Support Staff</option>
+            </select>
+          </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">
               Total: <strong>{users.length}</strong> users
@@ -83,15 +122,15 @@ export default function UsersPage() {
       </div>
 
       {/* Users Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-card rounded-lg shadow overflow-hidden">
         {loading.users ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-muted">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     User
@@ -113,16 +152,16 @@ export default function UsersPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-card divide-y divide-border">
                 {users.map((user) => (
-                  <tr key={user._id} className="hover:bg-gray-50">
+                  <tr key={user._id} className="hover:bg-muted">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
                           {user.name?.charAt(0).toUpperCase()}
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-foreground">
                             {user.name}
                           </div>
                           {user.student_id && (
@@ -134,7 +173,9 @@ export default function UsersPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900">{user.email}</div>
+                      <div className="text-sm text-foreground">
+                        {user.email}
+                      </div>
                       {user.phone && (
                         <div className="text-xs text-gray-500">
                           {user.phone}
@@ -142,22 +183,40 @@ export default function UsersPage() {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">
+                      <span
+                        className={`px-2 py-1 text-xs rounded ${
+                          user.role === "admin"
+                            ? "bg-red-100 text-red-700"
+                            : user.role === "moderator"
+                            ? "bg-purple-100 text-purple-700"
+                            : user.role === "support_staff"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-blue-100 text-blue-700"
+                        }`}
+                      >
                         {user.role}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-col gap-1">
+                        {/* Active/Inactive Status */}
                         <span
                           className={`px-2 py-1 text-xs rounded inline-block w-fit ${
-                            user.is_banned
+                            !user.is_active
+                              ? "bg-gray-100 text-gray-700"
+                              : user.is_banned
                               ? "bg-red-100 text-red-700"
                               : "bg-green-100 text-green-700"
                           }`}
                         >
-                          {user.is_banned ? "Banned" : "Active"}
+                          {!user.is_active
+                            ? "Inactive"
+                            : user.is_banned
+                            ? "Banned"
+                            : "Active"}
                         </span>
-                        {user.is_verified && (
+                        {/* Verification Badge */}
+                        {user.verified && (
                           <span className="px-2 py-1 text-xs rounded bg-purple-100 text-purple-700 inline-block w-fit">
                             ✓ Verified
                           </span>
@@ -171,13 +230,84 @@ export default function UsersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => {
+                            set_selected_user(user);
+                            set_new_role(user.role);
+                            set_action_modal("role");
+                          }}
+                          className="text-blue-600 hover:text-blue-900 text-xs"
+                          title="Change Role"
+                        >
+                          Role
+                        </button>
+
+                        {/* Verification Toggle */}
+                        {user.verified ? (
+                          <button
+                            onClick={async () => {
+                              if (
+                                confirm(
+                                  `Are you sure you want to unverify ${user.name}?`
+                                )
+                              ) {
+                                await unverify_user(user._id);
+                              }
+                            }}
+                            className="text-purple-600 hover:text-purple-900 text-xs"
+                            title="Unverify User"
+                          >
+                            Unverify
+                          </button>
+                        ) : (
+                          <button
+                            onClick={async () => {
+                              await verify_user(user._id);
+                            }}
+                            className="text-purple-600 hover:text-purple-900 text-xs"
+                            title="Verify User"
+                          >
+                            Verify
+                          </button>
+                        )}
+
+                        {/* Active/Deactivate Toggle */}
+                        {user.is_active ? (
+                          <button
+                            onClick={async () => {
+                              if (
+                                confirm(
+                                  `Are you sure you want to deactivate ${user.name}? They won't be able to login.`
+                                )
+                              ) {
+                                await deactivate_user(user._id);
+                              }
+                            }}
+                            className="text-orange-600 hover:text-orange-900 text-xs"
+                            title="Deactivate User"
+                          >
+                            Deactivate
+                          </button>
+                        ) : (
+                          <button
+                            onClick={async () => {
+                              await activate_user(user._id);
+                            }}
+                            className="text-green-600 hover:text-green-900 text-xs"
+                            title="Activate User"
+                          >
+                            Activate
+                          </button>
+                        )}
+
+                        {/* Ban/Unban */}
                         {user.is_banned ? (
                           <button
                             onClick={() => {
                               set_selected_user(user);
                               set_action_modal("unban");
                             }}
-                            className="text-green-600 hover:text-green-900"
+                            className="text-green-600 hover:text-green-900 text-xs"
                           >
                             Unban
                           </button>
@@ -187,7 +317,7 @@ export default function UsersPage() {
                               set_selected_user(user);
                               set_action_modal("ban");
                             }}
-                            className="text-red-600 hover:text-red-900"
+                            className="text-red-600 hover:text-red-900 text-xs"
                           >
                             Ban
                           </button>
@@ -205,12 +335,12 @@ export default function UsersPage() {
       {/* Ban Modal */}
       {action_modal === "ban" && selected_user && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-card rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">
               Ban User: {selected_user.name}
             </h3>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Reason for banning
               </label>
               <textarea
@@ -228,7 +358,7 @@ export default function UsersPage() {
                   set_ban_reason("");
                   set_selected_user(null);
                 }}
-                className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                className="px-4 py-2 text-sm text-foreground bg-muted rounded-lg hover:bg-muted/80"
               >
                 Cancel
               </button>
@@ -247,8 +377,8 @@ export default function UsersPage() {
       {/* Unban Modal */}
       {action_modal === "unban" && selected_user && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          <div className="bg-card rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">
               Unban User: {selected_user.name}
             </h3>
             <p className="text-sm text-gray-600 mb-6">
@@ -261,7 +391,7 @@ export default function UsersPage() {
                   set_action_modal(null);
                   set_selected_user(null);
                 }}
-                className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                className="px-4 py-2 text-sm text-foreground bg-muted rounded-lg hover:bg-muted/80"
               >
                 Cancel
               </button>
@@ -270,6 +400,67 @@ export default function UsersPage() {
                 className="px-4 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700"
               >
                 Unban User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Role Change Modal */}
+      {action_modal === "role" && selected_user && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-card rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">
+              Change User Role: {selected_user.name}
+            </h3>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Current Role:{" "}
+                <span className="font-bold text-blue-600">
+                  {selected_user.role}
+                </span>
+              </label>
+              <label className="block text-sm font-medium text-foreground mb-2 mt-4">
+                Select New Role
+              </label>
+              <select
+                value={new_role}
+                onChange={(e) => set_new_role(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="student">Student</option>
+                <option value="admin">Admin</option>
+                <option value="moderator">Moderator</option>
+                <option value="support_staff">Support Staff</option>
+              </select>
+              <p className="text-xs text-gray-500 mt-2">
+                {new_role === "admin" &&
+                  "Admin has full access to all features and can manage all users."}
+                {new_role === "moderator" &&
+                  "Moderator can manage items, claims, and reports but has limited user management."}
+                {new_role === "support_staff" &&
+                  "Support Staff can view and assist with claims and reports."}
+                {new_role === "student" &&
+                  "Student has basic user access to post and claim items."}
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-3">
+              <button
+                onClick={() => {
+                  set_action_modal(null);
+                  set_new_role("");
+                  set_selected_user(null);
+                }}
+                className="px-4 py-2 text-sm text-foreground bg-muted rounded-lg hover:bg-muted/80"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handle_role_change}
+                disabled={!new_role || new_role === selected_user.role}
+                className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Update Role
               </button>
             </div>
           </div>

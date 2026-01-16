@@ -461,6 +461,150 @@ export class AdminService {
   }
 
   /**
+   * Update user verification status
+   */
+  static async updateUserVerification(
+    user_id: string,
+    verified: boolean,
+    admin_id: string,
+    ip_address?: string,
+    user_agent?: string
+  ): Promise<ServiceResponse<unknown>> {
+    try {
+      if (!user_id || !admin_id || typeof verified !== "boolean") {
+        return {
+          success: false,
+          error: "User ID, admin ID, and verified status are required",
+          statusCode: 400,
+        };
+      }
+
+      await dbConnect();
+
+      // Find the user
+      const user = await User.findById(user_id);
+      if (!user) {
+        return {
+          success: false,
+          error: "User not found",
+          statusCode: 404,
+        };
+      }
+
+      const old_status = user.verified;
+
+      // Update verification status
+      user.verified = verified;
+      await user.save();
+
+      // Log action
+      await AuditLog.create({
+        admin_id,
+        action: verified ? "verify_user" : "unverify_user",
+        target_type: "user",
+        target_id: user_id,
+        details: { old_status, new_status: verified },
+        ip_address,
+        user_agent,
+      });
+
+      return {
+        success: true,
+        data: {
+          message: `User ${verified ? "verified" : "unverified"} successfully`,
+          user: {
+            id: user._id,
+            email: user.email,
+            name: user.name,
+            verified: user.verified,
+          },
+        },
+        statusCode: 200,
+      };
+    } catch (error) {
+      console.error("Error updating user verification:", error);
+      return {
+        success: false,
+        error: "Failed to update user verification",
+        statusCode: 500,
+      };
+    }
+  }
+
+  /**
+   * Update user active status
+   */
+  static async updateUserActiveStatus(
+    user_id: string,
+    is_active: boolean,
+    admin_id: string,
+    ip_address?: string,
+    user_agent?: string
+  ): Promise<ServiceResponse<unknown>> {
+    try {
+      if (!user_id || !admin_id || typeof is_active !== "boolean") {
+        return {
+          success: false,
+          error: "User ID, admin ID, and active status are required",
+          statusCode: 400,
+        };
+      }
+
+      await dbConnect();
+
+      // Find the user
+      const user = await User.findById(user_id);
+      if (!user) {
+        return {
+          success: false,
+          error: "User not found",
+          statusCode: 404,
+        };
+      }
+
+      const old_status = user.is_active;
+
+      // Update active status
+      user.is_active = is_active;
+      await user.save();
+
+      // Log action
+      await AuditLog.create({
+        admin_id,
+        action: is_active ? "activate_user" : "deactivate_user",
+        target_type: "user",
+        target_id: user_id,
+        details: { old_status, new_status: is_active },
+        ip_address,
+        user_agent,
+      });
+
+      return {
+        success: true,
+        data: {
+          message: `User ${
+            is_active ? "activated" : "deactivated"
+          } successfully`,
+          user: {
+            id: user._id,
+            email: user.email,
+            name: user.name,
+            is_active: user.is_active,
+          },
+        },
+        statusCode: 200,
+      };
+    } catch (error) {
+      console.error("Error updating user active status:", error);
+      return {
+        success: false,
+        error: "Failed to update user active status",
+        statusCode: 500,
+      };
+    }
+  }
+
+  /**
    * Get default permissions based on role
    */
   private static getDefaultPermissionsByRole(role: string): string[] {

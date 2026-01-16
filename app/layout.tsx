@@ -69,7 +69,8 @@ export default async function RootLayout({
 }>) {
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "";
-  const is_admin_route = pathname.startsWith("/admin");
+  const is_admin_route =
+    pathname.startsWith("/admin") || pathname.startsWith("/dashboard");
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -82,7 +83,7 @@ export default async function RootLayout({
             children
           ) : (
             // Regular routes - with header/footer
-            <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
+            <div className="min-h-screen bg-background flex flex-col">
               <Navigation />
               <main className="flex-1">{children}</main>
               <Footer />

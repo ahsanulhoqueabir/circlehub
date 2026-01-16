@@ -65,11 +65,11 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
   return (
     <div
       onClick={handleClick}
-      className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
+      className="bg-card rounded-lg shadow-sm border border-border hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
     >
       {/* Image */}
       {item.image_url && (
-        <div className="aspect-video overflow-hidden bg-slate-100 dark:bg-slate-700">
+        <div className="aspect-video overflow-hidden bg-muted">
           <Image
             src={item.image_url}
             alt={item.title}
@@ -82,28 +82,28 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
       <div className="p-4">
         {/* Header */}
         <div className="flex items-start justify-between mb-2">
-          <h3 className="font-semibold text-slate-900 dark:text-white text-lg leading-tight line-clamp-2">
+          <h3 className="font-semibold text-foreground text-lg leading-tight line-clamp-2">
             {item.title}
           </h3>
           <StatusBadge status={item.status} />
         </div>
 
         {/* Description */}
-        <p className="text-slate-600 dark:text-slate-300 text-sm mb-4 line-clamp-3">
+        <p className="text-muted-foreground text-sm mb-4 line-clamp-3">
           {item.description}
         </p>
 
         {/* Details */}
         <div className="space-y-2 mb-4">
-          <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <MapPin className="w-4 h-4 shrink-0" />
             <span className="truncate">{item.location}</span>
           </div>
-          <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Calendar className="w-4 h-4 shrink-0" />
             <span>Found {formatDateDistance(item.date_found)} ago</span>
           </div>
-          <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <User className="w-4 h-4 shrink-0" />
             <span className="truncate">
               Found by {item.profile?.name || "Anonymous"}
@@ -119,13 +119,13 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
               {item.tags.slice(0, 3).map((tag, index) => (
                 <span
                   key={index}
-                  className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs rounded-md"
+                  className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-md"
                 >
                   {tag}
                 </span>
               ))}
               {item.tags.length > 3 && (
-                <span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs rounded-md">
+                <span className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded-md">
                   +{item.tags.length - 3}
                 </span>
               )}
@@ -134,11 +134,11 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700">
+        <div className="flex items-center justify-between pt-4 border-t border-border">
           <div className="text-sm font-medium text-green-600 dark:text-green-400">
             {item.category}
           </div>
-          <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400 text-sm">
+          <div className="flex items-center gap-1 text-muted-foreground text-sm">
             <Eye className="w-4 h-4" />
             <span>{item.views || 0}</span>
           </div>

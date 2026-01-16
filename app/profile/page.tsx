@@ -28,9 +28,9 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white dark:bg-slate-800 shadow rounded-lg overflow-hidden">
+        <div className="bg-card shadow rounded-lg overflow-hidden">
           {/* Header */}
           <div className="bg-linear-to-r from-blue-600 to-purple-600 px-6 py-8">
             <div className="flex items-center space-x-6">
@@ -51,7 +51,7 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Basic Information */}
               <div className="space-y-4">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h2 className="text-lg font-semibold text-foreground">
                   Basic Information
                 </h2>
 
@@ -114,7 +114,7 @@ export default function ProfilePage() {
 
               {/* Statistics */}
               <div className="space-y-4">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <h2 className="text-lg font-semibold text-foreground">
                   Activity Statistics
                 </h2>
 
@@ -141,7 +141,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Actions */}
-            <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="mt-8 pt-6 border-t border-border">
               <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                 Edit Profile
               </button>

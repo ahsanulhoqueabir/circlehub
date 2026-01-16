@@ -190,17 +190,17 @@ export default function LostPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
             <Search className="w-8 h-8 text-red-600 dark:text-red-400" />
           </div>
-          <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">
+          <h1 className="text-4xl font-bold text-foreground mb-4">
             Lost Items
           </h1>
-          <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-6">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
             Report items you&apos;ve lost and search through items found by
             other students
           </p>
@@ -228,9 +228,7 @@ export default function LostPage() {
           <div className="flex items-center justify-center py-16">
             <div className="text-center">
               <div className="w-16 h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-slate-600 dark:text-slate-300">
-                Loading items...
-              </p>
+              <p className="text-muted-foreground">Loading items...</p>
             </div>
           </div>
         ) : (
@@ -240,12 +238,12 @@ export default function LostPage() {
               {statsData.map((stat, index) => (
                 <div
                   key={index}
-                  className="bg-white dark:bg-slate-800 rounded-lg p-4 text-center border border-slate-200 dark:border-slate-700"
+                  className="bg-card rounded-lg p-4 text-center border border-border"
                 >
                   <div className={`text-2xl font-bold ${stat.color} mb-1`}>
                     {stat.value}
                   </div>
-                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                  <div className="text-sm text-muted-foreground">
                     {stat.label}
                   </div>
                 </div>
@@ -279,12 +277,12 @@ export default function LostPage() {
             {/* Results Header */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-4">
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+                <h2 className="text-xl font-semibold text-foreground">
                   {filteredItems.length}{" "}
                   {filteredItems.length === 1 ? "Item" : "Items"} Found
                 </h2>
                 {searchQuery && (
-                  <span className="text-slate-600 dark:text-slate-400">
+                  <span className="text-muted-foreground">
                     for &ldquo;{searchQuery}&rdquo;
                   </span>
                 )}
@@ -306,7 +304,7 @@ export default function LostPage() {
                   className={`p-2 rounded-lg transition-colors ${
                     viewMode === "list"
                       ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                      : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                      : "text-slate-400 hover:text-foreground"
                   }`}
                 >
                   <List className="w-5 h-5" />
@@ -317,13 +315,13 @@ export default function LostPage() {
             {/* Items Grid/List */}
             {filteredItems.length === 0 ? (
               <div className="text-center py-16">
-                <div className="w-24 h-24 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
                   <Search className="w-12 h-12 text-slate-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
+                <h3 className="text-xl font-semibold text-foreground mb-2">
                   No items found
                 </h3>
-                <p className="text-slate-600 dark:text-slate-400 mb-6">
+                <p className="text-muted-foreground mb-6">
                   {searchQuery
                     ? "Try adjusting your search terms or filters"
                     : "No lost items have been reported yet"}
@@ -362,7 +360,7 @@ export default function LostPage() {
             {/* Load More Button (for pagination in real app) */}
             {filteredItems.length > 0 && (
               <div className="text-center mt-12">
-                <button className="px-8 py-3 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 font-medium transition-colors">
+                <button className="px-8 py-3 border border-border text-foreground rounded-lg hover:bg-muted font-medium transition-colors">
                   Load More Items
                 </button>
               </div>

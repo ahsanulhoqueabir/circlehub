@@ -80,10 +80,10 @@ export default function ItemDetailModal({
           onClick={onClose}
         />
 
-        <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700">
+        <div className="relative bg-card rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-border">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700">
-            <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">
+          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground">
               Item Details
             </h2>
             <button
@@ -134,7 +134,7 @@ export default function ItemDetailModal({
                   </span>
                 </div>
               </div>
-              <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-2">
+              <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2">
                 {item.title}
               </h3>
               {item.offer_type === "sale" && item.price && (
@@ -152,10 +152,10 @@ export default function ItemDetailModal({
 
             {/* Description */}
             <div className="mb-4 sm:mb-6">
-              <h4 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white mb-2">
+              <h4 className="text-base sm:text-lg font-semibold text-foreground mb-2">
                 Description
               </h4>
-              <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+              <p className="text-sm sm:text-base text-foreground leading-relaxed">
                 {item.description}
               </p>
             </div>
@@ -163,15 +163,15 @@ export default function ItemDetailModal({
             {/* Details Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
               <div>
-                <h4 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white mb-2 sm:mb-3">
+                <h4 className="text-base sm:text-lg font-semibold text-foreground mb-2 sm:mb-3">
                   Item Information
                 </h4>
                 <div className="space-y-2 sm:space-y-3">
-                  <div className="flex items-center gap-2 text-sm sm:text-base text-slate-600 dark:text-slate-300">
+                  <div className="flex items-center gap-2 text-sm sm:text-base text-foreground">
                     <MapPin className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
                     <span className="break-all">{item.location}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm sm:text-base text-slate-600 dark:text-slate-300">
+                  <div className="flex items-center gap-2 text-sm sm:text-base text-foreground">
                     <Calendar className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
                     <span>
                       Posted{" "}
@@ -184,16 +184,16 @@ export default function ItemDetailModal({
               </div>
 
               <div>
-                <h4 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white mb-2 sm:mb-3">
+                <h4 className="text-base sm:text-lg font-semibold text-foreground mb-2 sm:mb-3">
                   Contact Information
                 </h4>
                 <div className="space-y-2 sm:space-y-3">
-                  <div className="flex items-center gap-2 text-sm sm:text-base text-slate-600 dark:text-slate-300">
+                  <div className="flex items-center gap-2 text-sm sm:text-base text-foreground">
                     <User className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
                     <span className="break-all">{contact.name}</span>
                   </div>
                   {contact.email && (
-                    <div className="flex items-center gap-2 text-sm sm:text-base text-slate-600 dark:text-slate-300">
+                    <div className="flex items-center gap-2 text-sm sm:text-base text-foreground">
                       <Mail className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
                       <a
                         href={`mailto:${contact.email}`}
@@ -204,7 +204,7 @@ export default function ItemDetailModal({
                     </div>
                   )}
                   {contact.phone && (
-                    <div className="flex items-center gap-2 text-sm sm:text-base text-slate-600 dark:text-slate-300">
+                    <div className="flex items-center gap-2 text-sm sm:text-base text-foreground">
                       <Phone className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
                       <a
                         href={`tel:${contact.phone}`}
@@ -215,7 +215,7 @@ export default function ItemDetailModal({
                     </div>
                   )}
                   {!contact.email && !contact.phone && (
-                    <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                    <div className="text-xs sm:text-sm text-muted-foreground">
                       No contact information available
                     </div>
                   )}
@@ -226,14 +226,14 @@ export default function ItemDetailModal({
             {/* Tags */}
             {item.tags && item.tags.length > 0 && (
               <div className="mb-4 sm:mb-6">
-                <h4 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white mb-2 sm:mb-3">
+                <h4 className="text-base sm:text-lg font-semibold text-foreground mb-2 sm:mb-3">
                   Tags
                 </h4>
                 <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {item.tags.map((tag, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-md text-xs sm:text-sm bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+                      className="inline-flex items-center px-2.5 sm:px-3 py-1 rounded-md text-xs sm:text-sm bg-muted text-muted-foreground"
                     >
                       {tag}
                     </span>
@@ -243,13 +243,13 @@ export default function ItemDetailModal({
             )}
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 border-t border-border">
               <button className="w-full sm:flex-1 bg-yellow-600 hover:bg-yellow-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium transition-colors text-sm sm:text-base">
                 Contact Sharer
               </button>
               <button
                 onClick={onClose}
-                className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-sm sm:text-base"
+                className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 border border-border text-muted-foreground rounded-lg font-medium hover:bg-muted transition-colors text-sm sm:text-base"
               >
                 Close
               </button>

@@ -203,10 +203,10 @@ export default function ReportFoundItemForm({
       className="fixed inset-0 backdrop-blur-lg bg-black/20 z-50 flex items-center justify-center p-2 sm:p-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white dark:bg-slate-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden border border-slate-200 dark:border-slate-700 shadow-xl">
+      <div className="bg-card rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden border border-border shadow-xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700">
-          <h2 className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-white">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
+          <h2 className="text-lg sm:text-2xl font-bold text-foreground">
             Report Found Item
           </h2>
           <button
@@ -226,7 +226,7 @@ export default function ReportFoundItemForm({
             <div>
               <label
                 htmlFor="title"
-                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+                className="block text-sm font-medium text-foreground mb-2"
               >
                 Item Title *
               </label>
@@ -238,10 +238,8 @@ export default function ReportFoundItemForm({
                   setFormData((prev) => ({ ...prev, title: e.target.value }))
                 }
                 placeholder="e.g., iPhone 15 Pro - Black"
-                className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent ${
-                  errors.title
-                    ? "border-destructive"
-                    : "border-slate-300 dark:border-slate-600"
+                className={`w-full px-3 py-2 border rounded-md bg-card text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent ${
+                  errors.title ? "border-destructive" : "border-border"
                 }`}
               />
               {errors.title && (
@@ -255,7 +253,7 @@ export default function ReportFoundItemForm({
             <div>
               <label
                 htmlFor="description"
-                className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+                className="block text-sm font-medium text-foreground mb-2"
               >
                 Description *
               </label>
@@ -270,10 +268,8 @@ export default function ReportFoundItemForm({
                 }
                 rows={4}
                 placeholder="Please describe the found item in detail..."
-                className={`w-full px-3 py-2 border rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent ${
-                  errors.description
-                    ? "border-destructive"
-                    : "border-slate-300 dark:border-slate-600"
+                className={`w-full px-3 py-2 border rounded-md bg-card text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent ${
+                  errors.description ? "border-destructive" : "border-border"
                 }`}
               />
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -292,7 +288,7 @@ export default function ReportFoundItemForm({
               <div>
                 <label
                   htmlFor="category"
-                  className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+                  className="block text-sm font-medium text-foreground mb-2"
                 >
                   Category *
                 </label>
@@ -327,7 +323,7 @@ export default function ReportFoundItemForm({
               <div>
                 <label
                   htmlFor="location"
-                  className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
+                  className="block text-sm font-medium text-foreground mb-2"
                 >
                   Found at Location *
                 </label>
@@ -362,7 +358,7 @@ export default function ReportFoundItemForm({
 
             {/* Date Found */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Date Found *
               </label>
               <DatePicker
@@ -384,7 +380,7 @@ export default function ReportFoundItemForm({
 
             {/* Image Upload */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Item Image (Optional)
               </label>
 
@@ -399,7 +395,7 @@ export default function ReportFoundItemForm({
                   />
                   <label
                     htmlFor="image-upload"
-                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-lg cursor-pointer hover:bg-muted transition-colors"
                   >
                     <Upload className="w-8 h-8 text-slate-400 mb-2" />
                     <span className="text-sm text-slate-600 dark:text-slate-400">
@@ -412,7 +408,7 @@ export default function ReportFoundItemForm({
                 </div>
               ) : (
                 <div className="relative">
-                  <div className="relative w-full h-48 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-600">
+                  <div className="relative w-full h-48 rounded-lg overflow-hidden border border-border">
                     <Image
                       src={imagePreview}
                       alt="Preview"
@@ -449,7 +445,7 @@ export default function ReportFoundItemForm({
 
             {/* Tags */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Tags (Optional)
               </label>
               <div className="space-y-3">
@@ -460,7 +456,7 @@ export default function ReportFoundItemForm({
                     onChange={(e) => setNewTag(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Add a tag (e.g., black, phone, case)"
-                    className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent"
+                    className="flex-1 px-3 py-2 border border-border rounded-md bg-card text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-success focus:border-transparent"
                   />
                   <button
                     type="button"
@@ -500,11 +496,11 @@ export default function ReportFoundItemForm({
         </div>
 
         {/* Footer */}
-        <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 p-4 sm:p-6 border-t border-slate-200 dark:border-slate-700">
+        <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 p-4 sm:p-6 border-t border-border">
           <button
             type="button"
             onClick={onClose}
-            className="w-full sm:w-auto px-4 py-2 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+            className="w-full sm:w-auto px-4 py-2 text-foreground border border-border rounded-md hover:bg-muted transition-colors"
           >
             Cancel
           </button>

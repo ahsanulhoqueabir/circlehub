@@ -109,7 +109,7 @@ export default function SharePage() {
 
   if (context_loading) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-yellow-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-600 dark:text-slate-300">Loading items...</p>
@@ -119,7 +119,7 @@ export default function SharePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
         {/* Error State */}
         {context_error && (
@@ -174,7 +174,7 @@ export default function SharePage() {
           </p>
 
           {/* View Mode Toggle */}
-          <div className="flex items-center gap-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-1">
+          <div className="flex items-center gap-2 bg-card rounded-lg border border-border p-1">
             <button
               onClick={() => setViewMode("grid")}
               className={`p-2 rounded-md transition-colors ${
@@ -226,7 +226,7 @@ export default function SharePage() {
           )
         ) : (
           <div className="text-center py-12 sm:py-16">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
               <Share2 className="w-6 h-6 sm:w-8 sm:h-8 text-slate-400" />
             </div>
             <h3 className="text-base sm:text-lg font-medium text-slate-900 dark:text-white mb-2 px-4">

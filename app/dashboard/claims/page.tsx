@@ -51,7 +51,7 @@ export default function ClaimsPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="bg-card rounded-lg shadow p-4">
         <div className="flex items-center gap-4">
           <select
             value={status_filter}
@@ -77,10 +77,10 @@ export default function ClaimsPage() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-card rounded-lg shadow overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-muted">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Item
@@ -99,7 +99,7 @@ export default function ClaimsPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-card divide-y divide-border">
                 {claims.map((claim) => (
                   <tr key={claim._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
@@ -199,7 +199,7 @@ export default function ClaimsPage() {
           onClick={() => set_action_modal(null)}
         >
           <div
-            className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-card rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6">
@@ -257,7 +257,7 @@ export default function ClaimsPage() {
       {/* Approve/Reject Modals */}
       {action_modal === "approve" && selected_claim && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="bg-card rounded-lg max-w-md w-full p-6">
             <h3 className="text-lg font-semibold mb-4">Approve Claim</h3>
             <p className="text-sm text-gray-600 mb-6">
               Approve claim for <strong>{selected_claim.item_id?.title}</strong>
@@ -283,7 +283,7 @@ export default function ClaimsPage() {
 
       {action_modal === "reject" && selected_claim && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="bg-card rounded-lg max-w-md w-full p-6">
             <h3 className="text-lg font-semibold mb-4">Reject Claim</h3>
             <textarea
               value={reject_reason}

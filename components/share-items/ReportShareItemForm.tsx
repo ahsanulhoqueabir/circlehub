@@ -173,10 +173,10 @@ export default function ReportShareItemForm({
           onClick={onClose}
         />
 
-        <div className="relative bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700">
+        <div className="relative bg-card rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-border">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700">
-            <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">
+          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground">
               Share an Item
             </h2>
             <button
@@ -194,12 +194,12 @@ export default function ReportShareItemForm({
           >
             {/* Basic Information */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-slate-900 dark:text-white">
+              <h3 className="text-lg font-medium text-foreground">
                 Basic Information
               </h3>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Item Title *
                 </label>
                 <input
@@ -209,13 +209,13 @@ export default function ReportShareItemForm({
                   onChange={(e) =>
                     setFormData({ ...formData, title: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-secondary focus:border-transparent"
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-secondary focus:border-transparent"
                   placeholder="e.g., Engineering Textbooks Set"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Description *
                 </label>
                 <textarea
@@ -225,14 +225,14 @@ export default function ReportShareItemForm({
                     setFormData({ ...formData, description: e.target.value })
                   }
                   rows={4}
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-secondary focus:border-transparent"
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-secondary focus:border-transparent"
                   placeholder="Describe the item you want to share..."
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Category *
                   </label>
                   <Select
@@ -256,7 +256,7 @@ export default function ReportShareItemForm({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Condition *
                   </label>
                   <Select
@@ -287,7 +287,7 @@ export default function ReportShareItemForm({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-foreground mb-2">
                     Offer Type *
                   </label>
                   <Select
@@ -314,7 +314,7 @@ export default function ReportShareItemForm({
 
                 {formData.offerType === "sale" && (
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Price (৳) *
                     </label>
                     <input
@@ -325,7 +325,7 @@ export default function ReportShareItemForm({
                         setFormData({ ...formData, price: e.target.value })
                       }
                       min="0"
-                      className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-secondary focus:border-transparent"
+                      className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-secondary focus:border-transparent"
                       placeholder="Enter price"
                     />
                   </div>
@@ -333,7 +333,7 @@ export default function ReportShareItemForm({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Location *
                 </label>
                 <input
@@ -343,7 +343,7 @@ export default function ReportShareItemForm({
                   onChange={(e) =>
                     setFormData({ ...formData, location: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-secondary focus:border-transparent"
+                  className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-secondary focus:border-transparent"
                   placeholder="e.g., Engineering Block A, Room 201"
                 />
               </div>
@@ -351,7 +351,7 @@ export default function ReportShareItemForm({
 
             {/* Image Upload */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Item Image
               </label>
               {imagePreview ? (
@@ -372,7 +372,7 @@ export default function ReportShareItemForm({
                   </button>
                 </div>
               ) : (
-                <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-6 text-center">
+                <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
                   <ImageIcon className="mx-auto h-12 w-12 text-slate-400" />
                   <div className="mt-2">
                     <label className="cursor-pointer">
@@ -396,7 +396,7 @@ export default function ReportShareItemForm({
 
             {/* Tags */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Tags
               </label>
               <div className="space-y-2">
@@ -406,7 +406,7 @@ export default function ReportShareItemForm({
                       type="text"
                       value={tag}
                       onChange={(e) => handleTagChange(index, e.target.value)}
-                      className="flex-1 px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-secondary focus:border-transparent"
+                      className="flex-1 px-3 py-2 border border-border rounded-md bg-background text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-secondary focus:border-transparent"
                       placeholder="Enter a tag"
                     />
                     {formData.tags.length > 1 && (
@@ -432,7 +432,7 @@ export default function ReportShareItemForm({
             </div>
 
             {/* Submit Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
               <button
                 type="submit"
                 className="w-full sm:flex-1 bg-secondary hover:bg-secondary/90 text-secondary-foreground px-6 py-3 rounded-lg font-medium transition-colors"
@@ -442,7 +442,7 @@ export default function ReportShareItemForm({
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full sm:w-auto px-6 py-3 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                className="w-full sm:w-auto px-6 py-3 border border-border text-muted-foreground rounded-lg font-medium hover:bg-muted transition-colors"
               >
                 Cancel
               </button>
