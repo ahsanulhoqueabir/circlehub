@@ -9,7 +9,7 @@ export interface LostItem {
   location: string;
   date_lost: string;
   image_url?: string;
-  status: "active" | "found" | "closed";
+  status: "pending" | "active" | "found" | "closed" | "rejected";
   tags?: string[];
   reward_amount?: number | null;
   views: number;
@@ -26,7 +26,7 @@ export interface FoundItem {
   location: string;
   date_found: string;
   image_url?: string;
-  status: "available" | "claimed" | "returned";
+  status: "pending" | "available" | "claimed" | "returned" | "rejected";
   tags?: string[];
   views: number;
   created_at: string;
@@ -45,7 +45,7 @@ export interface ShareItem {
   location: string;
   image_url?: string;
   tags?: string[];
-  status: "available" | "reserved" | "shared";
+  status: "pending" | "available" | "reserved" | "shared" | "rejected";
   created_at: string;
   updated_at: string;
 }
@@ -299,6 +299,28 @@ export interface ItemStatistics {
   resolvedItems: number;
   itemsByCategory: Record<ItemCategory, number>;
   recentItems: number;
+}
+
+// Home Stats types
+export interface HomeStats {
+  items_recovered: number;
+  active_users: number;
+  items_shared: number;
+  success_rate: number;
+}
+
+export interface RecentActivityItem {
+  id: string;
+  type: "lost" | "found" | "share";
+  title: string;
+  location: string;
+  time: string;
+  created_at: Date | string;
+}
+
+export interface HomeData {
+  stats: HomeStats;
+  recent_activity: RecentActivityItem[];
 }
 
 // Error response

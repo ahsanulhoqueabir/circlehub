@@ -112,6 +112,7 @@ export class AuthService {
         },
         statusCode: 201,
       };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Register service error:", error);
 
@@ -125,6 +126,7 @@ export class AuthService {
 
       if (error.name === "ValidationError") {
         const messages = Object.values(error.errors)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .map((err: any) => err.message)
           .join(", ");
         return {
