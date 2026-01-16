@@ -83,10 +83,4 @@ async function handle_post(
   }
 }
 
-export const POST = (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) =>
-  with_admin_auth("items.approve")(req, (r) =>
-    handle_post(r as AdminAuthRequest, context)
-  );
+export const POST = with_admin_auth(handle_post, "items.approve");

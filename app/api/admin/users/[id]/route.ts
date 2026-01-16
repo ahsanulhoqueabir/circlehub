@@ -157,26 +157,8 @@ async function handle_delete(
   }
 }
 
-export const GET = (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) =>
-  with_admin_auth("users.view")(req, (r) =>
-    handle_get(r as AdminAuthRequest, context)
-  );
+export const GET = with_admin_auth(handle_get, "users.view");
 
-export const PATCH = (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) =>
-  with_admin_auth("users.edit")(req, (r) =>
-    handle_patch(r as AdminAuthRequest, context)
-  );
+export const PATCH = with_admin_auth(handle_patch, "users.edit");
 
-export const DELETE = (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) =>
-  with_admin_auth("users.delete")(req, (r) =>
-    handle_delete(r as AdminAuthRequest, context)
-  );
+export const DELETE = with_admin_auth(handle_delete, "users.delete");

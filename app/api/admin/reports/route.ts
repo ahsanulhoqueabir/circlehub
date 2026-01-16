@@ -54,8 +54,4 @@ async function handle_get(req: AdminAuthRequest) {
   }
 }
 
-export const GET = (req: NextRequest) =>
-  with_admin_auth("reports.view")(
-    req,
-    handle_get as (req: AdminAuthRequest) => Promise<NextResponse>
-  );
+export const GET = with_admin_auth(handle_get, "reports.view");

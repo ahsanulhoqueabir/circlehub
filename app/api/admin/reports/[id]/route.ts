@@ -112,10 +112,4 @@ async function handle_patch(
   }
 }
 
-export const PATCH = (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) =>
-  with_admin_auth("reports.manage")(req, (r) =>
-    handle_patch(r as AdminAuthRequest, context)
-  );
+export const PATCH = with_admin_auth(handle_patch, "reports.manage");

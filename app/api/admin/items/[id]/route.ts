@@ -71,10 +71,4 @@ async function handle_delete(
   }
 }
 
-export const DELETE = (
-  req: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) =>
-  with_admin_auth("items.delete")(req, (r) =>
-    handle_delete(r as AdminAuthRequest, context)
-  );
+export const DELETE = with_admin_auth(handle_delete, "items.delete");

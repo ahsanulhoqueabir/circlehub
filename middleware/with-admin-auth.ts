@@ -24,14 +24,23 @@ export interface AdminAuthRequest extends NextRequest {
 
 /**
  * Middleware to verify admin authentication and authorization
+ * @param handler - The route handler function to wrap
  * @param required_permission - Optional specific permission required
- * @returns Middleware function
+ * @returns Route handler with admin authentication
  */
-export function with_admin_auth(required_permission?: string) {
-  return async (
-    req: NextRequest,
-    handler: (req: AdminAuthRequest) => Promise<NextResponse>
-  ) => {
+export function with_admin_auth<T>(
+  handler: (req: AdminAuthRequest, context: T) => Promise<NextResponse>,
+  required_permission?: string
+): (req: NextRequest, context: T) => Promise<NextResponse>;
+export function with_admin_auth(
+  handler: (req: AdminAuthRequest) => Promise<NextResponse>,
+  required_permission?: string
+): (req: NextRequest) => Promise<NextResponse>;
+export function with_admin_auth<T = unknown>(
+  handler: (req: AdminAuthRequest, context?: T) => Promise<NextResponse>,
+  required_permission?: string
+) {
+  return async (req: NextRequest, context?: T) => {
     try {
       // Get authorization header
       const auth_header = req.headers.get("authorization");
@@ -106,8 +115,8 @@ export function with_admin_auth(required_permission?: string) {
       admin_req.admin_role = admin.role;
       admin_req.permissions = admin.permissions;
 
-      // Call the handler
-      return await handler(admin_req);
+      // Call the handler with context if provided
+      return await handler(admin_req, context as T);
     } catch (error) {
       console.error("Admin auth middleware error:", error);
       return NextResponse.json(
@@ -124,11 +133,11 @@ export function with_admin_auth(required_permission?: string) {
 /**
  * Helper to check multiple permissions (user must have at least one)
  */
-export function with_admin_auth_any(required_permissions: string[]) {
-  return async (
-    req: NextRequest,
-    handler: (req: AdminAuthRequest) => Promise<NextResponse>
-  ) => {
+export function with_admin_auth_any<T = unknown>(
+  handler: (req: AdminAuthRequest, context?: T) => Promise<NextResponse>,
+  required_permissions: string[]
+) {
+  return async (req: NextRequest, context?: T) => {
     try {
       // Get authorization header
       const auth_header = req.headers.get("authorization");
@@ -207,8 +216,8 @@ export function with_admin_auth_any(required_permissions: string[]) {
       admin_req.admin_role = admin.role;
       admin_req.permissions = admin.permissions;
 
-      // Call the handler
-      return await handler(admin_req);
+      // Call the handler with context if provided
+      return await handler(admin_req, context);
     } catch (error) {
       console.error("Admin auth middleware error:", error);
       return NextResponse.json(
@@ -225,13 +234,11 @@ export function with_admin_auth_any(required_permissions: string[]) {
 /**
  * Helper to check if user has a specific role
  */
-export function with_admin_role(
+export function with_admin_role<T = unknown>(
+  handler: (req: AdminAuthRequest, context?: T) => Promise<NextResponse>,
   required_role: "super_admin" | "moderator" | "support_staff"
 ) {
-  return async (
-    req: NextRequest,
-    handler: (req: AdminAuthRequest) => Promise<NextResponse>
-  ) => {
+  return async (req: NextRequest, context?: T) => {
     try {
       // Get authorization header
       const auth_header = req.headers.get("authorization");
@@ -304,8 +311,8 @@ export function with_admin_role(
       admin_req.admin_role = admin.role;
       admin_req.permissions = admin.permissions;
 
-      // Call the handler
-      return await handler(admin_req);
+      // Call the handler with context if provided
+      return await handler(admin_req, context);
     } catch (error) {
       console.error("Admin auth middleware error:", error);
       return NextResponse.json(

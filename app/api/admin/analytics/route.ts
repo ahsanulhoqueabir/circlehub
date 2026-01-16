@@ -69,6 +69,4 @@ async function handle_get(req: AdminAuthRequest) {
   }
 }
 
-export const GET = (req: NextRequest) =>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  with_admin_auth("analytics.view")(req, handle_get as any);
+export const GET = with_admin_auth(handle_get, "analytics.view");
