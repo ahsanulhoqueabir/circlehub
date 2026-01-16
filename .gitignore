@@ -14,6 +14,7 @@ docs/
 # testing
 /coverage
 lib/mock-data/
+scripts/
 
 # next.js
 /.next/
