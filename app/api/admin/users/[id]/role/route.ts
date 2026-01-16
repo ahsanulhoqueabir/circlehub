@@ -8,16 +8,16 @@ import {
 import { AdminService } from "@/services/admin.services";
 
 /**
- * PATCH /api/admin/users/[userId]/role
+ * PATCH /api/admin/users/[id]/role
  * Update user role (admin only)
  * Requires "users.edit" permission
  */
 async function handle_patch(
   req: AdminAuthRequest,
-  { params }: { params: Promise<{ userId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await params;
+    const { id } = await params;
     const body = await req.json();
     const { role } = body;
 
@@ -51,7 +51,7 @@ async function handle_patch(
 
     // Update user role
     const result = await AdminService.updateUserRole(
-      userId,
+      id,
       role,
       admin_id,
       ip_address,

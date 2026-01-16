@@ -72,3 +72,12 @@ export const getUserId = (request: NextRequest): string | null => {
   const auth = authenticate(request);
   return auth.authenticated ? auth.user.userId : null;
 };
+
+/**
+ * Verify JWT token and return payload
+ * Used in middleware for token validation
+ */
+export const verify_token = (token: string): JwtPayload | null => {
+  const result = JWTService.verifyAccessToken(token);
+  return result.valid && result.payload ? result.payload : null;
+};

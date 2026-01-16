@@ -107,23 +107,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Load user from localStorage and verify token on mount
   useEffect(() => {
-    const loadUser = async () => {
+    const loadUser = () => {
       try {
         const storedAccessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
         const storedUser = localStorage.getItem(USER_KEY);
 
         if (storedAccessToken && storedUser) {
-          setAccessToken(storedAccessToken);
-          setUser(JSON.parse(storedUser));
+          const parsedUser = JSON.parse(storedUser);
 
-          // Verify token and fetch fresh user data
-          await fetchCurrentUser(storedAccessToken);
+          // Set user, token and loading state together
+          setAccessToken(storedAccessToken);
+          setUser(parsedUser);
+          setIsLoading(false);
+
+          // Verify token and fetch fresh user data in background
+          fetchCurrentUser(storedAccessToken).catch((err) => {
+            console.error("Failed to verify user:", err);
+            // Don't clear user data if verification fails, token might still be valid
+          });
+        } else {
+          setIsLoading(false);
         }
       } catch (error) {
         console.error("Error loading user:", error);
         // Clear invalid data
         clearAuthData();
-      } finally {
         setIsLoading(false);
       }
     };
@@ -153,6 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error("Error fetching current user:", error);
+      throw error;
     }
   };
 

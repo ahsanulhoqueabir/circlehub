@@ -3,12 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import {
-  Home,
-  Search,
-  MapPin,
-  Share2,
   Sun,
   Moon,
   User,
@@ -18,9 +14,12 @@ import {
   BookOpen,
   Bell,
   Package,
+  Shield,
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/auth-context";
+
+import { PUBLIC_ROUTES } from "@/config/routes.config";
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -28,6 +27,26 @@ export default function Navigation() {
   const { user, logout, isAuthenticated } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Always show only public routes in navbar
+  const menuItems = useMemo(() => {
+    return PUBLIC_ROUTES.filter((route) => route.showInNav);
+  }, []);
+
+  // Get dashboard/admin link based on user role
+  const dashboardLink = useMemo(() => {
+    if (!user || !isAuthenticated) return null;
+
+    switch (user.role) {
+      case "admin":
+        return { href: "/dashboard", label: "Dashboard" };
+      case "moderator":
+      case "support_staff":
+        return { href: "/admin", label: "Admin Panel" };
+      default:
+        return null;
+    }
+  }, [user, isAuthenticated]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -46,29 +65,6 @@ export default function Navigation() {
         document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isDropdownOpen]);
-
-  const menuItems = [
-    {
-      name: "Home",
-      href: "/",
-      icon: Home,
-    },
-    {
-      name: "Lost",
-      href: "/lost",
-      icon: Search,
-    },
-    {
-      name: "Found",
-      href: "/found",
-      icon: MapPin,
-    },
-    {
-      name: "Share",
-      href: "/share",
-      icon: Share2,
-    },
-  ];
 
   const toggleTheme = () => {
     const newTheme = actualTheme === "light" ? "dark" : "light";
@@ -122,6 +118,21 @@ export default function Navigation() {
                   </Link>
                 );
               })}
+
+              {/* Dashboard Link for authenticated users */}
+              {isAuthenticated && dashboardLink && (
+                <Link
+                  href={dashboardLink.href}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isActive(dashboardLink.href)
+                      ? "bg-blue-600 text-white shadow-md"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100"
+                  }`}
+                >
+                  <Shield className="w-4 h-4" />
+                  <span>{dashboardLink.label}</span>
+                </Link>
+              )}
             </div>
 
             {/* Right side - Theme Toggle, User Menu */}
@@ -263,7 +274,7 @@ export default function Navigation() {
       {/* Mobile Bottom Navigation Bar */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 pb-safe">
         <div className="flex justify-around items-center h-16">
-          {menuItems.map((item) => {
+          {menuItems.slice(0, 4).map((item) => {
             const Icon = item.icon;
             return (
               <Link
@@ -281,8 +292,20 @@ export default function Navigation() {
             );
           })}
 
-          {/* Mobile User Menu in Bottom Nav */}
-          {isAuthenticated ? (
+          {/* Dashboard Link or User Menu */}
+          {isAuthenticated && dashboardLink ? (
+            <Link
+              href={dashboardLink.href}
+              className={`flex flex-col items-center justify-center space-y-1 px-3 py-2 rounded-lg transition-colors ${
+                isActive(dashboardLink.href)
+                  ? "text-blue-600 dark:text-blue-400"
+                  : "text-slate-600 dark:text-slate-400"
+              }`}
+            >
+              <Shield className="w-6 h-6" />
+              <span className="text-xs font-medium">Dashboard</span>
+            </Link>
+          ) : isAuthenticated ? (
             <div className="relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
