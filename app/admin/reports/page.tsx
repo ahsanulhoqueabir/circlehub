@@ -318,10 +318,6 @@ export default function ReportsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -217,7 +217,7 @@ export default function ItemDetailModal({
                       {item.tags.map((tag, index) => (
                         <span
                           key={index}
-                          className="inline-block px-2 py-1 text-sm bg-muted text-muted-foreground rounded-md">
+                          className="inline-block px-2 py-1 text-sm bg-muted text-muted-foreground rounded-md"
                         >
                           #{tag}
                         </span>

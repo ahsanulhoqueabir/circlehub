@@ -141,7 +141,7 @@ export default function NotificationsPage() {
                       notification.read
                         ? "bg-muted"
                         : "bg-card"
-                    } p-4 rounded-lg shadow-sm border border-border">
+                    } p-4 rounded-lg shadow-sm border border-border`}
                   >
                     <div className="flex items-start space-x-3">
                       {getNotificationIcon(notification.type)}

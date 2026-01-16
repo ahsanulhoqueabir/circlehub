@@ -36,29 +36,41 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Get admin details
-    const result = await AdminService.getAdminByUserId(decoded.payload.userId);
+    // Get user details and check if they're an admin
+    const result = await AdminService.getUserById(decoded.payload.userId);
     if (!result.success) {
       return NextResponse.json(
         {
           success: false,
-          message: result.error || "User is not an admin",
+          message: result.error || "User not found",
         },
         { status: result.statusCode }
       );
     }
 
-    const admin = result.data as {
+    const user = result.data as {
       _id: string;
-      user_id: string;
+      name: string;
+      email: string;
       role: string;
-      permissions: string[];
-      last_login?: Date;
       is_active: boolean;
+      verified: boolean;
     };
 
+    // Check if user has admin role
+    const admin_roles = ["admin", "moderator", "support_staff"];
+    if (!admin_roles.includes(user.role)) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "User is not an admin",
+        },
+        { status: 403 }
+      );
+    }
+
     // Check if admin is active
-    if (!admin.is_active) {
+    if (!user.is_active) {
       return NextResponse.json(
         {
           success: false,
@@ -73,11 +85,11 @@ export async function GET(req: NextRequest) {
         success: true,
         message: "Admin authenticated",
         data: {
-          admin_id: admin._id,
-          user_id: admin.user_id,
-          role: admin.role,
-          permissions: admin.permissions,
-          last_login: admin.last_login,
+          user_id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          verified: user.verified,
         },
       },
       { status: 200 }

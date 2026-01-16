@@ -51,7 +51,7 @@ export async function withRoleAuth(
     const user: AuthenticatedUser = {
       userId: decoded.userId,
       email: decoded.email,
-      role: decoded.role,
+      role: decoded.role as UserRole,
     };
 
     // Check if user has required role

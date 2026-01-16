@@ -198,10 +198,7 @@ export default function SettingsPage() {
                     <p className="text-sm text-muted-foreground">
                       Current theme:{" "}
                       {actualTheme === "light" ? "Light" : "Dark"}
-                    </p>", "oldString": "                    <p className=\"text-sm text-gray-600 dark:text-gray-300\">
-                      Current theme:{" "}
-                      {actualTheme === "light" ? "Light" : "Dark"}
-                    </p>"
+                    </p>
                   </div>
                   <button
                     onClick={handleThemeToggle}
