@@ -113,7 +113,7 @@ const user_schema = new Schema<IUser>(
       updatedAt: "updated_at",
     },
     collection: "users",
-  }
+  },
 );
 
 // Indexes for better query performance
@@ -148,4 +148,6 @@ user_schema.set("toObject", { virtuals: true });
 // Create or retrieve the model
 const User = mongoose.models.User || mongoose.model<IUser>("User", user_schema);
 
+// Export both named and default for flexibility
+export { User };
 export default User;

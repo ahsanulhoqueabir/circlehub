@@ -89,7 +89,7 @@ const found_item_schema = new Schema<IFoundItem>(
       updatedAt: "updated_at",
     },
     collection: "found_items",
-  }
+  },
 );
 
 // Indexes for better query performance
@@ -127,4 +127,6 @@ const FoundItem =
   mongoose.models.FoundItem ||
   mongoose.model<IFoundItem>("FoundItem", found_item_schema);
 
+// Export both named and default for flexibility
+export { FoundItem };
 export default FoundItem;

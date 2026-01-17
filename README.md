@@ -6,6 +6,29 @@ CircleHub is a comprehensive campus community platform built specifically for Ja
 
 ---
 
+## 📚 Complete Documentation
+
+**New to CircleHub? Start here:** [Getting Started Guide](docs/Guides/GETTING_STARTED.md)
+
+### 📖 Essential Documentation
+
+- **[📋 Documentation Index](docs/README.md)** - Complete documentation overview
+- **[🏗️ Project Architecture](docs/Architecture/PROJECT_ARCHITECTURE.md)** - System design and architecture
+- **[🗂️ Project Organization](docs/PROJECT_ORGANIZATION.md)** - How everything is organized
+- **[📁 Directory Structure](docs/Architecture/DIRECTORY_STRUCTURE.md)** - Complete file structure guide
+- **[🔌 API Overview](docs/API/API_OVERVIEW.md)** - All API endpoints reference
+- **[✨ Feature Overview](docs/Features/COMPLETE_FEATURE_OVERVIEW.md)** - All features explained
+
+### 🚀 Quick Links
+
+- [Authentication API](docs/API/AUTHENTICATION_API.md) - Login, register, token management
+- [Lost Items Feature](docs/Features/LOST_ITEMS_PAGE.md) - Report and find lost items
+- [Admin Panel Guide](docs/Guides/ADMIN_GUIDE.md) - Admin functionality (coming soon)
+
+> **💡 Tip**: The `docs/` directory contains comprehensive documentation covering every aspect of the project. Browse [docs/README.md](docs/README.md) for the complete index.
+
+---
+
 ## ✨ Features
 
 ### 🔍 **Lost & Found System**
@@ -36,7 +59,6 @@ CircleHub is a comprehensive campus community platform built specifically for Ja
 - Beautiful dark and light theme support
 - Fully responsive design for all devices
 - Intuitive navigation and search functionality
-- Real-time notifications system
 - Advanced filtering and sorting options
 
 ### 👤 **User Management**
@@ -108,8 +130,7 @@ campus-connect/
 │   ├── share/             # Share items page
 │   ├── my-items/          # User's items dashboard
 │   ├── profile/           # User profile
-│   ├── settings/          # App settings
-│   └── notifications/     # Notifications page
+│   └── settings/          # App settings
 ├── components/            # Reusable React components
 │   ├── found-items/       # Found items components
 │   ├── lost-items/        # Lost items components

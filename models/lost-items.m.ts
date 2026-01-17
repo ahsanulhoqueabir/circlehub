@@ -95,7 +95,7 @@ const lost_item_schema = new Schema<ILostItem>(
       updatedAt: "updated_at",
     },
     collection: "lost_items",
-  }
+  },
 );
 
 // Indexes for better query performance
@@ -126,4 +126,6 @@ const LostItem =
   mongoose.models.LostItem ||
   mongoose.model<ILostItem>("LostItem", lost_item_schema);
 
+// Export both named and default for flexibility
+export { LostItem };
 export default LostItem;

@@ -73,11 +73,19 @@ interface Item {
 
 interface Claim {
   _id: string;
-  item_id: Item;
-  claimant_id: User;
+  foundItemId: Item;
+  claimerId: User;
   status: string;
   verification_answers: any;
-  created_at: string;
+  message?: string;
+  contactInfo?: {
+    phone?: string;
+    email?: string;
+    other?: string;
+  };
+  createdAt: string;
+  updatedAt?: string;
+  reject_reason?: string;
 }
 
 interface Report {
@@ -98,6 +106,7 @@ interface AuditLog {
     _id: string;
     name: string;
     email: string;
+    role?: string;
   };
   action: string;
   target_type: string;
@@ -439,7 +448,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
   const approve_claim = useCallback(
     async (claim_id: string) => {
-      await axios.patch(`/api/admin/claims/${claim_id}/approve`);
+      await axios.post(`/api/admin/claims/${claim_id}/approve`);
       await fetch_claims();
     },
     [axios, fetch_claims],
@@ -447,7 +456,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
   const reject_claim = useCallback(
     async (claim_id: string, reason: string) => {
-      await axios.patch(`/api/admin/claims/${claim_id}/reject`, { reason });
+      await axios.post(`/api/admin/claims/${claim_id}/reject`, { reason });
       await fetch_claims();
     },
     [axios, fetch_claims],

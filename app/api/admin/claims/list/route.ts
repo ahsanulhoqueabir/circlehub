@@ -21,9 +21,9 @@ async function handler(req: NextRequest) {
 
     // Get claims
     const claims = await FoundItemClaim.find(query)
-      .populate("item_id")
-      .populate("claimant_id", "name email phone")
-      .sort({ created_at: -1 })
+      .populate("foundItemId", "title category images")
+      .populate("claimerId", "name email phone")
+      .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
       .lean();
@@ -48,7 +48,7 @@ async function handler(req: NextRequest) {
         message: "Failed to fetch claims",
         error: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

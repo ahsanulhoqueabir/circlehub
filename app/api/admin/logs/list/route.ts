@@ -9,6 +9,7 @@ async function handler(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const action = searchParams.get("action") || "";
+    const target_type = searchParams.get("target_type") || "";
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "50");
 
@@ -17,6 +18,10 @@ async function handler(req: NextRequest) {
 
     if (action) {
       query.action = action;
+    }
+
+    if (target_type) {
+      query.target_type = target_type;
     }
 
     // Get logs
@@ -47,7 +52,7 @@ async function handler(req: NextRequest) {
         message: "Failed to fetch logs",
         error: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

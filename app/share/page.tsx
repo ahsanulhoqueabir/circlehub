@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Share2, Plus, Grid, List } from "lucide-react";
 import SearchBar from "@/components/share-items/SearchBar";
 import FilterBar from "@/components/share-items/FilterBar";
@@ -145,7 +145,7 @@ export default function SharePage() {
           {/* Share Item Button */}
           <button
             onClick={handleReportClick}
-            className="inline-flex items-center justify-center gap-2 bg-yellow-600 hover:bg-yellow-700 active:bg-yellow-800 text-white px-5 py-3 sm:px-6 sm:py-3.5 lg:px-8 lg:py-4 rounded-lg font-medium transition-all hover:shadow-lg active:scale-95 min-h-[44px] text-sm sm:text-base"
+            className="inline-flex items-center justify-center gap-2 bg-yellow-600 hover:bg-yellow-700 active:bg-yellow-800 text-white px-5 py-3 sm:px-6 sm:py-3.5 lg:px-8 lg:py-4 rounded-lg font-medium transition-all hover:shadow-lg active:scale-95 min-h-11 text-sm sm:text-base"
           >
             <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             Share an Item
@@ -177,7 +177,7 @@ export default function SharePage() {
           <div className="flex items-center gap-1 bg-card rounded-lg border border-border p-1">
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-2.5 sm:p-3 rounded-md transition-all min-h-[44px] min-w-[44px] flex items-center justify-center ${
+              className={`p-2.5 sm:p-3 rounded-md transition-all min-h-11 min-w-11 flex items-center justify-center ${
                 viewMode === "grid"
                   ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 shadow-sm"
                   : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-muted"
@@ -188,7 +188,7 @@ export default function SharePage() {
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-2.5 sm:p-3 rounded-md transition-all min-h-[44px] min-w-[44px] flex items-center justify-center ${
+              className={`p-2.5 sm:p-3 rounded-md transition-all min-h-11 min-w-11 flex items-center justify-center ${
                 viewMode === "list"
                   ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 shadow-sm"
                   : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-muted"
@@ -247,7 +247,7 @@ export default function SharePage() {
               selectedOfferType === "all" && (
                 <button
                   onClick={handleReportClick}
-                  className="inline-flex items-center justify-center gap-2 bg-yellow-600 hover:bg-yellow-700 active:bg-yellow-800 text-white px-5 py-3 sm:px-6 sm:py-3.5 rounded-lg font-medium transition-all hover:shadow-lg active:scale-95 min-h-[44px] text-sm sm:text-base"
+                  className="inline-flex items-center justify-center gap-2 bg-yellow-600 hover:bg-yellow-700 active:bg-yellow-800 text-white px-5 py-3 sm:px-6 sm:py-3.5 rounded-lg font-medium transition-all hover:shadow-lg active:scale-95 min-h-11 text-sm sm:text-base"
                 >
                   <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                   Share Your First Item

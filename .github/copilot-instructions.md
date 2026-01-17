@@ -32,6 +32,7 @@
 
 ## Code Quality Standards
 
+- Use `global.css` for global styles and dont use hardcoded colors unless necessary.
 - Write clean, readable, and maintainable code.
 - Add comments for complex logic and business rules.
 - Use meaningful variable and function names.

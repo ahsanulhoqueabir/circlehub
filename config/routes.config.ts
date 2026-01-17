@@ -12,7 +12,6 @@ import {
   AlertTriangle,
   TrendingUp,
   FileText,
-  Bell,
   Package,
   Settings,
   User,
@@ -85,14 +84,6 @@ export const USER_ROUTES: RouteConfig[] = [
     roles: ["student", "admin", "moderator", "support_staff"],
     showInNav: false,
     description: "View your posted items",
-  },
-  {
-    name: "Notifications",
-    href: "/notifications",
-    icon: Bell,
-    roles: ["student", "admin", "moderator", "support_staff"],
-    showInNav: false,
-    description: "View your notifications",
   },
   {
     name: "Profile",
@@ -287,7 +278,7 @@ export function getAccessibleRoutes(role: UserRole | null): RouteConfig[] {
  */
 export function getNavigationItems(
   role: UserRole | null,
-  isAuthenticated: boolean
+  isAuthenticated: boolean,
 ): RouteConfig[] {
   if (!isAuthenticated) {
     return PUBLIC_ROUTES.filter((route) => route.showInNav);

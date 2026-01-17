@@ -71,13 +71,13 @@ const found_item_claim_schema = new Schema<IFoundItemClaim>(
       updatedAt: "updatedAt",
     },
     collection: "found_item_claims",
-  }
+  },
 );
 
 // Compound indexes for better query performance
 found_item_claim_schema.index(
   { foundItemId: 1, claimerId: 1 },
-  { unique: true }
+  { unique: true },
 );
 found_item_claim_schema.index({ foundItemId: 1, status: 1 });
 found_item_claim_schema.index({ claimerId: 1, createdAt: -1 });
@@ -184,7 +184,7 @@ found_item_claim_schema.post("findOneAndUpdate", async function (doc) {
             status: "rejected",
             updatedAt: new Date(),
           },
-        }
+        },
       );
     } catch (error) {
       console.error("Error updating found item and claims:", error);
@@ -199,4 +199,6 @@ const FoundItemClaim =
   mongoose.models.FoundItemClaim ||
   mongoose.model<IFoundItemClaim>("FoundItemClaim", found_item_claim_schema);
 
+// Export both named and default for flexibility
+export { FoundItemClaim };
 export default FoundItemClaim;

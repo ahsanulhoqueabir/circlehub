@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
 
     if (action === "statistics") {
       const stats_result = await LostItemsService.getStatistics(
-        userId || undefined
+        userId || undefined,
       );
 
       if (!stats_result.success) {
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
             success: false,
             error: stats_result.error,
           },
-          { status: stats_result.statusCode }
+          { status: stats_result.statusCode },
         );
       }
 
@@ -43,9 +43,13 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    const statusParam = searchParams.get("status");
     const filters: ItemFilterOptions = {
       category: (searchParams.get("category") as ItemCategory) || undefined,
-      status: (searchParams.get("status") as ItemStatus) || "active",
+      status:
+        statusParam === "all"
+          ? undefined
+          : (statusParam as ItemStatus) || "active",
       search: searchParams.get("search") || undefined,
       tags: searchParams.get("tags")?.split(",").filter(Boolean) || undefined,
       location: searchParams.get("location") || undefined,
@@ -65,7 +69,7 @@ export async function GET(req: NextRequest) {
           success: false,
           error: result.error,
         },
-        { status: result.statusCode }
+        { status: result.statusCode },
       );
     }
 
@@ -80,7 +84,7 @@ export async function GET(req: NextRequest) {
         success: false,
         error: error instanceof Error ? error.message : "Internal server error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -107,7 +111,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
             "dateLost",
           ],
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -118,7 +122,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
         imageUrl = await uploadDocumentFromBase64(
           body.imageBase64,
           "lost-items",
-          `lost_${Date.now()}`
+          `lost_${Date.now()}`,
         );
       } catch (error) {
         console.error("Image upload error:", error);
@@ -127,7 +131,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
             success: false,
             error: "Failed to upload image. Please try again.",
           },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
@@ -149,7 +153,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
           success: false,
           error: result.error,
         },
-        { status: result.statusCode }
+        { status: result.statusCode },
       );
     }
 
@@ -159,7 +163,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
         message: result.data?.message || "Lost item reported successfully",
         data: result.data?.item,
       },
-      { status: result.statusCode }
+      { status: result.statusCode },
     );
   } catch (error) {
     console.error("Create lost item error:", error);
@@ -168,7 +172,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
         success: false,
         error: error instanceof Error ? error.message : "Internal server error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 });

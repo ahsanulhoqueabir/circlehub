@@ -1,6 +1,7 @@
 import dbConnect from "@/lib/mongodb";
 import FoundItem from "@/models/found-items.m";
 import User from "@/models/users.m";
+import { Types } from "mongoose";
 import type {
   ItemFilterOptions,
   ItemsResponse,
@@ -18,7 +19,7 @@ export class FoundItemsService {
    * Get found items with filtering, sorting, and pagination
    */
   static async getItems(
-    filters: ItemFilterOptions = {}
+    filters: ItemFilterOptions = {},
   ): Promise<ServiceResponse<ItemsResponse<FoundItemWithProfile>>> {
     try {
       const {
@@ -40,6 +41,7 @@ export class FoundItemsService {
       // Build query
       const query: Record<string, unknown> = {};
 
+      // Only filter by status if provided (undefined means fetch all statuses)
       if (status) {
         query.status = status;
       }
@@ -72,7 +74,7 @@ export class FoundItemsService {
       }
 
       if (userId) {
-        query.user_id = userId;
+        query.user_id = new Types.ObjectId(userId);
       }
 
       // Build sort
@@ -110,7 +112,7 @@ export class FoundItemsService {
         .lean();
 
       const users_map = new Map(
-        users.map((user) => [user._id.toString(), user])
+        users.map((user) => [user._id.toString(), user]),
       );
 
       // Map items with profiles
@@ -168,7 +170,7 @@ export class FoundItemsService {
    * Get a single found item by ID
    */
   static async getItemById(
-    item_id: string
+    item_id: string,
   ): Promise<ServiceResponse<FoundItemWithProfile>> {
     try {
       if (!item_id) {
@@ -242,7 +244,7 @@ export class FoundItemsService {
    */
   static async createItem(
     user_id: string,
-    item_data: CreateFoundItemRequest
+    item_data: CreateFoundItemRequest,
   ): Promise<
     ServiceResponse<{ message: string; item: Record<string, unknown> }>
   > {
@@ -321,7 +323,7 @@ export class FoundItemsService {
         "errors" in error
       ) {
         const messages = Object.values(
-          error.errors as Record<string, { message: string }>
+          error.errors as Record<string, { message: string }>,
         )
           .map((err) => err.message)
           .join(", ");
@@ -346,7 +348,7 @@ export class FoundItemsService {
   static async updateItem(
     item_id: string,
     user_id: string,
-    updates: Partial<CreateFoundItemRequest>
+    updates: Partial<CreateFoundItemRequest>,
   ): Promise<
     ServiceResponse<{ message: string; item: Record<string, unknown> }>
   > {
@@ -423,7 +425,7 @@ export class FoundItemsService {
         "errors" in error
       ) {
         const messages = Object.values(
-          error.errors as Record<string, { message: string }>
+          error.errors as Record<string, { message: string }>,
         )
           .map((err) => err.message)
           .join(", ");
@@ -447,7 +449,7 @@ export class FoundItemsService {
    */
   static async deleteItem(
     item_id: string,
-    user_id: string
+    user_id: string,
   ): Promise<ServiceResponse<{ message: string }>> {
     try {
       if (!item_id || !user_id) {
@@ -501,7 +503,7 @@ export class FoundItemsService {
   static async markAsResolved(
     item_id: string,
     user_id: string,
-    final_status: "claimed" | "returned" = "returned"
+    final_status: "claimed" | "returned" = "returned",
   ): Promise<
     ServiceResponse<{ message: string; item: Record<string, unknown> }>
   > {
@@ -562,7 +564,7 @@ export class FoundItemsService {
    * Get items statistics
    */
   static async getStatistics(
-    user_id?: string
+    user_id?: string,
   ): Promise<ServiceResponse<ItemStatistics>> {
     try {
       await dbConnect();
@@ -570,7 +572,7 @@ export class FoundItemsService {
       const query: Record<string, unknown> = user_id ? { user_id } : {};
 
       const all_items = await FoundItem.find(query).select(
-        "category status created_at"
+        "category status created_at",
       );
 
       const items_by_category: Record<string, number> = {};
@@ -624,7 +626,7 @@ export class FoundItemsService {
    */
   static async searchItems(
     search_query: string,
-    filters?: Omit<ItemFilterOptions, "search">
+    filters?: Omit<ItemFilterOptions, "search">,
   ): Promise<ServiceResponse<ItemsResponse<FoundItemWithProfile>>> {
     return this.getItems({
       ...filters,
@@ -637,7 +639,7 @@ export class FoundItemsService {
    */
   static async getUserItems(
     user_id: string,
-    filters?: Omit<ItemFilterOptions, "userId">
+    filters?: Omit<ItemFilterOptions, "userId">,
   ): Promise<ServiceResponse<ItemsResponse<FoundItemWithProfile>>> {
     return this.getItems({
       ...filters,
