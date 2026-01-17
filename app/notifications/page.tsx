@@ -61,14 +61,14 @@ export default function NotificationsPage() {
   const markAsRead = (id: string) => {
     setNotifications((prev) =>
       prev.map((notification) =>
-        notification.id === id ? { ...notification, read: true } : notification
-      )
+        notification.id === id ? { ...notification, read: true } : notification,
+      ),
     );
   };
 
   const deleteNotification = (id: string) => {
     setNotifications((prev) =>
-      prev.filter((notification) => notification.id !== id)
+      prev.filter((notification) => notification.id !== id),
     );
   };
 
@@ -136,12 +136,10 @@ export default function NotificationsPage() {
                   <div
                     key={notification.id}
                     className={`border-l-4 ${getNotificationBorder(
-                      notification.type
+                      notification.type,
                     )} ${
-                      notification.read
-                        ? "bg-muted"
-                        : "bg-card"
-                    } p-4 rounded-lg shadow-sm border border-border">
+                      notification.read ? "bg-muted" : "bg-card"
+                    } p-4 rounded-lg shadow-sm border border-border`}
                   >
                     <div className="flex items-start space-x-3">
                       {getNotificationIcon(notification.type)}
@@ -151,7 +149,7 @@ export default function NotificationsPage() {
                             className={`text-sm font-medium ${
                               notification.read
                                 ? "text-gray-600 dark:text-gray-400"
-                              : "text-foreground"
+                                : "text-foreground"
                             }`}
                           >
                             {notification.title}
@@ -207,7 +205,7 @@ export default function NotificationsPage() {
                   <button
                     onClick={() =>
                       setNotifications((prev) =>
-                        prev.map((n) => ({ ...n, read: true }))
+                        prev.map((n) => ({ ...n, read: true })),
                       )
                     }
                     className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"

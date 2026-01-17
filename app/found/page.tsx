@@ -33,7 +33,7 @@ export default function FoundPage() {
 
   // Modals
   const [selectedItem, setSelectedItem] = useState<FoundItemWithProfile | null>(
-    null
+    null,
   );
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showReportForm, setShowReportForm] = useState(false);
@@ -64,7 +64,7 @@ export default function FoundPage() {
           item.title.toLowerCase().includes(query) ||
           item.description.toLowerCase().includes(query) ||
           item.location.toLowerCase().includes(query) ||
-          item.tags?.some((tag) => tag.toLowerCase().includes(query))
+          item.tags?.some((tag) => tag.toLowerCase().includes(query)),
       );
     }
 
@@ -73,7 +73,7 @@ export default function FoundPage() {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - selectedDateRange);
       filtered = filtered.filter(
-        (item) => new Date(item.date_found) >= cutoffDate
+        (item) => new Date(item.date_found) >= cutoffDate,
       );
     }
 
@@ -167,7 +167,7 @@ export default function FoundPage() {
       label: "Items Claimed/Returned",
       value: context_items
         .filter(
-          (item) => item.status === "claimed" || item.status === "returned"
+          (item) => item.status === "claimed" || item.status === "returned",
         )
         .length.toString(),
       color: "text-purple-600",
@@ -189,22 +189,22 @@ export default function FoundPage() {
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-            <MapPin className="w-8 h-8 text-green-600 dark:text-green-400" />
+        <div className="text-center mb-6 sm:mb-8 lg:mb-12">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+            <MapPin className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-green-600 dark:text-green-400" />
           </div>
-          <h1 className="text-4xl font-bold text-foreground mb-4">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-foreground mb-3 sm:mb-4 px-4">
             Found Items
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
+          <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-8 px-4 leading-relaxed">
             Post items you&apos;ve found and help reunite them with their owners
           </p>
 
           <button
             onClick={handleReportClick}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 lg:px-8 lg:py-4 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white rounded-lg font-medium transition-all hover:shadow-lg active:scale-95 min-h-[44px] text-sm sm:text-base"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             Report Found Item
           </button>
         </div>
@@ -229,16 +229,18 @@ export default function FoundPage() {
         ) : (
           <>
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
               {statsData.map((stat, index) => (
                 <div
                   key={index}
-                  className="bg-card rounded-lg p-4 text-center border border-border"
+                  className="bg-card rounded-lg sm:rounded-xl p-4 sm:p-5 lg:p-6 text-center border border-border hover:shadow-md transition-shadow"
                 >
-                  <div className={`text-2xl font-bold ${stat.color} mb-1`}>
+                  <div
+                    className={`text-xl sm:text-2xl lg:text-3xl font-bold ${stat.color} mb-1 sm:mb-2`}
+                  >
                     {stat.value}
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-xs sm:text-sm text-muted-foreground">
                     {stat.label}
                   </div>
                 </div>
@@ -246,7 +248,7 @@ export default function FoundPage() {
             </div>
 
             {/* Search Bar */}
-            <div className="mb-6">
+            <div className="mb-4 sm:mb-6">
               <SearchBar
                 onSearch={setSearchQuery}
                 placeholder="Search found items by title, description, location, or tags..."
@@ -254,7 +256,7 @@ export default function FoundPage() {
             </div>
 
             {/* Filters */}
-            <div className="mb-6">
+            <div className="mb-6 sm:mb-8">
               <FilterBar
                 categories={CATEGORIES}
                 locations={LOCATIONS}
@@ -270,37 +272,39 @@ export default function FoundPage() {
             </div>
 
             {/* Results Header */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-4">
-                <h2 className="text-xl font-semibold text-foreground">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                <h2 className="text-lg sm:text-xl font-semibold text-foreground">
                   {filteredItems.length}{" "}
                   {filteredItems.length === 1 ? "Item" : "Items"} Found
                 </h2>
                 {searchQuery && (
-                  <span className="text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     for &ldquo;{searchQuery}&rdquo;
                   </span>
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 bg-card rounded-lg border border-border p-1">
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded-lg transition-colors ${
+                  className={`p-2.5 sm:p-3 rounded-md transition-all min-h-[44px] min-w-[44px] flex items-center justify-center ${
                     viewMode === "grid"
-                      ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                      : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                      ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 shadow-sm"
+                      : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-muted"
                   }`}
+                  aria-label="Grid view"
                 >
                   <Grid className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`p-2 rounded-lg transition-colors ${
+                  className={`p-2.5 sm:p-3 rounded-md transition-all min-h-[44px] min-w-[44px] flex items-center justify-center ${
                     viewMode === "list"
-                      ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-                      : "text-slate-400 hover:text-foreground"
+                      ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 shadow-sm"
+                      : "text-slate-400 hover:text-foreground hover:bg-muted"
                   }`}
+                  aria-label="List view"
                 >
                   <List className="w-5 h-5" />
                 </button>
@@ -309,14 +313,14 @@ export default function FoundPage() {
 
             {/* Items Grid/List */}
             {filteredItems.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
-                  <MapPin className="w-12 h-12 text-slate-400" />
+              <div className="text-center py-12 sm:py-16 lg:py-20 px-4">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <MapPin className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-slate-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">
+                <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
                   No items found
                 </h3>
-                <p className="text-muted-foreground mb-6">
+                <p className="text-sm sm:text-base text-muted-foreground mb-6 sm:mb-8">
                   {searchQuery
                     ? "Try adjusting your search terms or filters"
                     : "No found items have been reported yet"}
@@ -324,9 +328,9 @@ export default function FoundPage() {
                 {!searchQuery && (
                   <button
                     onClick={handleReportClick}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white rounded-lg font-medium transition-all hover:shadow-lg active:scale-95 min-h-[44px] text-sm sm:text-base"
                   >
-                    <Plus className="w-5 h-5" />
+                    <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                     Report the First Found Item
                   </button>
                 )}
@@ -335,15 +339,17 @@ export default function FoundPage() {
               <div
                 className={
                   viewMode === "grid"
-                    ? "columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6"
-                    : "space-y-4"
+                    ? "columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 sm:gap-5 lg:gap-6 space-y-0"
+                    : "space-y-3 sm:space-y-4"
                 }
               >
                 {filteredItems.map((item) => (
                   <div
                     key={item._id}
                     className={
-                      viewMode === "grid" ? "break-inside-avoid mb-6" : ""
+                      viewMode === "grid"
+                        ? "break-inside-avoid mb-4 sm:mb-5 lg:mb-6"
+                        : ""
                     }
                   >
                     <ItemCard item={item} onClick={handleItemClick} />
@@ -354,8 +360,8 @@ export default function FoundPage() {
 
             {/* Load More Button (for pagination in real app) */}
             {filteredItems.length > 0 && (
-              <div className="text-center mt-12">
-                <button className="px-8 py-3 border border-border text-foreground rounded-lg hover:bg-muted font-medium transition-colors">
+              <div className="text-center mt-8 sm:mt-12">
+                <button className="px-6 py-3 sm:px-8 sm:py-3.5 border-2 border-border text-foreground rounded-lg hover:bg-muted font-medium transition-all hover:shadow-md active:scale-95 min-h-[44px] text-sm sm:text-base">
                   Load More Items
                 </button>
               </div>

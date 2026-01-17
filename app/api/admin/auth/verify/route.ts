@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
           success: false,
           message: "No authorization token provided",
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -32,19 +32,19 @@ export async function GET(req: NextRequest) {
           success: false,
           message: decoded.error || "Invalid or expired token",
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     // Get admin details
-    const result = await AdminService.getAdminByUserId(decoded.payload.userId);
+    const result = await AdminService.getUserById(decoded.payload.userId);
     if (!result.success) {
       return NextResponse.json(
         {
           success: false,
           message: result.error || "User is not an admin",
         },
-        { status: result.statusCode }
+        { status: result.statusCode },
       );
     }
 
@@ -64,7 +64,7 @@ export async function GET(req: NextRequest) {
           success: false,
           message: "Admin account is deactivated",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
           last_login: admin.last_login,
         },
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("Error verifying admin:", error);
@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
         success: false,
         message: "Failed to verify admin authentication",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

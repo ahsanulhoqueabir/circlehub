@@ -71,7 +71,7 @@ export default function AnalyticsPage() {
   const user_stats = {
     active: users.filter((u) => !u.is_banned).length,
     banned: users.filter((u) => u.is_banned).length,
-    verified: users.filter((u) => u.is_verified).length,
+    verified: users.filter((u) => u.verified).length,
   };
 
   if (loading.overview || loading.users || loading.items || loading.claims) {

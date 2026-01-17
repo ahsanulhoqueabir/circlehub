@@ -192,16 +192,11 @@ export default function SettingsPage() {
               <div className="bg-muted rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-foreground">
-                      Theme
-                    </p>
+                    <p className="font-medium text-foreground">Theme</p>
                     <p className="text-sm text-muted-foreground">
                       Current theme:{" "}
                       {actualTheme === "light" ? "Light" : "Dark"}
-                    </p>", "oldString": "                    <p className=\"text-sm text-gray-600 dark:text-gray-300\">
-                      Current theme:{" "}
-                      {actualTheme === "light" ? "Light" : "Dark"}
-                    </p>"
+                    </p>
                   </div>
                   <button
                     onClick={handleThemeToggle}

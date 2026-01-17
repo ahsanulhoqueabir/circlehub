@@ -31,7 +31,7 @@ export default function SharePage() {
   const [selectedCondition, setSelectedCondition] = useState("all");
   const [selectedOfferType, setSelectedOfferType] = useState("all");
   const [selectedItem, setSelectedItem] = useState<ShareItemWithProfile | null>(
-    null
+    null,
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isReportFormOpen, setIsReportFormOpen] = useState(false);
@@ -45,7 +45,7 @@ export default function SharePage() {
         item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.tags?.some((tag) =>
-          tag.toLowerCase().includes(searchTerm.toLowerCase())
+          tag.toLowerCase().includes(searchTerm.toLowerCase()),
         );
 
       const matchesCategory =
@@ -130,14 +130,14 @@ export default function SharePage() {
           </div>
         )}
         {/* Header */}
-        <div className="text-center mb-8 sm:mb-12">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
-            <Share2 className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-600 dark:text-yellow-400" />
+        <div className="text-center mb-6 sm:mb-8 lg:mb-12">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+            <Share2 className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-yellow-600 dark:text-yellow-400" />
           </div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-3 sm:mb-4 px-4">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-slate-900 dark:text-white mb-3 sm:mb-4 px-4">
             Share Items
           </h1>
-          <p className="text-sm sm:text-base lg:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-6 sm:mb-8 px-4">
+          <p className="text-sm sm:text-base lg:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-6 sm:mb-8 px-4 leading-relaxed">
             Give away items you no longer need to fellow students in your
             community
           </p>
@@ -145,7 +145,7 @@ export default function SharePage() {
           {/* Share Item Button */}
           <button
             onClick={handleReportClick}
-            className="inline-flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium transition-colors text-sm sm:text-base"
+            className="inline-flex items-center justify-center gap-2 bg-yellow-600 hover:bg-yellow-700 active:bg-yellow-800 text-white px-5 py-3 sm:px-6 sm:py-3.5 lg:px-8 lg:py-4 rounded-lg font-medium transition-all hover:shadow-lg active:scale-95 min-h-[44px] text-sm sm:text-base"
           >
             <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             Share an Item
@@ -153,7 +153,7 @@ export default function SharePage() {
         </div>
 
         {/* Search and Filters */}
-        <div className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
+        <div className="space-y-4 sm:space-y-5 lg:space-y-6 mb-6 sm:mb-8">
           <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
           <FilterBar
@@ -168,19 +168,19 @@ export default function SharePage() {
 
         {/* Results Count and View Toggle */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3">
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300">
+          <p className="text-sm sm:text-base font-medium text-slate-600 dark:text-slate-300">
             {filteredItems.length}{" "}
             {filteredItems.length === 1 ? "item" : "items"} available
           </p>
 
           {/* View Mode Toggle */}
-          <div className="flex items-center gap-2 bg-card rounded-lg border border-border p-1">
+          <div className="flex items-center gap-1 bg-card rounded-lg border border-border p-1">
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-2 rounded-md transition-colors ${
+              className={`p-2.5 sm:p-3 rounded-md transition-all min-h-[44px] min-w-[44px] flex items-center justify-center ${
                 viewMode === "grid"
-                  ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400"
-                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                  ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-muted"
               }`}
               aria-label="Grid view"
             >
@@ -188,10 +188,10 @@ export default function SharePage() {
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-2 rounded-md transition-colors ${
+              className={`p-2.5 sm:p-3 rounded-md transition-all min-h-[44px] min-w-[44px] flex items-center justify-center ${
                 viewMode === "list"
-                  ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400"
-                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                  ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-muted"
               }`}
               aria-label="List view"
             >
@@ -203,13 +203,14 @@ export default function SharePage() {
         {/* Items Grid/List */}
         {filteredItems.length > 0 ? (
           viewMode === "grid" ? (
-            <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-3 sm:gap-4 space-y-0">
+            <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 sm:gap-5 lg:gap-6 space-y-0">
               {filteredItems.map((item) => (
-                <ItemCard
+                <div
                   key={item._id}
-                  item={item}
-                  onClick={() => handleItemClick(item)}
-                />
+                  className="break-inside-avoid mb-4 sm:mb-5 lg:mb-6"
+                >
+                  <ItemCard item={item} onClick={() => handleItemClick(item)} />
+                </div>
               ))}
             </div>
           ) : (
@@ -225,14 +226,14 @@ export default function SharePage() {
             </div>
           )
         ) : (
-          <div className="text-center py-12 sm:py-16">
-            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-              <Share2 className="w-6 h-6 sm:w-8 sm:h-8 text-slate-400" />
+          <div className="text-center py-12 sm:py-16 lg:py-20 px-4">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+              <Share2 className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-slate-400" />
             </div>
-            <h3 className="text-base sm:text-lg font-medium text-slate-900 dark:text-white mb-2 px-4">
+            <h3 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white mb-2">
               No items found
             </h3>
-            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 px-4">
+            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 mb-6 sm:mb-8">
               {searchTerm ||
               selectedCategory !== "All Categories" ||
               selectedCondition !== "all" ||
@@ -240,6 +241,18 @@ export default function SharePage() {
                 ? "Try adjusting your search or filters"
                 : "Be the first to share an item!"}
             </p>
+            {!searchTerm &&
+              selectedCategory === "All Categories" &&
+              selectedCondition === "all" &&
+              selectedOfferType === "all" && (
+                <button
+                  onClick={handleReportClick}
+                  className="inline-flex items-center justify-center gap-2 bg-yellow-600 hover:bg-yellow-700 active:bg-yellow-800 text-white px-5 py-3 sm:px-6 sm:py-3.5 rounded-lg font-medium transition-all hover:shadow-lg active:scale-95 min-h-[44px] text-sm sm:text-base"
+                >
+                  <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                  Share Your First Item
+                </button>
+              )}
           </div>
         )}
       </div>

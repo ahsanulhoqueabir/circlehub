@@ -96,9 +96,7 @@ const StatusBadge = ({
       >
         {config.label}
       </span>
-      <p className="text-xs text-muted-foreground">
-        {config.description}
-      </p>
+      <p className="text-xs text-muted-foreground">{config.description}</p>
     </div>
   );
 };
@@ -187,7 +185,7 @@ export default function ItemDetailModal({
 
       alert(
         response.data?.message ||
-          "Claim submitted successfully! The finder will review your request."
+          "Claim submitted successfully! The finder will review your request.",
       );
 
       if (onClaimSuccess) {
@@ -315,18 +313,14 @@ export default function ItemDetailModal({
                     <Tag className="w-4 h-4 shrink-0" />
                     <div>
                       <span className="text-sm font-medium">Category</span>
-                      <p className="text-foreground">
-                        {item.category}
-                      </p>
+                      <p className="text-foreground">{item.category}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <MapPin className="w-4 h-4 shrink-0" />
                     <div>
                       <span className="text-sm font-medium">Found at</span>
-                      <p className="text-foreground">
-                        {item.location}
-                      </p>
+                      <p className="text-foreground">{item.location}</p>
                     </div>
                   </div>
                 </div>
@@ -344,9 +338,7 @@ export default function ItemDetailModal({
                     <User className="w-4 h-4 shrink-0" />
                     <div>
                       <span className="text-sm font-medium">Found by</span>
-                      <p className="text-foreground">
-                        {contact.name}
-                      </p>
+                      <p className="text-foreground">{contact.name}</p>
                     </div>
                   </div>
                 </div>
@@ -355,14 +347,12 @@ export default function ItemDetailModal({
               {/* Tags */}
               {item.tags && item.tags.length > 0 && (
                 <div>
-                  <h3 className="font-semibold text-foreground mb-3">
-                    Tags
-                  </h3>
+                  <h3 className="font-semibold text-foreground mb-3">Tags</h3>
                   <div className="flex gap-2 flex-wrap">
                     {item.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="px-3 py-1 bg-muted text-muted-foreground text-sm rounded-md">
+                        className="px-3 py-1 bg-muted text-muted-foreground text-sm rounded-md"
                       >
                         {tag}
                       </span>
