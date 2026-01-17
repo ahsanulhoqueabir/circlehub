@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { NumberInput } from "@/components/ui/number-input";
 
 interface ReportShareItemFormProps {
   isOpen: boolean;
@@ -317,15 +318,15 @@ export default function ReportShareItemForm({
                     <label className="block text-sm font-medium text-foreground mb-2">
                       Price (৳) *
                     </label>
-                    <input
-                      type="number"
+                    <NumberInput
                       required={formData.offerType === "sale"}
                       value={formData.price}
-                      onChange={(e) =>
-                        setFormData({ ...formData, price: e.target.value })
+                      onChange={(value, formatted) =>
+                        setFormData({ ...formData, price: formatted })
                       }
-                      min="0"
-                      className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground placeholder-muted-foreground focus:ring-2 focus:ring-secondary focus:border-transparent"
+                      allowDecimal={true}
+                      maxDecimals={2}
+                      className="w-full"
                       placeholder="Enter price"
                     />
                   </div>

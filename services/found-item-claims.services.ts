@@ -51,7 +51,7 @@ export class FoundItemClaimsService {
    */
   static async createClaim(
     user_id: string,
-    claim_data: CreateClaimData
+    claim_data: CreateClaimData,
   ): Promise<
     ServiceResponse<{ message: string; claim: Record<string, unknown> }>
   > {
@@ -159,8 +159,8 @@ export class FoundItemClaimsService {
    */
   static async getClaimsByItemId(
     item_id: string,
-    user_id: string
-  ): Promise<ServiceResponse<ClaimWithProfile[]>> {
+    user_id: string,
+  ): Promise<ServiceResponse<any[]>> {
     try {
       if (!item_id || !user_id) {
         return {
@@ -173,7 +173,7 @@ export class FoundItemClaimsService {
       await dbConnect();
 
       // Verify user owns this item
-      const found_item = await FoundItem.findById(item_id);
+      const found_item = await FoundItem.findById(item_id).lean();
 
       if (!found_item) {
         return {
@@ -203,27 +203,42 @@ export class FoundItemClaimsService {
         .lean();
 
       const users_map = new Map(
-        users.map((user) => [user._id.toString(), user])
+        users.map((user) => [user._id.toString(), user]),
       );
 
-      // Map claims with profiles
-      const claims_with_profiles: ClaimWithProfile[] = claims.map((claim) => {
+      // Map claims with profiles and found item details
+      const claims_with_profiles: any[] = claims.map((claim) => {
         const user = users_map.get(claim.claimerId.toString());
         return {
           id: claim._id.toString(),
-          foundItemId: claim.foundItemId.toString(),
-          claimerId: claim.claimerId.toString(),
+          found_item_id: claim.foundItemId.toString(),
+          claimer_id: claim.claimerId.toString(),
           status: claim.status,
           message: claim.message || null,
-          contactInfo: claim.contactInfo || null,
-          createdAt: claim.createdAt.toISOString(),
-          updatedAt: claim.updatedAt.toISOString(),
-          claimerProfile: {
+          contact_info: claim.contactInfo || null,
+          created_at: claim.createdAt.toISOString(),
+          updated_at: claim.updatedAt.toISOString(),
+          claimer_profile: {
             id: user?._id.toString() || "",
             name: user?.name || "",
             email: user?.email || "",
-            avatar_url: user?.avatar || null,
+            avatar_url: user?.avatar_url || null,
             phone: user?.phone || null,
+          },
+          found_item: {
+            _id: found_item._id.toString(),
+            user_id: found_item.user_id.toString(),
+            title: found_item.title,
+            description: found_item.description,
+            category: found_item.category,
+            location: found_item.location,
+            date_found: new Date(found_item.date_found).toISOString(),
+            image_url: found_item.image_url || undefined,
+            status: found_item.status,
+            tags: found_item.tags || [],
+            views: found_item.views || 0,
+            created_at: new Date(found_item.created_at).toISOString(),
+            updated_at: new Date(found_item.updated_at).toISOString(),
           },
         };
       });
@@ -247,8 +262,8 @@ export class FoundItemClaimsService {
    * Get all claims made by a user
    */
   static async getClaimsByUserId(
-    user_id: string
-  ): Promise<ServiceResponse<ClaimWithProfile[]>> {
+    user_id: string,
+  ): Promise<ServiceResponse<any[]>> {
     try {
       if (!user_id) {
         return {
@@ -266,26 +281,56 @@ export class FoundItemClaimsService {
 
       // Fetch user profile
       const user = await User.findById(user_id)
-        .select("name email avatar phone")
+        .select("name email avatar_url phone")
         .lean();
 
-      const claims_with_profiles: ClaimWithProfile[] = claims.map((claim) => ({
-        id: claim._id.toString(),
-        foundItemId: claim.foundItemId.toString(),
-        claimerId: claim.claimerId.toString(),
-        status: claim.status,
-        message: claim.message || null,
-        contactInfo: claim.contactInfo || null,
-        createdAt: claim.createdAt.toISOString(),
-        updatedAt: claim.updatedAt.toISOString(),
-        claimerProfile: {
-          id: user?._id.toString() || "",
-          name: user?.name || "",
-          email: user?.email || "",
-          avatar_url: user?.avatar || null,
-          phone: user?.phone || null,
-        },
-      }));
+      // Fetch found items
+      const found_item_ids = claims.map((claim) => claim.foundItemId);
+      const found_items = await FoundItem.find({
+        _id: { $in: found_item_ids },
+      }).lean();
+
+      const found_items_map = new Map(
+        found_items.map((item) => [item._id.toString(), item]),
+      );
+
+      const claims_with_profiles: any[] = claims.map((claim) => {
+        const found_item = found_items_map.get(claim.foundItemId.toString());
+        return {
+          id: claim._id.toString(),
+          found_item_id: claim.foundItemId.toString(),
+          claimer_id: claim.claimerId.toString(),
+          status: claim.status,
+          message: claim.message || null,
+          contact_info: claim.contactInfo || null,
+          created_at: claim.createdAt.toISOString(),
+          updated_at: claim.updatedAt.toISOString(),
+          claimer_profile: {
+            id: user?._id.toString() || "",
+            name: user?.name || "",
+            email: user?.email || "",
+            avatar_url: user?.avatar_url || null,
+            phone: user?.phone || null,
+          },
+          found_item: found_item
+            ? {
+                _id: found_item._id.toString(),
+                user_id: found_item.user_id.toString(),
+                title: found_item.title,
+                description: found_item.description,
+                category: found_item.category,
+                location: found_item.location,
+                date_found: new Date(found_item.date_found).toISOString(),
+                image_url: found_item.image_url || undefined,
+                status: found_item.status,
+                tags: found_item.tags || [],
+                views: found_item.views || 0,
+                created_at: new Date(found_item.created_at).toISOString(),
+                updated_at: new Date(found_item.updated_at).toISOString(),
+              }
+            : undefined,
+        };
+      });
 
       return {
         success: true,
@@ -306,8 +351,8 @@ export class FoundItemClaimsService {
    * Get all claims received by a user (for items they found)
    */
   static async getReceivedClaims(
-    user_id: string
-  ): Promise<ServiceResponse<ClaimWithProfile[]>> {
+    user_id: string,
+  ): Promise<ServiceResponse<any[]>> {
     try {
       if (!user_id) {
         return {
@@ -320,10 +365,13 @@ export class FoundItemClaimsService {
       await dbConnect();
 
       // Get all found items by user
-      const found_items = await FoundItem.find({ user_id })
-        .select("_id")
-        .lean();
+      const found_items = await FoundItem.find({ user_id }).lean();
       const item_ids = found_items.map((item) => item._id);
+
+      // Create found items map for quick lookup
+      const found_items_map = new Map(
+        found_items.map((item) => [item._id.toString(), item]),
+      );
 
       // Get all claims for these items
       const claims = await FoundItemClaim.find({
@@ -339,28 +387,46 @@ export class FoundItemClaimsService {
         .lean();
 
       const users_map = new Map(
-        users.map((user) => [user._id.toString(), user])
+        users.map((user) => [user._id.toString(), user]),
       );
 
-      // Map claims with profiles
-      const claims_with_profiles: ClaimWithProfile[] = claims.map((claim) => {
+      // Map claims with profiles and found item details
+      const claims_with_profiles: any[] = claims.map((claim) => {
         const user = users_map.get(claim.claimerId.toString());
+        const found_item = found_items_map.get(claim.foundItemId.toString());
         return {
           id: claim._id.toString(),
-          foundItemId: claim.foundItemId.toString(),
-          claimerId: claim.claimerId.toString(),
+          found_item_id: claim.foundItemId.toString(),
+          claimer_id: claim.claimerId.toString(),
           status: claim.status,
           message: claim.message || null,
-          contactInfo: claim.contactInfo || null,
-          createdAt: claim.createdAt.toISOString(),
-          updatedAt: claim.updatedAt.toISOString(),
-          claimerProfile: {
+          contact_info: claim.contactInfo || null,
+          created_at: claim.createdAt.toISOString(),
+          updated_at: claim.updatedAt.toISOString(),
+          claimer_profile: {
             id: user?._id.toString() || "",
             name: user?.name || "",
             email: user?.email || "",
-            avatar_url: user?.avatar || null,
+            avatar_url: user?.avatar_url || null,
             phone: user?.phone || null,
           },
+          found_item: found_item
+            ? {
+                _id: found_item._id.toString(),
+                user_id: found_item.user_id.toString(),
+                title: found_item.title,
+                description: found_item.description,
+                category: found_item.category,
+                location: found_item.location,
+                date_found: new Date(found_item.date_found).toISOString(),
+                image_url: found_item.image_url || undefined,
+                status: found_item.status,
+                tags: found_item.tags || [],
+                views: found_item.views || 0,
+                created_at: new Date(found_item.created_at).toISOString(),
+                updated_at: new Date(found_item.updated_at).toISOString(),
+              }
+            : undefined,
         };
       });
 
@@ -385,7 +451,7 @@ export class FoundItemClaimsService {
   static async updateClaimStatus(
     claim_id: string,
     user_id: string,
-    status: "approved" | "rejected"
+    status: "approved" | "rejected",
   ): Promise<
     ServiceResponse<{ message: string; claim: Record<string, unknown> }>
   > {
@@ -466,7 +532,7 @@ export class FoundItemClaimsService {
    */
   static async deleteClaim(
     claim_id: string,
-    user_id: string
+    user_id: string,
   ): Promise<ServiceResponse<{ message: string }>> {
     try {
       if (!claim_id || !user_id) {
@@ -527,7 +593,7 @@ export class FoundItemClaimsService {
    */
   static async hasUserClaimed(
     user_id: string,
-    item_id: string
+    item_id: string,
   ): Promise<ServiceResponse<boolean>> {
     try {
       if (!user_id || !item_id) {
@@ -564,7 +630,7 @@ export class FoundItemClaimsService {
    * Get claim count for an item
    */
   static async getClaimCount(
-    item_id: string
+    item_id: string,
   ): Promise<ServiceResponse<number>> {
     try {
       if (!item_id) {

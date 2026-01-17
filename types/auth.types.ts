@@ -24,8 +24,23 @@ export interface UserProfile {
   avatar?: string;
   university?: string;
   studentId?: string;
+  phone?: string;
   verified: boolean;
   role: "student" | "admin" | "moderator" | "support_staff";
+  created_at?: string;
+}
+
+export interface UpdateProfileRequest {
+  name?: string;
+  university?: string;
+  studentId?: string;
+  phone?: string;
+}
+
+export interface ChangePasswordRequest {
+  current_password: string;
+  new_password: string;
+  confirm_password: string;
 }
 
 export interface AuthTokens {

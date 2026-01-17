@@ -24,7 +24,7 @@ const audit_log_schema = new Schema<IAuditLog>(
   {
     admin_id: {
       type: Schema.Types.ObjectId,
-      ref: "Admin",
+      ref: "User",
       required: [true, "Admin ID is required"],
       index: true,
     },
@@ -68,7 +68,7 @@ const audit_log_schema = new Schema<IAuditLog>(
   },
   {
     collection: "audit_logs",
-  }
+  },
 );
 
 // Compound indexes for common queries
@@ -85,7 +85,7 @@ audit_log_schema.statics.logAction = async function (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   details: Record<string, any>,
   ip_address?: string,
-  user_agent?: string
+  user_agent?: string,
 ) {
   const log_data: Record<string, unknown> = {
     admin_id,

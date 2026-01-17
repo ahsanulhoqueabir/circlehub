@@ -116,7 +116,7 @@ const share_item_schema = new Schema<IShareItem>(
       updatedAt: "updated_at",
     },
     collection: "share_items",
-  }
+  },
 );
 
 // Indexes for better query performance
@@ -149,4 +149,6 @@ const ShareItem =
   mongoose.models.ShareItem ||
   mongoose.model<IShareItem>("ShareItem", share_item_schema);
 
+// Export both named and default for flexibility
+export { ShareItem };
 export default ShareItem;

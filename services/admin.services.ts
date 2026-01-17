@@ -40,7 +40,7 @@ export class AdminService {
    */
   static async checkPermission(
     user_id: string,
-    permission: string
+    permission: string,
   ): Promise<boolean> {
     try {
       await dbConnect();
@@ -67,7 +67,7 @@ export class AdminService {
    * Get all users with pagination and filters
    */
   static async getAllUsers(
-    options: UserFilters
+    options: UserFilters,
   ): Promise<ServiceResponse<PaginatedResponse<unknown>>> {
     try {
       await dbConnect();
@@ -190,7 +190,7 @@ export class AdminService {
     admin_id: string,
     reason: string,
     ip_address?: string,
-    user_agent?: string
+    user_agent?: string,
   ): Promise<ServiceResponse<unknown>> {
     try {
       if (!user_id || !admin_id || !reason) {
@@ -210,7 +210,7 @@ export class AdminService {
           ban_reason: reason,
           ban_date: new Date(),
         },
-        { new: true }
+        { new: true },
       ).select("-password");
 
       if (!user) {
@@ -254,7 +254,7 @@ export class AdminService {
     user_id: string,
     admin_id: string,
     ip_address?: string,
-    user_agent?: string
+    user_agent?: string,
   ): Promise<ServiceResponse<unknown>> {
     try {
       if (!user_id || !admin_id) {
@@ -274,7 +274,7 @@ export class AdminService {
           ban_reason: null,
           ban_date: null,
         },
-        { new: true }
+        { new: true },
       ).select("-password");
 
       if (!user) {
@@ -319,7 +319,7 @@ export class AdminService {
     admin_id: string,
     updates: UserUpdateData,
     ip_address?: string,
-    user_agent?: string
+    user_agent?: string,
   ): Promise<ServiceResponse<unknown>> {
     try {
       if (!user_id || !admin_id) {
@@ -387,7 +387,7 @@ export class AdminService {
     new_role: "student" | "admin" | "moderator" | "support_staff",
     admin_id: string,
     ip_address?: string,
-    user_agent?: string
+    user_agent?: string,
   ): Promise<ServiceResponse<unknown>> {
     try {
       if (!user_id || !admin_id || !new_role) {
@@ -468,7 +468,7 @@ export class AdminService {
     verified: boolean,
     admin_id: string,
     ip_address?: string,
-    user_agent?: string
+    user_agent?: string,
   ): Promise<ServiceResponse<unknown>> {
     try {
       if (!user_id || !admin_id || typeof verified !== "boolean") {
@@ -539,7 +539,7 @@ export class AdminService {
     is_active: boolean,
     admin_id: string,
     ip_address?: string,
-    user_agent?: string
+    user_agent?: string,
   ): Promise<ServiceResponse<unknown>> {
     try {
       if (!user_id || !admin_id || typeof is_active !== "boolean") {
@@ -657,7 +657,7 @@ export class AdminService {
     user_id: string,
     admin_id: string,
     ip_address?: string,
-    user_agent?: string
+    user_agent?: string,
   ): Promise<ServiceResponse<unknown>> {
     try {
       if (!user_id || !admin_id) {
@@ -673,7 +673,7 @@ export class AdminService {
       const user = await User.findByIdAndUpdate(
         user_id,
         { is_active: false },
-        { new: true }
+        { new: true },
       ).select("-password");
 
       if (!user) {
@@ -716,7 +716,7 @@ export class AdminService {
    * Get model by item type
    */
   private static getItemModel(
-    item_type: "lost" | "found" | "share"
+    item_type: "lost" | "found" | "share",
   ): typeof LostItem | typeof FoundItem | typeof ShareItem {
     switch (item_type) {
       case "lost":
@@ -734,7 +734,7 @@ export class AdminService {
    * Get all items with filters
    */
   static async getAllItems(
-    options: ItemFilters
+    options: ItemFilters,
   ): Promise<ServiceResponse<PaginatedResponse<unknown>>> {
     try {
       if (!options.type) {
@@ -811,7 +811,7 @@ export class AdminService {
     item_type: "lost" | "found" | "share",
     admin_id: string,
     ip_address?: string,
-    user_agent?: string
+    user_agent?: string,
   ): Promise<ServiceResponse<unknown>> {
     try {
       if (!item_id || !item_type || !admin_id) {
@@ -831,7 +831,7 @@ export class AdminService {
       const item = await Model.findByIdAndUpdate(
         item_id,
         { status },
-        { new: true }
+        { new: true },
       );
 
       if (!item) {
@@ -877,7 +877,7 @@ export class AdminService {
     admin_id: string,
     reason: string,
     ip_address?: string,
-    user_agent?: string
+    user_agent?: string,
   ): Promise<ServiceResponse<unknown>> {
     try {
       if (!item_id || !item_type || !admin_id || !reason) {
@@ -895,7 +895,7 @@ export class AdminService {
       const item = await Model.findByIdAndUpdate(
         item_id,
         { status: "rejected" },
-        { new: true }
+        { new: true },
       );
 
       if (!item) {
@@ -940,7 +940,7 @@ export class AdminService {
     item_type: "lost" | "found" | "share",
     admin_id: string,
     ip_address?: string,
-    user_agent?: string
+    user_agent?: string,
   ): Promise<ServiceResponse<{ success: boolean }>> {
     try {
       if (!item_id || !item_type || !admin_id) {
@@ -997,7 +997,7 @@ export class AdminService {
    * Get all claims with filters
    */
   static async getAllClaims(
-    options: ClaimFilters
+    options: ClaimFilters,
   ): Promise<ServiceResponse<PaginatedResponse<unknown>>> {
     try {
       await dbConnect();
@@ -1014,11 +1014,11 @@ export class AdminService {
 
       const [claims, total] = await Promise.all([
         FoundItemClaim.find(query)
-          .populate("claimant_id", "name email phone")
-          .populate("found_item_id", "title category")
+          .populate("claimerId", "name email phone")
+          .populate("foundItemId", "title category images")
           .skip(skip)
           .limit(limit)
-          .sort({ created_at: -1 })
+          .sort({ createdAt: -1 })
           .lean(),
         FoundItemClaim.countDocuments(query),
       ]);
@@ -1050,7 +1050,7 @@ export class AdminService {
     claim_id: string,
     admin_id: string,
     ip_address?: string,
-    user_agent?: string
+    user_agent?: string,
   ): Promise<ServiceResponse<unknown>> {
     try {
       if (!claim_id || !admin_id) {
@@ -1069,7 +1069,7 @@ export class AdminService {
           verification_status: "verified",
           status: "approved",
         },
-        { new: true }
+        { new: true },
       );
 
       if (!claim) {
@@ -1114,7 +1114,7 @@ export class AdminService {
     admin_id: string,
     reason: string,
     ip_address?: string,
-    user_agent?: string
+    user_agent?: string,
   ): Promise<ServiceResponse<unknown>> {
     try {
       if (!claim_id || !admin_id || !reason) {
@@ -1133,7 +1133,7 @@ export class AdminService {
           verification_status: "rejected",
           status: "rejected",
         },
-        { new: true }
+        { new: true },
       );
 
       if (!claim) {
@@ -1176,7 +1176,7 @@ export class AdminService {
    * Get all reports with filters
    */
   static async getAllReports(
-    options: ReportFilters
+    options: ReportFilters,
   ): Promise<ServiceResponse<PaginatedResponse<unknown>>> {
     try {
       await dbConnect();
@@ -1231,7 +1231,7 @@ export class AdminService {
     status: "new" | "under_review" | "resolved" | "dismissed",
     resolution?: string,
     ip_address?: string,
-    user_agent?: string
+    user_agent?: string,
   ): Promise<ServiceResponse<unknown>> {
     try {
       if (!report_id || !admin_id || !status) {
@@ -1294,7 +1294,7 @@ export class AdminService {
     assigned_to: string,
     admin_id: string,
     ip_address?: string,
-    user_agent?: string
+    user_agent?: string,
   ): Promise<ServiceResponse<unknown>> {
     try {
       if (!report_id || !assigned_to || !admin_id) {
@@ -1313,7 +1313,7 @@ export class AdminService {
           assigned_to,
           status: "under_review",
         },
-        { new: true }
+        { new: true },
       );
 
       if (!report) {
@@ -1680,7 +1680,7 @@ export class AdminService {
    * Get audit logs with filters
    */
   static async getAuditLogs(
-    options: AuditLogFilters
+    options: AuditLogFilters,
   ): Promise<ServiceResponse<PaginatedResponse<unknown>>> {
     try {
       await dbConnect();
@@ -1706,10 +1706,7 @@ export class AdminService {
 
       const [logs, total] = await Promise.all([
         AuditLog.find(query)
-          .populate({
-            path: "admin_id",
-            populate: { path: "user_id", select: "name email" },
-          })
+          .populate("admin_id", "name email role")
           .skip(skip)
           .limit(limit)
           .sort({ timestamp: -1 })
@@ -1741,7 +1738,7 @@ export class AdminService {
    * Export audit logs (for compliance)
    */
   static async exportAuditLogs(
-    filters: AuditLogExportFilters
+    filters: AuditLogExportFilters,
   ): Promise<ServiceResponse<unknown[]>> {
     try {
       await dbConnect();
@@ -1760,10 +1757,7 @@ export class AdminService {
       }
 
       const logs = await AuditLog.find(query)
-        .populate({
-          path: "admin_id",
-          populate: { path: "user_id", select: "name email" },
-        })
+        .populate("admin_id", "name email role")
         .sort({ timestamp: -1 })
         .lean();
 

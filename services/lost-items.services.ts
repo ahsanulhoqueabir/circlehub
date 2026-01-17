@@ -1,6 +1,7 @@
 import dbConnect from "@/lib/mongodb";
 import LostItem from "@/models/lost-items.m";
 import User from "@/models/users.m";
+import { Types } from "mongoose";
 import type {
   ItemFilterOptions,
   ItemsResponse,
@@ -18,7 +19,7 @@ export class LostItemsService {
    * Get lost items with filtering, sorting, and pagination
    */
   static async getItems(
-    filters: ItemFilterOptions = {}
+    filters: ItemFilterOptions = {},
   ): Promise<ServiceResponse<ItemsResponse<LostItemWithProfile>>> {
     try {
       const {
@@ -40,6 +41,7 @@ export class LostItemsService {
       // Build query
       const query: Record<string, unknown> = {};
 
+      // Only filter by status if provided (undefined means fetch all statuses)
       if (status) {
         query.status = status;
       }
@@ -72,7 +74,7 @@ export class LostItemsService {
       }
 
       if (userId) {
-        query.user_id = userId;
+        query.user_id = new Types.ObjectId(userId);
       }
 
       // Build sort
@@ -110,7 +112,7 @@ export class LostItemsService {
         .lean();
 
       const users_map = new Map(
-        users.map((user) => [user._id.toString(), user])
+        users.map((user) => [user._id.toString(), user]),
       );
 
       // Map items with profiles
@@ -169,7 +171,7 @@ export class LostItemsService {
    * Get a single lost item by ID
    */
   static async getItemById(
-    item_id: string
+    item_id: string,
   ): Promise<ServiceResponse<LostItemWithProfile>> {
     try {
       if (!item_id) {
@@ -244,7 +246,7 @@ export class LostItemsService {
    */
   static async createItem(
     user_id: string,
-    item_data: CreateLostItemRequest
+    item_data: CreateLostItemRequest,
   ): Promise<
     ServiceResponse<{ message: string; item: Record<string, unknown> }>
   > {
@@ -325,7 +327,7 @@ export class LostItemsService {
         "errors" in error
       ) {
         const messages = Object.values(
-          error.errors as Record<string, { message: string }>
+          error.errors as Record<string, { message: string }>,
         )
           .map((err) => err.message)
           .join(", ");
@@ -350,7 +352,7 @@ export class LostItemsService {
   static async updateItem(
     item_id: string,
     user_id: string,
-    updates: Partial<CreateLostItemRequest>
+    updates: Partial<CreateLostItemRequest>,
   ): Promise<
     ServiceResponse<{ message: string; item: Record<string, unknown> }>
   > {
@@ -427,7 +429,7 @@ export class LostItemsService {
         "errors" in error
       ) {
         const messages = Object.values(
-          error.errors as Record<string, { message: string }>
+          error.errors as Record<string, { message: string }>,
         )
           .map((err) => err.message)
           .join(", ");
@@ -451,7 +453,7 @@ export class LostItemsService {
    */
   static async deleteItem(
     item_id: string,
-    user_id: string
+    user_id: string,
   ): Promise<ServiceResponse<{ message: string }>> {
     try {
       if (!item_id || !user_id) {
@@ -505,7 +507,7 @@ export class LostItemsService {
   static async markAsResolved(
     item_id: string,
     user_id: string,
-    final_status: "found" | "closed" = "found"
+    final_status: "found" | "closed" = "found",
   ): Promise<
     ServiceResponse<{ message: string; item: Record<string, unknown> }>
   > {
@@ -566,7 +568,7 @@ export class LostItemsService {
    * Get items statistics
    */
   static async getStatistics(
-    user_id?: string
+    user_id?: string,
   ): Promise<ServiceResponse<ItemStatistics>> {
     try {
       await dbConnect();
@@ -574,7 +576,7 @@ export class LostItemsService {
       const query: Record<string, unknown> = user_id ? { user_id } : {};
 
       const all_items = await LostItem.find(query).select(
-        "category status created_at"
+        "category status created_at",
       );
 
       const items_by_category: Record<string, number> = {};
@@ -628,7 +630,7 @@ export class LostItemsService {
    */
   static async searchItems(
     search_query: string,
-    filters?: Omit<ItemFilterOptions, "search">
+    filters?: Omit<ItemFilterOptions, "search">,
   ): Promise<ServiceResponse<ItemsResponse<LostItemWithProfile>>> {
     return this.getItems({
       ...filters,
@@ -641,7 +643,7 @@ export class LostItemsService {
    */
   static async getUserItems(
     user_id: string,
-    filters?: Omit<ItemFilterOptions, "userId">
+    filters?: Omit<ItemFilterOptions, "userId">,
   ): Promise<ServiceResponse<ItemsResponse<LostItemWithProfile>>> {
     return this.getItems({
       ...filters,

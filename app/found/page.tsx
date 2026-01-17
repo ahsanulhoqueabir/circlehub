@@ -202,7 +202,7 @@ export default function FoundPage() {
 
           <button
             onClick={handleReportClick}
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 lg:px-8 lg:py-4 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white rounded-lg font-medium transition-all hover:shadow-lg active:scale-95 min-h-[44px] text-sm sm:text-base"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 lg:px-8 lg:py-4 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white rounded-lg font-medium transition-all hover:shadow-lg active:scale-95 min-h-11 text-sm sm:text-base"
           >
             <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
             Report Found Item
@@ -288,7 +288,7 @@ export default function FoundPage() {
               <div className="flex items-center gap-1 bg-card rounded-lg border border-border p-1">
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`p-2.5 sm:p-3 rounded-md transition-all min-h-[44px] min-w-[44px] flex items-center justify-center ${
+                  className={`p-2.5 sm:p-3 rounded-md transition-all min-h-11 min-w-11 flex items-center justify-center ${
                     viewMode === "grid"
                       ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 shadow-sm"
                       : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-muted"
@@ -299,7 +299,7 @@ export default function FoundPage() {
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`p-2.5 sm:p-3 rounded-md transition-all min-h-[44px] min-w-[44px] flex items-center justify-center ${
+                  className={`p-2.5 sm:p-3 rounded-md transition-all min-h-11 min-w-11 flex items-center justify-center ${
                     viewMode === "list"
                       ? "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 shadow-sm"
                       : "text-slate-400 hover:text-foreground hover:bg-muted"
@@ -328,7 +328,7 @@ export default function FoundPage() {
                 {!searchQuery && (
                   <button
                     onClick={handleReportClick}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white rounded-lg font-medium transition-all hover:shadow-lg active:scale-95 min-h-[44px] text-sm sm:text-base"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white rounded-lg font-medium transition-all hover:shadow-lg active:scale-95 min-h-11 text-sm sm:text-base"
                   >
                     <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                     Report the First Found Item
@@ -361,7 +361,7 @@ export default function FoundPage() {
             {/* Load More Button (for pagination in real app) */}
             {filteredItems.length > 0 && (
               <div className="text-center mt-8 sm:mt-12">
-                <button className="px-6 py-3 sm:px-8 sm:py-3.5 border-2 border-border text-foreground rounded-lg hover:bg-muted font-medium transition-all hover:shadow-md active:scale-95 min-h-[44px] text-sm sm:text-base">
+                <button className="px-6 py-3 sm:px-8 sm:py-3.5 border-2 border-border text-foreground rounded-lg hover:bg-muted font-medium transition-all hover:shadow-md active:scale-95 min-h-11 text-sm sm:text-base">
                   Load More Items
                 </button>
               </div>
