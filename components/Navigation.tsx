@@ -226,15 +226,6 @@ export default function Navigation() {
                         <span>Claims</span>
                       </Link>
 
-                      <Link
-                        href="/notifications"
-                        className="flex items-center space-x-3 px-4 py-3 text-sm text-foreground hover:bg-muted transition-colors"
-                        onClick={() => setIsDropdownOpen(false)}
-                      >
-                        <Bell className="w-4 h-4" />
-                        <span>Notifications</span>
-                      </Link>
-
                       <hr className="border-border my-1" />
 
                       <button

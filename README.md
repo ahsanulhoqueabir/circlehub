@@ -36,7 +36,6 @@ CircleHub is a comprehensive campus community platform built specifically for Ja
 - Beautiful dark and light theme support
 - Fully responsive design for all devices
 - Intuitive navigation and search functionality
-- Real-time notifications system
 - Advanced filtering and sorting options
 
 ### 👤 **User Management**
@@ -108,8 +107,7 @@ campus-connect/
 │   ├── share/             # Share items page
 │   ├── my-items/          # User's items dashboard
 │   ├── profile/           # User profile
-│   ├── settings/          # App settings
-│   └── notifications/     # Notifications page
+│   └── settings/          # App settings
 ├── components/            # Reusable React components
 │   ├── found-items/       # Found items components
 │   ├── lost-items/        # Lost items components
