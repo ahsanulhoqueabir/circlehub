@@ -138,7 +138,9 @@ export default function NotificationsPage() {
                     className={`border-l-4 ${getNotificationBorder(
                       notification.type,
                     )} ${
-                      notification.read ? "bg-muted" : "bg-card"
+                      notification.read
+                        ? "bg-muted"
+                        : "bg-card"
                     } p-4 rounded-lg shadow-sm border border-border`}
                   >
                     <div className="flex items-start space-x-3">
