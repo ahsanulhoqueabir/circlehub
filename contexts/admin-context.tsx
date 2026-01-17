@@ -48,15 +48,27 @@ interface Item {
   title: string;
   category: string;
   description: string;
-  images: string[];
+  image_url?: string | null;
+  images?: string[];
   status: string;
-  user_id: {
+  user_id?: {
     _id: string;
     name: string;
     email: string;
   };
+  profile?: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string | null;
+    avatar_url: string | null;
+  } | null;
   created_at: string;
   location?: string;
+  condition?: string;
+  offer_type?: string;
+  price?: number | null;
+  tags?: string[];
 }
 
 interface Claim {
@@ -164,7 +176,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
 
   // State
   const [overview_stats, set_overview_stats] = useState<OverviewStats | null>(
-    null
+    null,
   );
   const [users, set_users] = useState<User[]>([]);
   const [lost_items, set_lost_items] = useState<Item[]>([]);
@@ -194,7 +206,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         logout();
       }
     },
-    [logout]
+    [logout],
   );
 
   // Fetch functions
@@ -223,7 +235,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         set_loading((prev) => ({ ...prev, users: false }));
       }
     },
-    [axios, handle_error]
+    [axios, handle_error],
   );
 
   const fetch_lost_items = useCallback(
@@ -239,7 +251,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         set_loading((prev) => ({ ...prev, items: false }));
       }
     },
-    [axios, handle_error]
+    [axios, handle_error],
   );
 
   const fetch_found_items = useCallback(
@@ -255,7 +267,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         set_loading((prev) => ({ ...prev, items: false }));
       }
     },
-    [axios, handle_error]
+    [axios, handle_error],
   );
 
   const fetch_share_items = useCallback(
@@ -271,7 +283,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         set_loading((prev) => ({ ...prev, items: false }));
       }
     },
-    [axios, handle_error]
+    [axios, handle_error],
   );
 
   const fetch_claims = useCallback(
@@ -287,7 +299,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         set_loading((prev) => ({ ...prev, claims: false }));
       }
     },
-    [axios, handle_error]
+    [axios, handle_error],
   );
 
   const fetch_reports = useCallback(
@@ -303,7 +315,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         set_loading((prev) => ({ ...prev, reports: false }));
       }
     },
-    [axios, handle_error]
+    [axios, handle_error],
   );
 
   const fetch_audit_logs = useCallback(
@@ -319,7 +331,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         set_loading((prev) => ({ ...prev, logs: false }));
       }
     },
-    [axios, handle_error]
+    [axios, handle_error],
   );
 
   // Action functions
@@ -328,7 +340,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       await axios.patch(`/api/admin/users/${user_id}`, updates);
       await fetch_users();
     },
-    [axios, fetch_users]
+    [axios, fetch_users],
   );
 
   const update_user_role = useCallback(
@@ -336,7 +348,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       await axios.patch(`/api/admin/users/${user_id}/role`, { role: new_role });
       await fetch_users();
     },
-    [axios, fetch_users]
+    [axios, fetch_users],
   );
 
   const verify_user = useCallback(
@@ -346,7 +358,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       });
       await fetch_users();
     },
-    [axios, fetch_users]
+    [axios, fetch_users],
   );
 
   const unverify_user = useCallback(
@@ -356,7 +368,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       });
       await fetch_users();
     },
-    [axios, fetch_users]
+    [axios, fetch_users],
   );
 
   const activate_user = useCallback(
@@ -366,7 +378,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       });
       await fetch_users();
     },
-    [axios, fetch_users]
+    [axios, fetch_users],
   );
 
   const deactivate_user = useCallback(
@@ -376,7 +388,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       });
       await fetch_users();
     },
-    [axios, fetch_users]
+    [axios, fetch_users],
   );
 
   const ban_user = useCallback(
@@ -384,7 +396,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       await axios.post(`/api/admin/users/${user_id}/ban`, { reason });
       await fetch_users();
     },
-    [axios, fetch_users]
+    [axios, fetch_users],
   );
 
   const unban_user = useCallback(
@@ -392,27 +404,27 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       await axios.post(`/api/admin/users/${user_id}/unban`);
       await fetch_users();
     },
-    [axios, fetch_users]
+    [axios, fetch_users],
   );
 
   const approve_item = useCallback(
     async (item_id: string, type: string) => {
-      await axios.patch(`/api/admin/items/${item_id}/approve`, { type });
+      await axios.post(`/api/admin/items/${item_id}/approve`, { type });
       if (type === "lost") await fetch_lost_items();
       if (type === "found") await fetch_found_items();
       if (type === "share") await fetch_share_items();
     },
-    [axios, fetch_lost_items, fetch_found_items, fetch_share_items]
+    [axios, fetch_lost_items, fetch_found_items, fetch_share_items],
   );
 
   const reject_item = useCallback(
     async (item_id: string, type: string, reason: string) => {
-      await axios.patch(`/api/admin/items/${item_id}/reject`, { type, reason });
+      await axios.post(`/api/admin/items/${item_id}/reject`, { type, reason });
       if (type === "lost") await fetch_lost_items();
       if (type === "found") await fetch_found_items();
       if (type === "share") await fetch_share_items();
     },
-    [axios, fetch_lost_items, fetch_found_items, fetch_share_items]
+    [axios, fetch_lost_items, fetch_found_items, fetch_share_items],
   );
 
   const delete_item = useCallback(
@@ -422,7 +434,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       if (type === "found") await fetch_found_items();
       if (type === "share") await fetch_share_items();
     },
-    [axios, fetch_lost_items, fetch_found_items, fetch_share_items]
+    [axios, fetch_lost_items, fetch_found_items, fetch_share_items],
   );
 
   const approve_claim = useCallback(
@@ -430,7 +442,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       await axios.patch(`/api/admin/claims/${claim_id}/approve`);
       await fetch_claims();
     },
-    [axios, fetch_claims]
+    [axios, fetch_claims],
   );
 
   const reject_claim = useCallback(
@@ -438,7 +450,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       await axios.patch(`/api/admin/claims/${claim_id}/reject`, { reason });
       await fetch_claims();
     },
-    [axios, fetch_claims]
+    [axios, fetch_claims],
   );
 
   const resolve_report = useCallback(
@@ -448,7 +460,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       });
       await fetch_reports();
     },
-    [axios, fetch_reports]
+    [axios, fetch_reports],
   );
 
   const refresh_all = useCallback(async () => {

@@ -21,6 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+type ActionModal = "approve" | "reject" | "delete" | "view" | null;
+
 export default function ShareItemsPage() {
   const {
     share_items,
@@ -35,9 +37,7 @@ export default function ShareItemsPage() {
   const [status_filter, set_status_filter] = useState("all");
   const [category_filter, set_category_filter] = useState("all");
   const [selected_item, set_selected_item] = useState<any>(null);
-  const [action_modal, set_action_modal] = useState<
-    "approve" | "reject" | "delete" | "view" | null
-  >(null);
+  const [action_modal, set_action_modal] = useState<ActionModal>(null);
   const [reject_reason, set_reject_reason] = useState("");
 
   useEffect(() => {
@@ -147,16 +147,16 @@ export default function ShareItemsPage() {
               className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
             >
               <div
-                className="aspect-square bg-gray-200 rounded-t-lg overflow-hidden cursor-pointer"
+                className="aspect-square bg-gray-200 rounded-t-lg overflow-hidden cursor-pointer relative"
                 onClick={() => {
                   set_selected_item(item);
                   set_action_modal("view");
                 }}
               >
-                {item.images?.[0] ? (
+                {item.image_url ? (
                   <Image
                     fill
-                    src={item.images[0]}
+                    src={item.image_url}
                     alt={item.title}
                     className="w-full h-full object-cover"
                   />
@@ -176,8 +176,8 @@ export default function ShareItemsPage() {
                       item.status === "available"
                         ? "bg-green-100 text-green-700"
                         : item.status === "reserved"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : "bg-blue-100 text-blue-700"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-blue-100 text-blue-700"
                     }`}
                   >
                     {item.status}
@@ -192,7 +192,7 @@ export default function ShareItemsPage() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-xs text-gray-500 mb-3 pb-3 border-b">
-                  <span>By {item.user_id?.name || "Unknown"}</span>
+                  <span>By {item.profile?.name || "Unknown"}</span>
                   <span>
                     {formatDistanceToNow(new Date(item.created_at), {
                       addSuffix: true,
@@ -249,17 +249,58 @@ export default function ShareItemsPage() {
             <DialogTitle>{selected_item?.title}</DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              {selected_item?.images?.map((img: string, idx: number) => (
-                <div key={idx} className="relative w-full h-48">
-                  <Image
-                    fill
-                    src={img}
-                    alt=""
-                    className="object-cover rounded-lg"
-                  />
+            {selected_item?.image_url ? (
+              <div className="relative w-full h-64 mb-4">
+                <Image
+                  fill
+                  src={selected_item.image_url}
+                  alt={selected_item.title}
+                  className="object-cover rounded-lg"
+                />
+              </div>
+            ) : (
+              <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center mb-4">
+                <Handshake size={80} className="text-gray-400" />
+              </div>
+            )}
+            <div className="space-y-2">
+              <p className="text-sm text-gray-600">
+                {selected_item?.description}
+              </p>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-semibold">Category:</span>
+                <span className="px-2 py-1 bg-gray-100 rounded text-xs">
+                  {selected_item?.category}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-semibold">Condition:</span>
+                <span className="px-2 py-1 bg-gray-100 rounded text-xs">
+                  {selected_item?.condition}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-semibold">Type:</span>
+                <span className="px-2 py-1 bg-gray-100 rounded text-xs">
+                  {selected_item?.offer_type}
+                </span>
+              </div>
+              {selected_item?.price && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="font-semibold">Price:</span>
+                  <span className="text-green-600 font-bold">
+                    ৳{selected_item.price}
+                  </span>
                 </div>
-              ))}
+              )}
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-semibold">Location:</span>
+                <span>{selected_item?.location}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-semibold">Posted by:</span>
+                <span>{selected_item?.profile?.name || "Unknown"}</span>
+              </div>
             </div>
           </div>
           <DialogFooter>

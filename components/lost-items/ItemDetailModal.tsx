@@ -139,8 +139,8 @@ export default function ItemDetailModal({
                         item.status === "active"
                           ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
                           : item.status === "found"
-                          ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                          : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                            ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                            : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
                       }`}
                     >
                       {item.status

@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
           success: false,
           message: "No authorization token provided",
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
           success: false,
           message: decoded.error || "Invalid or expired token",
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
           success: false,
           message: result.error || "User not found",
         },
-        { status: result.statusCode }
+        { status: result.statusCode },
       );
     }
 
@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
           success: false,
           message: "Admin account is deactivated",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -92,7 +92,7 @@ export async function GET(req: NextRequest) {
           verified: user.verified,
         },
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("Error verifying admin:", error);
@@ -101,7 +101,7 @@ export async function GET(req: NextRequest) {
         success: false,
         message: "Failed to verify admin authentication",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

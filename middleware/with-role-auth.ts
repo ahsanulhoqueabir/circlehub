@@ -14,7 +14,7 @@ export interface AuthenticatedUser {
  */
 export async function withRoleAuth(
   request: NextRequest,
-  allowed_roles: UserRole[]
+  allowed_roles: UserRole[],
 ): Promise<
   | { authorized: true; user: AuthenticatedUser }
   | { authorized: false; response: NextResponse }
@@ -30,7 +30,7 @@ export async function withRoleAuth(
         authorized: false,
         response: NextResponse.json(
           { error: "Unauthorized", message: "No access token provided" },
-          { status: 401 }
+          { status: 401 },
         ),
       };
     }
@@ -43,7 +43,7 @@ export async function withRoleAuth(
         authorized: false,
         response: NextResponse.json(
           { error: "Unauthorized", message: "Invalid or expired token" },
-          { status: 401 }
+          { status: 401 },
         ),
       };
     }
@@ -62,10 +62,10 @@ export async function withRoleAuth(
           {
             error: "Forbidden",
             message: `Access denied. Required roles: ${allowed_roles.join(
-              ", "
+              ", ",
             )}`,
           },
-          { status: 403 }
+          { status: 403 },
         ),
       };
     }
@@ -77,7 +77,7 @@ export async function withRoleAuth(
       authorized: false,
       response: NextResponse.json(
         { error: "Internal Server Error", message: "Authentication failed" },
-        { status: 500 }
+        { status: 500 },
       ),
     };
   }
@@ -87,7 +87,7 @@ export async function withRoleAuth(
  * Check if user has admin role
  */
 export async function withAdminAuth(
-  request: NextRequest
+  request: NextRequest,
 ): Promise<
   | { authorized: true; user: AuthenticatedUser }
   | { authorized: false; response: NextResponse }
@@ -99,7 +99,7 @@ export async function withAdminAuth(
  * Check if user has moderator or admin role
  */
 export async function withModeratorAuth(
-  request: NextRequest
+  request: NextRequest,
 ): Promise<
   | { authorized: true; user: AuthenticatedUser }
   | { authorized: false; response: NextResponse }
@@ -111,7 +111,7 @@ export async function withModeratorAuth(
  * Check if user has support_staff, moderator or admin role
  */
 export async function withSupportAuth(
-  request: NextRequest
+  request: NextRequest,
 ): Promise<
   | { authorized: true; user: AuthenticatedUser }
   | { authorized: false; response: NextResponse }
@@ -123,7 +123,7 @@ export async function withSupportAuth(
  * Check if user is authenticated (any role)
  */
 export async function withAuth(
-  request: NextRequest
+  request: NextRequest,
 ): Promise<
   | { authorized: true; user: AuthenticatedUser }
   | { authorized: false; response: NextResponse }

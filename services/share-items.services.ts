@@ -1,5 +1,4 @@
-import ShareItem, { IShareItem } from "@/models/share-items.m";
-import User from "@/models/users.m";
+import ShareItem from "@/models/share-items.m";
 import dbConnect from "@/lib/mongodb";
 import { Types } from "mongoose";
 import type { ServiceResponse } from "@/types/auth.types";
@@ -25,30 +24,31 @@ export class ShareItemsService {
       sortBy?: "date" | "price";
       sortOrder?: "asc" | "desc";
       userId?: string;
-    } = {}
+    } = {},
   ): Promise<
     ServiceResponse<{
       items: Array<{
-        id: string;
-        userId: string;
+        _id: string;
+        user_id: string;
         title: string;
         description: string;
         category: string;
         condition: string;
-        offerType: string;
-        price?: number;
+        offer_type: string;
+        price: number | null;
         location: string;
-        imageUrl?: string;
+        image_url: string | null;
         tags: string[];
         status: string;
-        createdAt: string;
-        updatedAt: string;
-        profile?: {
+        created_at: string;
+        updated_at: string;
+        profile: {
+          id: string;
           name: string;
           email: string;
-          phone?: string;
-          avatarUrl?: string;
-        };
+          phone: string | null;
+          avatar_url: string | null;
+        } | null;
       }>;
       pagination: {
         currentPage: number;
@@ -129,32 +129,34 @@ export class ShareItemsService {
       ]);
 
       // Transform items
-      const transformed_items = items.map((item: any) => ({
-        id: item._id.toString(),
-        userId: item.user_id?._id
-          ? item.user_id._id.toString()
-          : item.user_id.toString(),
-        title: item.title,
-        description: item.description,
-        category: item.category,
-        condition: item.condition,
-        offerType: item.offer_type,
-        price: item.price || undefined,
-        location: item.location,
-        imageUrl: item.image_url || undefined,
-        tags: item.tags || [],
-        status: item.status,
-        createdAt: item.created_at.toISOString(),
-        updatedAt: item.updated_at.toISOString(),
-        profile: item.user_id?._id
-          ? {
-              name: item.user_id.name,
-              email: item.user_id.email,
-              phone: item.user_id.phone,
-              avatarUrl: item.user_id.avatar_url,
-            }
-          : undefined,
-      }));
+      const transformed_items = items.map((item: any) => {
+        const user = item.user_id;
+        return {
+          _id: item._id.toString(),
+          user_id: user?._id ? user._id.toString() : item.user_id.toString(),
+          title: item.title,
+          description: item.description,
+          category: item.category,
+          condition: item.condition,
+          offer_type: item.offer_type,
+          price: item.price || null,
+          location: item.location,
+          image_url: item.image_url || null,
+          tags: item.tags || [],
+          status: item.status,
+          created_at: item.created_at.toISOString(),
+          updated_at: item.updated_at.toISOString(),
+          profile: user?._id
+            ? {
+                id: user._id.toString(),
+                name: user.name,
+                email: user.email,
+                phone: user.phone || null,
+                avatar_url: user.avatar_url || null,
+              }
+            : null,
+        };
+      });
 
       const total_pages = Math.ceil(total_count / limit);
 
@@ -186,26 +188,27 @@ export class ShareItemsService {
    */
   static async getItemById(id: string): Promise<
     ServiceResponse<{
-      id: string;
-      userId: string;
+      _id: string;
+      user_id: string;
       title: string;
       description: string;
       category: string;
       condition: string;
-      offerType: string;
-      price?: number;
+      offer_type: string;
+      price: number | null;
       location: string;
-      imageUrl?: string;
+      image_url: string | null;
       tags: string[];
       status: string;
-      createdAt: string;
-      updatedAt: string;
-      profile?: {
+      created_at: string;
+      updated_at: string;
+      profile: {
+        id: string;
         name: string;
         email: string;
-        phone?: string;
-        avatarUrl?: string;
-      };
+        phone: string | null;
+        avatar_url: string | null;
+      } | null;
     }>
   > {
     try {
@@ -232,35 +235,34 @@ export class ShareItemsService {
         };
       }
 
-      const user_data = item.user_id as any;
+      const user = item.user_id as any;
 
       return {
         success: true,
         data: {
-          id: item._id.toString(),
-          userId: user_data._id
-            ? user_data._id.toString()
-            : item.user_id.toString(),
+          _id: item._id.toString(),
+          user_id: user?._id ? user._id.toString() : item.user_id.toString(),
           title: item.title,
           description: item.description,
           category: item.category,
           condition: item.condition,
-          offerType: item.offer_type,
-          price: item.price || undefined,
+          offer_type: item.offer_type,
+          price: item.price || null,
           location: item.location,
-          imageUrl: item.image_url || undefined,
+          image_url: item.image_url || null,
           tags: item.tags || [],
           status: item.status,
-          createdAt: item.created_at.toISOString(),
-          updatedAt: item.updated_at.toISOString(),
-          profile: user_data._id
+          created_at: item.created_at.toISOString(),
+          updated_at: item.updated_at.toISOString(),
+          profile: user?._id
             ? {
-                name: user_data.name,
-                email: user_data.email,
-                phone: user_data.phone,
-                avatarUrl: user_data.avatar_url,
+                id: user._id.toString(),
+                name: user.name,
+                email: user.email,
+                phone: user.phone || null,
+                avatar_url: user.avatar_url || null,
               }
-            : undefined,
+            : null,
         },
         statusCode: 200,
       };
@@ -378,9 +380,9 @@ export class ShareItemsService {
             category: new_item.category,
             condition: new_item.condition,
             offerType: new_item.offer_type,
-            price: new_item.price || undefined,
+            price: new_item.price || null,
             location: new_item.location,
-            imageUrl: new_item.image_url || undefined,
+            imageUrl: new_item.image_url || null,
             tags: new_item.tags || [],
             status: new_item.status,
             createdAt: new_item.created_at.toISOString(),
@@ -527,9 +529,9 @@ export class ShareItemsService {
             category: updated_item.category,
             condition: updated_item.condition,
             offerType: updated_item.offer_type,
-            price: updated_item.price || undefined,
+            price: updated_item.price || null,
             location: updated_item.location,
-            imageUrl: updated_item.image_url || undefined,
+            imageUrl: updated_item.image_url || null,
             tags: updated_item.tags || [],
             status: updated_item.status,
             createdAt: updated_item.created_at.toISOString(),
@@ -617,7 +619,7 @@ export class ShareItemsService {
     ServiceResponse<{
       message: string;
       item: {
-        id: string;
+        _id: string;
         status: string;
       };
     }>
@@ -662,7 +664,7 @@ export class ShareItemsService {
         data: {
           message: `Item marked as ${status} successfully`,
           item: {
-            id: item._id.toString(),
+            _id: item._id.toString(),
             status: item.status,
           },
         },
@@ -745,20 +747,20 @@ export class ShareItemsService {
   static async searchItems(data: { query: string; limit?: number }): Promise<
     ServiceResponse<
       Array<{
-        id: string;
-        userId: string;
+        _id: string;
+        user_id: string;
         title: string;
         description: string;
         category: string;
         condition: string;
-        offerType: string;
-        price?: number;
+        offer_type: string;
+        price: number | null;
         location: string;
-        imageUrl?: string;
+        image_url: string | null;
         tags: string[];
         status: string;
-        createdAt: string;
-        updatedAt: string;
+        created_at: string;
+        updated_at: string;
       }>
     >
   > {
@@ -782,20 +784,20 @@ export class ShareItemsService {
         .exec();
 
       const transformed_items = items.map((item: any) => ({
-        id: item._id.toString(),
-        userId: item.user_id.toString(),
+        _id: item._id.toString(),
+        user_id: item.user_id.toString(),
         title: item.title,
         description: item.description,
         category: item.category,
         condition: item.condition,
-        offerType: item.offer_type,
-        price: item.price || undefined,
+        offer_type: item.offer_type,
+        price: item.price || null,
         location: item.location,
-        imageUrl: item.image_url || undefined,
+        image_url: item.image_url || null,
         tags: item.tags || [],
         status: item.status,
-        createdAt: item.created_at.toISOString(),
-        updatedAt: item.updated_at.toISOString(),
+        created_at: item.created_at.toISOString(),
+        updated_at: item.updated_at.toISOString(),
       }));
 
       return {
@@ -820,20 +822,20 @@ export class ShareItemsService {
   static async getUserItems(userId: string): Promise<
     ServiceResponse<
       Array<{
-        id: string;
-        userId: string;
+        _id: string;
+        user_id: string;
         title: string;
         description: string;
         category: string;
         condition: string;
-        offerType: string;
-        price?: number;
+        offer_type: string;
+        price: number | null;
         location: string;
-        imageUrl?: string;
+        image_url: string | null;
         tags: string[];
         status: string;
-        createdAt: string;
-        updatedAt: string;
+        created_at: string;
+        updated_at: string;
       }>
     >
   > {
@@ -848,20 +850,20 @@ export class ShareItemsService {
         .exec();
 
       const transformed_items = items.map((item: any) => ({
-        id: item._id.toString(),
-        userId: item.user_id.toString(),
+        _id: item._id.toString(),
+        user_id: item.user_id.toString(),
         title: item.title,
         description: item.description,
         category: item.category,
         condition: item.condition,
-        offerType: item.offer_type,
-        price: item.price || undefined,
+        offer_type: item.offer_type,
+        price: item.price || null,
         location: item.location,
-        imageUrl: item.image_url || undefined,
+        image_url: item.image_url || null,
         tags: item.tags || [],
         status: item.status,
-        createdAt: item.created_at.toISOString(),
-        updatedAt: item.updated_at.toISOString(),
+        created_at: item.created_at.toISOString(),
+        updated_at: item.updated_at.toISOString(),
       }));
 
       return {

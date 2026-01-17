@@ -41,9 +41,9 @@ export interface ShareItem {
   category: string;
   condition: "new" | "like-new" | "good" | "fair";
   offer_type: "free" | "sale";
-  price?: number;
+  price?: number | null;
   location: string;
-  image_url?: string;
+  image_url?: string | null;
   tags?: string[];
   status: "pending" | "available" | "reserved" | "shared" | "rejected";
   created_at: string;
@@ -203,7 +203,7 @@ export interface FoundItemWithProfile extends FoundItem {
 
 // Share item with profile
 export interface ShareItemWithProfile extends ShareItem {
-  profile: UserProfile;
+  profile: UserProfile | null;
 }
 
 // API Response types

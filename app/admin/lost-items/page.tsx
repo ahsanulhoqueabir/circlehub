@@ -3,7 +3,7 @@
 import { useAdmin } from "@/contexts/admin-context";
 import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { RefreshCw, Package } from "lucide-react";
+import { RefreshCw, Package, Eye } from "lucide-react";
 import Image from "next/image";
 import {
   Dialog,
@@ -21,6 +21,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+interface LostItem {
+  _id: string;
+  title: string;
+  category: string;
+  description: string;
+  images?: string[];
+  status: string;
+  user_id?: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  created_at: string;
+  location?: string;
+}
+
 export default function LostItemsPage() {
   const {
     lost_items,
@@ -34,11 +50,12 @@ export default function LostItemsPage() {
   const [search, set_search] = useState("");
   const [status_filter, set_status_filter] = useState("all");
   const [category_filter, set_category_filter] = useState("all");
-  const [selected_item, set_selected_item] = useState<any>(null);
+  const [selected_item, set_selected_item] = useState<LostItem | null>(null);
   const [action_modal, set_action_modal] = useState<
     "approve" | "reject" | "delete" | "view" | null
   >(null);
   const [reject_reason, set_reject_reason] = useState("");
+  const [action_loading, set_action_loading] = useState(false);
 
   useEffect(() => {
     fetch_lost_items({
@@ -50,26 +67,47 @@ export default function LostItemsPage() {
 
   const handle_approve = async () => {
     if (selected_item) {
-      await approve_item(selected_item._id, "lost");
-      set_action_modal(null);
-      set_selected_item(null);
+      set_action_loading(true);
+      try {
+        await approve_item(selected_item._id, "lost");
+        set_action_modal(null);
+        set_selected_item(null);
+      } catch (error) {
+        console.error("Error approving item:", error);
+      } finally {
+        set_action_loading(false);
+      }
     }
   };
 
   const handle_reject = async () => {
     if (selected_item && reject_reason) {
-      await reject_item(selected_item._id, "lost", reject_reason);
-      set_action_modal(null);
-      set_reject_reason("");
-      set_selected_item(null);
+      set_action_loading(true);
+      try {
+        await reject_item(selected_item._id, "lost", reject_reason);
+        set_action_modal(null);
+        set_reject_reason("");
+        set_selected_item(null);
+      } catch (error) {
+        console.error("Error rejecting item:", error);
+      } finally {
+        set_action_loading(false);
+      }
     }
   };
 
   const handle_delete = async () => {
     if (selected_item) {
-      await delete_item(selected_item._id, "lost");
-      set_action_modal(null);
-      set_selected_item(null);
+      set_action_loading(true);
+      try {
+        await delete_item(selected_item._id, "lost");
+        set_action_modal(null);
+        set_selected_item(null);
+      } catch (error) {
+        console.error("Error deleting item:", error);
+      } finally {
+        set_action_loading(false);
+      }
     }
   };
 
@@ -83,13 +121,17 @@ export default function LostItemsPage() {
           onClick={() =>
             fetch_lost_items({
               search,
-              status: status_filter,
-              category: category_filter,
+              status: status_filter === "all" ? "" : status_filter,
+              category: category_filter === "all" ? "" : category_filter,
             })
           }
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2"
+          disabled={loading.items}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2 disabled:opacity-50"
         >
-          <RefreshCw size={16} />
+          <RefreshCw
+            size={16}
+            className={loading.items ? "animate-spin" : ""}
+          />
           Refresh
         </button>
       </div>
@@ -116,6 +158,7 @@ export default function LostItemsPage() {
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="resolved">Resolved</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -142,65 +185,196 @@ export default function LostItemsPage() {
         </div>
       </div>
 
-      {/* Items Grid */}
+      {/* Table */}
       {loading.items ? (
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
+      ) : lost_items.length === 0 ? (
+        <div className="bg-white rounded-lg shadow p-8 text-center">
+          <Package size={48} className="mx-auto text-gray-400 mb-4" />
+          <p className="text-gray-600">No lost items found</p>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {lost_items.map((item) => (
-            <div
-              key={item._id}
-              className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
-            >
-              <div
-                className="aspect-square bg-gray-200 rounded-t-lg overflow-hidden cursor-pointer"
-                onClick={() => {
-                  set_selected_item(item);
-                  set_action_modal("view");
-                }}
-              >
-                {item.images?.[0] ? (
-                  <Image
-                    fill
-                    src={item.images[0]}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400">
-                    <Package size={40} />
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          {/* Desktop Table */}
+          <div className="hidden lg:block overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Item
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Category
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Posted By
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {lost_items.map((item) => (
+                  <tr key={item._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="shrink-0 h-10 w-10 relative bg-gray-200 rounded overflow-hidden">
+                          {item.images?.[0] ? (
+                            <Image
+                              fill
+                              src={item.images[0]}
+                              alt={item.title}
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                              <Package size={20} />
+                            </div>
+                          )}
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900 max-w-xs truncate">
+                            {item.title}
+                          </div>
+                          {item.location && (
+                            <div className="text-xs text-gray-500 truncate max-w-xs">
+                              📍 {item.location}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 py-1 text-xs bg-gray-100 rounded capitalize">
+                        {item.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 py-1 text-xs rounded capitalize ${
+                          item.status === "active"
+                            ? "bg-green-100 text-green-700"
+                            : item.status === "resolved"
+                              ? "bg-blue-100 text-blue-700"
+                              : item.status === "rejected"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-yellow-100 text-yellow-700"
+                        }`}
+                      >
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {item.user_id?.name || "Unknown"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatDistanceToNow(new Date(item.created_at), {
+                        addSuffix: true,
+                      })}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => {
+                            set_selected_item(item);
+                            set_action_modal("view");
+                          }}
+                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
+                          title="View Details"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            set_selected_item(item);
+                            set_action_modal("approve");
+                          }}
+                          className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => {
+                            set_selected_item(item);
+                            set_action_modal("reject");
+                          }}
+                          className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                        >
+                          Reject
+                        </button>
+                        <button
+                          onClick={() => {
+                            set_selected_item(item);
+                            set_action_modal("delete");
+                          }}
+                          className="px-2 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile/Tablet Cards */}
+          <div className="lg:hidden divide-y divide-gray-200">
+            {lost_items.map((item) => (
+              <div key={item._id} className="p-4">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="shrink-0 h-16 w-16 relative bg-gray-200 rounded overflow-hidden">
+                    {item.images?.[0] ? (
+                      <Image
+                        fill
+                        src={item.images[0]}
+                        alt={item.title}
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <Package size={24} />
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              <div className="p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="text-sm font-semibold text-gray-900 line-clamp-1">
-                    {item.title}
-                  </h3>
-                  <span
-                    className={`px-2 py-1 text-xs rounded whitespace-nowrap ml-2 ${
-                      item.status === "active"
-                        ? "bg-green-100 text-green-700"
-                        : item.status === "resolved"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {item.status}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-600 line-clamp-2 mb-2">
-                  {item.description}
-                </p>
-                <div className="flex items-center gap-2 mb-3 text-xs text-gray-500">
-                  <span className="px-2 py-1 bg-gray-100 rounded">
-                    {item.category}
-                  </span>
-                  {item.location && (
-                    <span className="truncate">📍 {item.location}</span>
-                  )}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                      {item.title}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <span className="px-2 py-0.5 text-xs bg-gray-100 rounded capitalize">
+                        {item.category}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 text-xs rounded capitalize ${
+                          item.status === "active"
+                            ? "bg-green-100 text-green-700"
+                            : item.status === "resolved"
+                              ? "bg-blue-100 text-blue-700"
+                              : item.status === "rejected"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-yellow-100 text-yellow-700"
+                        }`}
+                      >
+                        {item.status}
+                      </span>
+                    </div>
+                    {item.location && (
+                      <p className="text-xs text-gray-500 truncate">
+                        📍 {item.location}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center justify-between text-xs text-gray-500 mb-3 pb-3 border-b">
                   <span>By {item.user_id?.name || "Unknown"}</span>
@@ -214,11 +388,21 @@ export default function LostItemsPage() {
                   <button
                     onClick={() => {
                       set_selected_item(item);
+                      set_action_modal("view");
+                    }}
+                    className="flex-1 px-3 py-1.5 border border-blue-600 text-blue-600 rounded text-xs hover:bg-blue-50 flex items-center justify-center gap-1"
+                  >
+                    <Eye size={14} />
+                    View
+                  </button>
+                  <button
+                    onClick={() => {
+                      set_selected_item(item);
                       set_action_modal("approve");
                     }}
                     className="flex-1 px-3 py-1.5 bg-green-600 text-white rounded text-xs hover:bg-green-700"
                   >
-                    ✓ Approve
+                    Approve
                   </button>
                   <button
                     onClick={() => {
@@ -227,7 +411,7 @@ export default function LostItemsPage() {
                     }}
                     className="flex-1 px-3 py-1.5 bg-red-600 text-white rounded text-xs hover:bg-red-700"
                   >
-                    ✗ Reject
+                    Reject
                   </button>
                   <button
                     onClick={() => {
@@ -240,8 +424,8 @@ export default function LostItemsPage() {
                   </button>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 
@@ -260,18 +444,20 @@ export default function LostItemsPage() {
             <DialogTitle>{selected_item?.title}</DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              {selected_item?.images?.map((img: string, idx: number) => (
-                <div key={idx} className="relative w-full h-48">
-                  <Image
-                    fill
-                    src={img}
-                    alt=""
-                    className="object-cover rounded-lg"
-                  />
-                </div>
-              ))}
-            </div>
+            {selected_item?.images && selected_item.images.length > 0 && (
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                {selected_item.images.map((img: string, idx: number) => (
+                  <div key={idx} className="relative w-full h-48">
+                    <Image
+                      fill
+                      src={img}
+                      alt={`Image ${idx + 1}`}
+                      className="object-cover rounded-lg"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="space-y-3">
               <div>
                 <span className="text-sm font-medium text-gray-700">
@@ -286,7 +472,7 @@ export default function LostItemsPage() {
                   <span className="text-sm font-medium text-gray-700">
                     Category:
                   </span>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 capitalize">
                     {selected_item?.category}
                   </p>
                 </div>
@@ -294,7 +480,7 @@ export default function LostItemsPage() {
                   <span className="text-sm font-medium text-gray-700">
                     Status:
                   </span>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 capitalize">
                     {selected_item?.status}
                   </p>
                 </div>
@@ -320,20 +506,24 @@ export default function LostItemsPage() {
                   </p>
                 </div>
               </div>
-              <div>
-                <span className="text-sm font-medium text-gray-700">
-                  Posted by:
-                </span>
-                <p className="text-sm text-gray-600">
-                  {selected_item?.user_id?.name} (
-                  {selected_item?.user_id?.email})
-                </p>
-              </div>
+              {selected_item?.user_id && (
+                <div>
+                  <span className="text-sm font-medium text-gray-700">
+                    Posted by:
+                  </span>
+                  <p className="text-sm text-gray-600">
+                    {selected_item.user_id.name} ({selected_item.user_id.email})
+                  </p>
+                </div>
+              )}
             </div>
           </div>
           <DialogFooter>
             <button
-              onClick={() => set_action_modal(null)}
+              onClick={() => {
+                set_action_modal(null);
+                set_selected_item(null);
+              }}
               className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
             >
               Close
@@ -361,16 +551,21 @@ export default function LostItemsPage() {
           </DialogHeader>
           <DialogFooter>
             <button
-              onClick={() => set_action_modal(null)}
-              className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+              onClick={() => {
+                set_action_modal(null);
+                set_selected_item(null);
+              }}
+              disabled={action_loading}
+              className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               onClick={handle_approve}
-              className="px-4 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700"
+              disabled={action_loading}
+              className="px-4 py-2 text-sm text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50"
             >
-              Approve
+              {action_loading ? "Approving..." : "Approve"}
             </button>
           </DialogFooter>
         </DialogContent>
@@ -403,6 +598,7 @@ export default function LostItemsPage() {
               rows={4}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
               placeholder="Enter reason..."
+              disabled={action_loading}
             />
           </div>
           <DialogFooter>
@@ -410,17 +606,19 @@ export default function LostItemsPage() {
               onClick={() => {
                 set_action_modal(null);
                 set_reject_reason("");
+                set_selected_item(null);
               }}
-              className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+              disabled={action_loading}
+              className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               onClick={handle_reject}
-              disabled={!reject_reason}
+              disabled={!reject_reason.trim() || action_loading}
               className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
             >
-              Reject
+              {action_loading ? "Rejecting..." : "Reject"}
             </button>
           </DialogFooter>
         </DialogContent>
@@ -446,16 +644,21 @@ export default function LostItemsPage() {
           </DialogHeader>
           <DialogFooter>
             <button
-              onClick={() => set_action_modal(null)}
-              className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+              onClick={() => {
+                set_action_modal(null);
+                set_selected_item(null);
+              }}
+              disabled={action_loading}
+              className="px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               onClick={handle_delete}
-              className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700"
+              disabled={action_loading}
+              className="px-4 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
             >
-              Delete
+              {action_loading ? "Deleting..." : "Delete"}
             </button>
           </DialogFooter>
         </DialogContent>

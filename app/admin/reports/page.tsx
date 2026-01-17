@@ -20,7 +20,7 @@ export default function ReportsPage() {
   const [priority_filter, set_priority_filter] = useState("");
   const [selected_report, set_selected_report] = useState<any>(null);
   const [action_modal, set_action_modal] = useState<"resolve" | "view" | null>(
-    null
+    null,
   );
   const [resolution, set_resolution] = useState("");
 
@@ -152,10 +152,10 @@ export default function ReportsPage() {
                           report.priority === "critical"
                             ? "bg-red-100 text-red-700"
                             : report.priority === "high"
-                            ? "bg-orange-100 text-orange-700"
-                            : report.priority === "medium"
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-green-100 text-green-700"
+                              ? "bg-orange-100 text-orange-700"
+                              : report.priority === "medium"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-green-100 text-green-700"
                         }`}
                       >
                         {report.priority}
@@ -167,10 +167,10 @@ export default function ReportsPage() {
                           report.status === "resolved"
                             ? "bg-green-100 text-green-700"
                             : report.status === "dismissed"
-                            ? "bg-muted text-foreground"
-                            : report.status === "under_review"
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-yellow-100 text-yellow-700"
+                              ? "bg-muted text-foreground"
+                              : report.status === "under_review"
+                                ? "bg-blue-100 text-blue-700"
+                                : "bg-yellow-100 text-yellow-700"
                         }`}
                       >
                         {report.status}
