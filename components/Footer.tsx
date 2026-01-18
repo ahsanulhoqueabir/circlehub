@@ -11,6 +11,12 @@ export default function Footer() {
       { name: "Found Items", href: "/found" },
       { name: "Share Items", href: "/share" },
     ],
+    account: [
+      { name: "My Items", href: "/my-items" },
+      { name: "My Claims", href: "/claims" },
+      { name: "Profile", href: "/profile" },
+      { name: "Settings", href: "/settings" },
+    ],
     support: [
       { name: "Help Center", href: "/help" },
       { name: "Contact Us", href: "/contact" },
@@ -30,7 +36,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
         <div className="py-12 lg:py-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
             {/* Brand Section */}
             <div className="lg:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
@@ -71,6 +77,25 @@ export default function Footer() {
               </h3>
               <ul className="space-y-3">
                 {footerLinks.platform.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      href={link.href}
+                      className="text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Account Links */}
+            <div>
+              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-4">
+                Account
+              </h3>
+              <ul className="space-y-3">
+                {footerLinks.account.map((link) => (
                   <li key={link.name}>
                     <Link
                       href={link.href}
