@@ -8,6 +8,7 @@ import React, {
   useCallback,
   useRef,
 } from "react";
+import { useRouter } from "next/navigation";
 import type { UserProfile } from "@/types/auth.types";
 
 // Auth Context Type
@@ -42,6 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const router = useRouter();
 
   // Clear auth data function (defined early for use in other functions)
   const clearAuthData = useCallback(() => {
@@ -58,7 +60,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Logout function (defined early for use in other functions)
   const logout = useCallback(() => {
     clearAuthData();
-  }, [clearAuthData]);
+    // Redirect to login page
+    router.push("/login");
+  }, [clearAuthData, router]);
 
   // Clear refresh timer on unmount
   useEffect(() => {
@@ -124,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }, refreshTime);
     },
-    [refreshAccessToken]
+    [refreshAccessToken],
   );
 
   // Fetch current user from API using token
@@ -155,19 +159,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem(USER_KEY, JSON.stringify(data.user));
             return true;
           }
-        } else if (response.status === 401) {
-          console.warn("Auth: Token invalid (401), attempting refresh...");
-          // Token is invalid, try to refresh
-          const refreshResult = await refreshAccessToken();
-          if (refreshResult?.accessToken) {
-            // Retry with new token
-            console.log("Auth: Token refreshed, retrying fetchCurrentUser");
-            return await fetchCurrentUser(refreshResult.accessToken);
-          } else {
-            console.error("Auth: Token refresh failed");
-          }
         } else {
-          console.error("Auth: Unexpected response status:", response.status);
+          // Parse error response
+          const errorData = await response.json().catch(() => null);
+
+          // Check for token expired error
+          if (
+            errorData?.success === false &&
+            (errorData?.error === "INVALID_TOKEN" ||
+              errorData?.error === "TOKEN_EXPIRED") &&
+            (errorData?.message?.toLowerCase().includes("token expired") ||
+              errorData?.message?.toLowerCase().includes("invalid token"))
+          ) {
+            console.warn("Auth: Token expired, logging out...");
+            logout();
+            return false;
+          }
+
+          // Handle 401 - try to refresh token
+          if (response.status === 401) {
+            console.warn("Auth: Token invalid (401), attempting refresh...");
+            // Token is invalid, try to refresh
+            const refreshResult = await refreshAccessToken();
+            if (refreshResult?.accessToken) {
+              // Retry with new token
+              console.log("Auth: Token refreshed, retrying fetchCurrentUser");
+              return await fetchCurrentUser(refreshResult.accessToken);
+            } else {
+              console.error("Auth: Token refresh failed");
+            }
+          } else {
+            console.error("Auth: Unexpected response status:", response.status);
+          }
         }
         return false;
       } catch (error) {
@@ -175,7 +198,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return false;
       }
     },
-    [refreshAccessToken]
+    [refreshAccessToken, logout],
   );
 
   // Load user from localStorage and verify token on mount
@@ -229,8 +252,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 setUser(data.user);
                 localStorage.setItem(USER_KEY, JSON.stringify(data.user));
               }
+            } else {
+              // Check for token expired error
+              const errorData = await response.json().catch(() => null);
+              if (
+                errorData?.success === false &&
+                (errorData?.error === "INVALID_TOKEN" ||
+                  errorData?.error === "TOKEN_EXPIRED") &&
+                (errorData?.message?.toLowerCase().includes("token expired") ||
+                  errorData?.message?.toLowerCase().includes("invalid token"))
+              ) {
+                console.warn(
+                  "Auth: Token expired during verification, logging out...",
+                );
+                if (mounted) {
+                  logout();
+                }
+              }
             }
-            // Don't clear auth on failure - token might still be valid
+            // Don't clear auth on other failures - token might still be valid
           } catch (err) {
             console.warn("Auth: Background verification failed:", err);
             // Keep user logged in even if verification fails
