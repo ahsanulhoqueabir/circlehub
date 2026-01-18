@@ -5,6 +5,7 @@ import { Suspense, useState } from "react";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { useRouter, useSearchParams } from "next/navigation";
+import Logo from "@/components/Logo";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -36,9 +37,7 @@ function LoginForm() {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="flex justify-center">
-            <div className="w-12 h-12 bg-linear-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-xl">CC</span>
-            </div>
+            <Logo size="lg" showText={false} href={null} />
           </div>
           <h2 className="mt-6 text-3xl font-bold text-slate-900 dark:text-white">
             Sign in to your account
@@ -60,19 +59,6 @@ function LoginForm() {
               {error}
             </div>
           )}
-
-          {/* Google sign-in removed */}
-
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-300 dark:border-slate-600" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-card text-muted-foreground">
-                Or continue with email
-              </span>
-            </div>
-          </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
