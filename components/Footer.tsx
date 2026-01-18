@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Mail, Phone, MapPin } from "lucide-react";
+import Logo from "@/components/Logo";
 
 export default function Footer() {
   const footerLinks = {
@@ -39,14 +40,7 @@ export default function Footer() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
             {/* Brand Section */}
             <div className="lg:col-span-2">
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-10 h-10 bg-linear-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">CH</span>
-                </div>
-                <span className="text-xl font-bold text-foreground">
-                  CircleHub JnU
-                </span>
-              </div>
+              <Logo size="md" showText={true} className="mb-4" />
               <p className="text-muted-foreground mb-6 max-w-md">
                 The modern platform connecting JnU students through lost & found
                 services, item sharing, and community building. Safe, secure,

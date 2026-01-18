@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/contexts/auth-context";
+import Logo from "@/components/Logo";
 
 import { PUBLIC_ROUTES } from "@/config/routes.config";
 
@@ -85,18 +86,7 @@ export default function Navigation() {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <Link href="/" className="flex items-center space-x-2">
-                <Image
-                  src="/logo/transparent-logo.png"
-                  alt="CircleHub JnU Logo"
-                  width={36}
-                  height={36}
-                  className="rounded-lg"
-                />
-                <span className="text-xl font-bold text-foreground hidden sm:block">
-                  CircleHub JnU
-                </span>
-              </Link>
+              <Logo size="md" showText={true} />
             </div>
 
             {/* Desktop Menu */}
