@@ -295,17 +295,17 @@ export default function LostItemsPage() {
                         </button>
                         {item.status !== "resolved" && (
                           <>
-                            <button
-                              onClick={() => {
-                                set_selected_item(item);
-                                set_action_modal("approve");
-                              }}
-                              className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
-                            >
-                              {item.status === "active"
-                                ? "Re-approve"
-                                : "Approve"}
-                            </button>
+                            {item.status !== "active" && (
+                              <button
+                                onClick={() => {
+                                  set_selected_item(item);
+                                  set_action_modal("approve");
+                                }}
+                                className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+                              >
+                                Approve
+                              </button>
+                            )}
                             <button
                               onClick={() => {
                                 set_selected_item(item);
@@ -403,15 +403,17 @@ export default function LostItemsPage() {
                   </button>
                   {item.status !== "resolved" && (
                     <>
-                      <button
-                        onClick={() => {
-                          set_selected_item(item);
-                          set_action_modal("approve");
-                        }}
-                        className="flex-1 px-3 py-1.5 bg-green-600 text-white rounded text-xs hover:bg-green-700"
-                      >
-                        {item.status === "active" ? "Re-approve" : "Approve"}
-                      </button>
+                      {item.status !== "active" && (
+                        <button
+                          onClick={() => {
+                            set_selected_item(item);
+                            set_action_modal("approve");
+                          }}
+                          className="flex-1 px-3 py-1.5 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                        >
+                          Approve
+                        </button>
+                      )}
                       <button
                         onClick={() => {
                           set_selected_item(item);
