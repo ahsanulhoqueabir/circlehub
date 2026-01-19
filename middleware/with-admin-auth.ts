@@ -29,23 +29,38 @@ export interface AdminAuthRequest extends NextRequest {
 function getDefaultPermissionsByRole(role: string): string[] {
   const permission_map: Record<string, string[]> = {
     admin: [
-      "manage_users",
-      "manage_items",
-      "manage_claims",
-      "manage_reports",
-      "view_analytics",
-      "manage_admins",
-      "view_audit_logs",
-      "system_settings",
+      "users.view",
+      "users.edit",
+      "users.delete",
+      "users.ban",
+      "items.view",
+      "items.edit",
+      "items.delete",
+      "items.approve",
+      "claims.view",
+      "claims.manage",
+      "reports.view",
+      "reports.manage",
+      "analytics.view",
+      "logs.view",
+      "logs.export",
+      "admins.manage",
+      "settings.edit",
     ],
     moderator: [
-      "manage_items",
-      "manage_claims",
-      "manage_reports",
-      "view_analytics",
-      "view_audit_logs",
+      "users.view",
+      "users.ban",
+      "items.view",
+      "items.edit",
+      "items.approve",
+      "items.delete",
+      "claims.view",
+      "claims.manage",
+      "reports.view",
+      "reports.manage",
+      "analytics.view",
     ],
-    support_staff: ["manage_claims", "manage_reports", "view_analytics"],
+    support_staff: ["users.view", "items.view", "claims.view", "reports.view"],
   };
 
   return permission_map[role] || [];
@@ -59,15 +74,15 @@ function getDefaultPermissionsByRole(role: string): string[] {
  */
 export function with_admin_auth<T>(
   handler: (req: AdminAuthRequest, context: T) => Promise<NextResponse>,
-  required_permission?: string
+  required_permission?: string,
 ): (req: NextRequest, context: T) => Promise<NextResponse>;
 export function with_admin_auth(
   handler: (req: AdminAuthRequest) => Promise<NextResponse>,
-  required_permission?: string
+  required_permission?: string,
 ): (req: NextRequest) => Promise<NextResponse>;
 export function with_admin_auth<T = unknown>(
   handler: (req: AdminAuthRequest, context?: T) => Promise<NextResponse>,
-  required_permission?: string
+  required_permission?: string,
 ) {
   return async (req: NextRequest, context?: T) => {
     try {
@@ -79,7 +94,7 @@ export function with_admin_auth<T = unknown>(
             success: false,
             message: "No authorization token provided",
           },
-          { status: 401 }
+          { status: 401 },
         );
       }
 
@@ -93,14 +108,14 @@ export function with_admin_auth<T = unknown>(
             success: false,
             message: "Invalid or expired token",
           },
-          { status: 401 }
+          { status: 401 },
         );
       }
 
       // Connect to database and get user details
       await dbConnect();
       const user = await User.findById(decoded.payload.userId).select(
-        "-password"
+        "-password",
       );
 
       if (!user) {
@@ -109,7 +124,7 @@ export function with_admin_auth<T = unknown>(
             success: false,
             message: "User not found",
           },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -121,7 +136,7 @@ export function with_admin_auth<T = unknown>(
             success: false,
             message: "User is not an admin",
           },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
@@ -132,7 +147,7 @@ export function with_admin_auth<T = unknown>(
             success: false,
             message: "Admin account is deactivated",
           },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
@@ -147,7 +162,7 @@ export function with_admin_auth<T = unknown>(
               success: false,
               message: `Permission denied. Required: ${required_permission}`,
             },
-            { status: 403 }
+            { status: 403 },
           );
         }
       }
@@ -168,7 +183,7 @@ export function with_admin_auth<T = unknown>(
           success: false,
           message: "Authentication failed",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
   };
@@ -179,7 +194,7 @@ export function with_admin_auth<T = unknown>(
  */
 export function with_admin_auth_any<T = unknown>(
   handler: (req: AdminAuthRequest, context?: T) => Promise<NextResponse>,
-  required_permissions: string[]
+  required_permissions: string[],
 ) {
   return async (req: NextRequest, context?: T) => {
     try {
@@ -191,7 +206,7 @@ export function with_admin_auth_any<T = unknown>(
             success: false,
             message: "No authorization token provided",
           },
-          { status: 401 }
+          { status: 401 },
         );
       }
 
@@ -205,14 +220,14 @@ export function with_admin_auth_any<T = unknown>(
             success: false,
             message: "Invalid or expired token",
           },
-          { status: 401 }
+          { status: 401 },
         );
       }
 
       // Connect to database and get user details
       await dbConnect();
       const user = await User.findById(decoded.payload.userId).select(
-        "-password"
+        "-password",
       );
 
       if (!user) {
@@ -221,7 +236,7 @@ export function with_admin_auth_any<T = unknown>(
             success: false,
             message: "User not found",
           },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -233,7 +248,7 @@ export function with_admin_auth_any<T = unknown>(
             success: false,
             message: "User is not an admin",
           },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
@@ -244,7 +259,7 @@ export function with_admin_auth_any<T = unknown>(
             success: false,
             message: "Admin account is deactivated",
           },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
@@ -253,7 +268,7 @@ export function with_admin_auth_any<T = unknown>(
 
       // Check if admin has at least one of the required permissions
       const has_permission = required_permissions.some((perm) =>
-        permissions.includes(perm)
+        permissions.includes(perm),
       );
 
       if (!has_permission) {
@@ -261,10 +276,10 @@ export function with_admin_auth_any<T = unknown>(
           {
             success: false,
             message: `Permission denied. Required one of: ${required_permissions.join(
-              ", "
+              ", ",
             )}`,
           },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
@@ -284,7 +299,7 @@ export function with_admin_auth_any<T = unknown>(
           success: false,
           message: "Authentication failed",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
   };
@@ -295,7 +310,7 @@ export function with_admin_auth_any<T = unknown>(
  */
 export function with_admin_role<T = unknown>(
   handler: (req: AdminAuthRequest, context?: T) => Promise<NextResponse>,
-  required_role: "super_admin" | "moderator" | "support_staff"
+  required_role: "super_admin" | "moderator" | "support_staff",
 ) {
   return async (req: NextRequest, context?: T) => {
     try {
@@ -307,7 +322,7 @@ export function with_admin_role<T = unknown>(
             success: false,
             message: "No authorization token provided",
           },
-          { status: 401 }
+          { status: 401 },
         );
       }
 
@@ -321,14 +336,14 @@ export function with_admin_role<T = unknown>(
             success: false,
             message: "Invalid or expired token",
           },
-          { status: 401 }
+          { status: 401 },
         );
       }
 
       // Connect to database and get user details
       await dbConnect();
       const user = await User.findById(decoded.payload.userId).select(
-        "-password"
+        "-password",
       );
 
       if (!user) {
@@ -337,7 +352,7 @@ export function with_admin_role<T = unknown>(
             success: false,
             message: "User not found",
           },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -349,7 +364,7 @@ export function with_admin_role<T = unknown>(
             success: false,
             message: "User is not an admin",
           },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
@@ -360,7 +375,7 @@ export function with_admin_role<T = unknown>(
             success: false,
             message: "Admin account is deactivated",
           },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
@@ -371,7 +386,7 @@ export function with_admin_role<T = unknown>(
             success: false,
             message: `Access denied. Required role: ${required_role}`,
           },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
@@ -394,7 +409,7 @@ export function with_admin_role<T = unknown>(
           success: false,
           message: "Authentication failed",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
   };

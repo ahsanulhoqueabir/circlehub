@@ -65,6 +65,15 @@ export default function FoundItemsPage() {
     });
   }, [fetch_found_items, search, status_filter, category_filter]);
 
+  // Filter items that need approval (exclude available and claimed)
+  const items_needing_approval = found_items.filter(
+    (item) => item.status === "pending" || item.status === "rejected",
+  );
+
+  // Determine which items to display based on filter
+  const displayed_items =
+    status_filter === "all" ? items_needing_approval : found_items;
+
   const handle_approve = async () => {
     if (selected_item) {
       set_action_loading(true);
@@ -128,7 +137,10 @@ export default function FoundItemsPage() {
           disabled={loading.items}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm flex items-center gap-2 disabled:opacity-50"
         >
-          <RefreshCw size={16} className={loading.items ? "animate-spin" : ""} />
+          <RefreshCw
+            size={16}
+            className={loading.items ? "animate-spin" : ""}
+          />
           Refresh
         </button>
       </div>
@@ -176,7 +188,16 @@ export default function FoundItemsPage() {
           </div>
           <div className="flex items-center">
             <span className="text-sm text-gray-600">
-              Total: <strong>{found_items.length}</strong> items
+              {status_filter === "all" ? (
+                <>
+                  Pending Approval:{" "}
+                  <strong>{items_needing_approval.length}</strong> items
+                </>
+              ) : (
+                <>
+                  Total: <strong>{found_items.length}</strong> items
+                </>
+              )}
             </span>
           </div>
         </div>
@@ -187,10 +208,14 @@ export default function FoundItemsPage() {
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
-      ) : found_items.length === 0 ? (
+      ) : displayed_items.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-8 text-center">
           <Sparkles size={48} className="mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-600">No found items</p>
+          <p className="text-gray-600">
+            {status_filter === "all"
+              ? "No items pending approval"
+              : "No found items matching filters"}
+          </p>
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -220,7 +245,7 @@ export default function FoundItemsPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {found_items.map((item) => (
+                {displayed_items.map((item) => (
                   <tr key={item._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -261,10 +286,10 @@ export default function FoundItemsPage() {
                           item.status === "available"
                             ? "bg-green-100 text-green-700"
                             : item.status === "claimed"
-                            ? "bg-blue-100 text-blue-700"
-                            : item.status === "rejected"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-yellow-100 text-yellow-700"
+                              ? "bg-blue-100 text-blue-700"
+                              : item.status === "rejected"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-yellow-100 text-yellow-700"
                         }`}
                       >
                         {item.status}
@@ -290,24 +315,29 @@ export default function FoundItemsPage() {
                         >
                           <Eye size={16} />
                         </button>
-                        <button
-                          onClick={() => {
-                            set_selected_item(item);
-                            set_action_modal("approve");
-                          }}
-                          className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => {
-                            set_selected_item(item);
-                            set_action_modal("reject");
-                          }}
-                          className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
-                        >
-                          Reject
-                        </button>
+                        {(item.status === "pending" ||
+                          item.status === "rejected") && (
+                          <>
+                            <button
+                              onClick={() => {
+                                set_selected_item(item);
+                                set_action_modal("approve");
+                              }}
+                              className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => {
+                                set_selected_item(item);
+                                set_action_modal("reject");
+                              }}
+                              className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700"
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
                         <button
                           onClick={() => {
                             set_selected_item(item);
@@ -327,7 +357,7 @@ export default function FoundItemsPage() {
 
           {/* Mobile/Tablet Cards */}
           <div className="lg:hidden divide-y divide-gray-200">
-            {found_items.map((item) => (
+            {displayed_items.map((item) => (
               <div key={item._id} className="p-4">
                 <div className="flex items-start gap-3 mb-3">
                   <div className="shrink-0 h-16 w-16 relative bg-gray-200 rounded overflow-hidden">
@@ -357,10 +387,10 @@ export default function FoundItemsPage() {
                           item.status === "available"
                             ? "bg-green-100 text-green-700"
                             : item.status === "claimed"
-                            ? "bg-blue-100 text-blue-700"
-                            : item.status === "rejected"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-yellow-100 text-yellow-700"
+                              ? "bg-blue-100 text-blue-700"
+                              : item.status === "rejected"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-yellow-100 text-yellow-700"
                         }`}
                       >
                         {item.status}
@@ -392,24 +422,29 @@ export default function FoundItemsPage() {
                     <Eye size={14} />
                     View
                   </button>
-                  <button
-                    onClick={() => {
-                      set_selected_item(item);
-                      set_action_modal("approve");
-                    }}
-                    className="flex-1 px-3 py-1.5 bg-green-600 text-white rounded text-xs hover:bg-green-700"
-                  >
-                    Approve
-                  </button>
-                  <button
-                    onClick={() => {
-                      set_selected_item(item);
-                      set_action_modal("reject");
-                    }}
-                    className="flex-1 px-3 py-1.5 bg-red-600 text-white rounded text-xs hover:bg-red-700"
-                  >
-                    Reject
-                  </button>
+                  {(item.status === "pending" ||
+                    item.status === "rejected") && (
+                    <>
+                      <button
+                        onClick={() => {
+                          set_selected_item(item);
+                          set_action_modal("approve");
+                        }}
+                        className="flex-1 px-3 py-1.5 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => {
+                          set_selected_item(item);
+                          set_action_modal("reject");
+                        }}
+                        className="flex-1 px-3 py-1.5 bg-red-600 text-white rounded text-xs hover:bg-red-700"
+                      >
+                        Reject
+                      </button>
+                    </>
+                  )}
                   <button
                     onClick={() => {
                       set_selected_item(item);
