@@ -313,7 +313,9 @@ export default function ShareItemsPage() {
                               }}
                               className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700"
                             >
-                              {item.status === "available" ? "Re-approve" : "Approve"}
+                              {item.status === "available"
+                                ? "Re-approve"
+                                : "Approve"}
                             </button>
                             <button
                               onClick={() => {
