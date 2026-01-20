@@ -64,15 +64,6 @@ export default function ClaimsPage() {
     fetch_claims({ status: status_filter === "all" ? "" : status_filter });
   }, [fetch_claims, status_filter]);
 
-  // Filter claims that need approval (exclude approved, completed, rejected)
-  const claims_needing_approval = claims.filter(
-    (claim) => claim.status === "pending" || claim.status === "processing",
-  );
-
-  // Determine which claims to display based on filter
-  const displayed_claims =
-    status_filter === "all" ? claims_needing_approval : claims;
-
   const handle_approve = async () => {
     if (selected_claim) {
       set_action_loading(true);
@@ -145,16 +136,7 @@ export default function ClaimsPage() {
           </div>
           <div className="flex items-center md:col-span-2">
             <span className="text-sm text-gray-600">
-              {status_filter === "all" ? (
-                <>
-                  Pending Review:{" "}
-                  <strong>{claims_needing_approval.length}</strong> claims
-                </>
-              ) : (
-                <>
-                  Total: <strong>{claims.length}</strong> claims
-                </>
-              )}
+              Total: <strong>{claims.length}</strong> claims
             </span>
           </div>
         </div>
@@ -165,14 +147,10 @@ export default function ClaimsPage() {
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
-      ) : displayed_claims.length === 0 ? (
+      ) : claims.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-8 text-center">
           <ClipboardCheck size={48} className="mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-600">
-            {status_filter === "all"
-              ? "No claims pending review"
-              : "No claims matching filter"}
-          </p>
+          <p className="text-gray-600">No claims found</p>
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -199,7 +177,7 @@ export default function ClaimsPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {displayed_claims.map((claim) => (
+                {claims.map((claim) => (
                   <tr key={claim._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -270,7 +248,8 @@ export default function ClaimsPage() {
                         >
                           <Eye size={16} />
                         </button>
-                        {claim.status === "pending" && (
+                        {(claim.status === "pending" ||
+                          claim.status === "processing") && (
                           <>
                             <button
                               onClick={() => {
@@ -302,7 +281,7 @@ export default function ClaimsPage() {
 
           {/* Mobile/Tablet Cards */}
           <div className="lg:hidden divide-y divide-gray-200">
-            {displayed_claims.map((claim) => (
+            {claims.map((claim) => (
               <div key={claim._id} className="p-4">
                 <div className="flex items-start gap-3 mb-3">
                   <div className="shrink-0 h-16 w-16 relative bg-gray-200 rounded overflow-hidden">
@@ -368,7 +347,8 @@ export default function ClaimsPage() {
                     <Eye size={14} />
                     View
                   </button>
-                  {claim.status === "pending" && (
+                  {(claim.status === "pending" ||
+                    claim.status === "processing") && (
                     <>
                       <button
                         onClick={() => {
