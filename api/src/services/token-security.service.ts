@@ -79,6 +79,22 @@ export const revokeRefreshTokenSession = async (
   );
 };
 
+export const revokeAllRefreshTokenSessions = async (
+  userId: string,
+): Promise<void> => {
+  await RefreshTokenSession.updateMany(
+    {
+      userId: new mongoose.Types.ObjectId(userId),
+      revokedAt: { $exists: false },
+    },
+    {
+      $set: {
+        revokedAt: new Date(),
+      },
+    },
+  );
+};
+
 export const blacklistAccessToken = async (
   payload: VerifiedJwtPayload,
   reason = "logout",

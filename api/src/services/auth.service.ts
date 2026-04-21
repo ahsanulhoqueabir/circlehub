@@ -13,6 +13,7 @@ import { AuthTokens, JwtPayload, UserProfile } from "../types/auth";
 import {
   blacklistAccessToken,
   persistRefreshTokenSession,
+  revokeAllRefreshTokenSessions,
   revokeRefreshTokenSession,
   rotateRefreshTokenSession,
   validateRefreshTokenSession,
@@ -212,6 +213,22 @@ export const logoutUser = async (
       await revokeRefreshTokenSession(refreshPayload.userId, refreshToken);
     } catch {
       // Ignore invalid refresh token on logout to keep endpoint idempotent.
+    }
+  }
+};
+
+export const logoutUserFromAllDevices = async (
+  userId: string,
+  accessToken?: string,
+): Promise<void> => {
+  await revokeAllRefreshTokenSessions(userId);
+
+  if (accessToken) {
+    try {
+      const accessPayload = verifyAccessToken(accessToken);
+      await blacklistAccessToken(accessPayload, "logout-all");
+    } catch {
+      // Ignore invalid access token on logout-all to keep endpoint idempotent.
     }
   }
 };

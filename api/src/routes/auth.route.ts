@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   loginHandler,
+  logoutAllHandler,
   logoutHandler,
   meHandler,
   refreshHandler,
@@ -16,5 +17,6 @@ authRouter.post("/login", asyncHandler(loginHandler));
 authRouter.post("/refresh", asyncHandler(refreshHandler));
 authRouter.get("/me", requireAuth, asyncHandler(meHandler));
 authRouter.post("/logout", asyncHandler(logoutHandler));
+authRouter.post("/logout-all", requireAuth, asyncHandler(logoutAllHandler));
 
 export default authRouter;

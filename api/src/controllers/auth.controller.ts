@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import {
   loginUser,
+  logoutUserFromAllDevices,
   logoutUser,
   refreshAuthToken,
   registerUser,
@@ -158,4 +159,22 @@ export const logoutHandler = async (
   res.setHeader("x-refresh-token", "");
 
   sendSuccess(res, null, "Logout successful");
+};
+
+export const logoutAllHandler = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  if (!req.user?.userId) {
+    throw new ApiError(StatusCodes.UNAUTHORIZED, "Unauthorized");
+  }
+
+  const accessToken = extractAccessToken(req);
+  await logoutUserFromAllDevices(req.user.userId, accessToken);
+
+  res.setHeader("Authorization", "");
+  res.setHeader("x-access-token", "");
+  res.setHeader("x-refresh-token", "");
+
+  sendSuccess(res, null, "Logged out from all devices successfully");
 };
