@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import {
   loginUser,
+  logoutUser,
   refreshAuthToken,
   registerUser,
   getCurrentUserById,
@@ -32,6 +33,23 @@ const extractRefreshToken = (req: Request): string | undefined => {
   if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.slice(7).trim();
     return token.length > 0 ? token : undefined;
+  }
+
+  return undefined;
+};
+
+const extractAccessToken = (req: Request): string | undefined => {
+  const authHeader = req.headers.authorization;
+
+  if (authHeader?.startsWith("Bearer ")) {
+    const token = authHeader.slice(7).trim();
+    return token.length > 0 ? token : undefined;
+  }
+
+  const accessHeader = req.headers["x-access-token"];
+
+  if (typeof accessHeader === "string" && accessHeader.trim().length > 0) {
+    return accessHeader.trim();
   }
 
   return undefined;
@@ -127,9 +145,14 @@ export const meHandler = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const logoutHandler = async (
-  _req: Request,
+  req: Request,
   res: Response,
 ): Promise<void> => {
+  const accessToken = extractAccessToken(req);
+  const refreshToken = extractRefreshToken(req);
+
+  await logoutUser(accessToken, refreshToken);
+
   res.setHeader("Authorization", "");
   res.setHeader("x-access-token", "");
   res.setHeader("x-refresh-token", "");

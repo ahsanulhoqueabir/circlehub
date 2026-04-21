@@ -3,8 +3,20 @@ import { StatusCodes } from "http-status-codes";
 import User from "../models/user.model";
 import { LoginInput, RegisterInput } from "../validations/auth.validation";
 import { ApiError } from "../utils/api-error";
-import { generateTokens, verifyRefreshToken } from "./jwt.service";
+import {
+  generateTokens,
+  getRefreshTokenExpiryDate,
+  verifyAccessToken,
+  verifyRefreshToken,
+} from "./jwt.service";
 import { AuthTokens, JwtPayload, UserProfile } from "../types/auth";
+import {
+  blacklistAccessToken,
+  persistRefreshTokenSession,
+  revokeRefreshTokenSession,
+  rotateRefreshTokenSession,
+  validateRefreshTokenSession,
+} from "./token-security.service";
 
 const SALT_ROUNDS = 10;
 
@@ -68,6 +80,11 @@ export const registerUser = async (
 
   const userProfile = toUserProfile(createdUser);
   const tokens = generateTokens(buildPayload(userProfile));
+  await persistRefreshTokenSession(
+    userProfile._id,
+    tokens.refreshToken,
+    getRefreshTokenExpiryDate(tokens.refreshToken),
+  );
 
   return {
     user: userProfile,
@@ -99,10 +116,17 @@ export const loginUser = async (
   }
 
   const profile = toUserProfile(user);
+  const tokens = generateTokens(buildPayload(profile));
+
+  await persistRefreshTokenSession(
+    profile._id,
+    tokens.refreshToken,
+    getRefreshTokenExpiryDate(tokens.refreshToken),
+  );
 
   return {
     user: profile,
-    tokens: generateTokens(buildPayload(profile)),
+    tokens,
   };
 };
 
@@ -120,6 +144,18 @@ export const refreshAuthToken = async (
     );
   }
 
+  const isStoredSessionValid = await validateRefreshTokenSession(
+    payload.userId,
+    refreshToken,
+  );
+
+  if (!isStoredSessionValid) {
+    throw new ApiError(
+      StatusCodes.UNAUTHORIZED,
+      "Refresh token has been revoked or already rotated",
+    );
+  }
+
   const user = await User.findById(payload.userId);
 
   if (!user) {
@@ -130,10 +166,18 @@ export const refreshAuthToken = async (
   }
 
   const profile = toUserProfile(user);
+  const tokens = generateTokens(buildPayload(profile));
+
+  await rotateRefreshTokenSession(
+    profile._id,
+    refreshToken,
+    tokens.refreshToken,
+    getRefreshTokenExpiryDate(tokens.refreshToken),
+  );
 
   return {
     user: profile,
-    tokens: generateTokens(buildPayload(profile)),
+    tokens,
   };
 };
 
@@ -147,4 +191,27 @@ export const getCurrentUserById = async (
   }
 
   return toUserProfile(user);
+};
+
+export const logoutUser = async (
+  accessToken?: string,
+  refreshToken?: string,
+): Promise<void> => {
+  if (accessToken) {
+    try {
+      const accessPayload = verifyAccessToken(accessToken);
+      await blacklistAccessToken(accessPayload, "logout");
+    } catch {
+      // Ignore invalid access token on logout and continue refresh session revocation.
+    }
+  }
+
+  if (refreshToken) {
+    try {
+      const refreshPayload = verifyRefreshToken(refreshToken);
+      await revokeRefreshTokenSession(refreshPayload.userId, refreshToken);
+    } catch {
+      // Ignore invalid refresh token on logout to keep endpoint idempotent.
+    }
+  }
 };

@@ -6,6 +6,12 @@ export interface JwtPayload {
   role: UserRole;
 }
 
+export interface VerifiedJwtPayload extends JwtPayload {
+  jti: string;
+  iat: number;
+  exp: number;
+}
+
 export interface UserProfile {
   _id: string;
   name: string;
