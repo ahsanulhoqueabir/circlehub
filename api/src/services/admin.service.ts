@@ -11,6 +11,7 @@ import {
   AdminChangeUserRoleInput,
   AdminQueryInput,
   AdminItemsQueryInput,
+  AdminClaimsQueryInput,
 } from "../validations/admin.validation";
 
 export const getDashboardStatistics = async () => {
@@ -250,19 +251,26 @@ export const deleteItem = async (
   return { message: "Item deleted successfully" };
 };
 
-export const listClaims = async (query: AdminQueryInput) => {
+export const listClaims = async (query: AdminClaimsQueryInput) => {
   const limit = query.limit ?? 20;
   const offset = query.offset ?? 0;
 
   const filter: Record<string, unknown> = {};
 
-  if (query.role) {
-    filter.status = query.role;
+  if (query.status) {
+    filter.status = query.status;
   }
+
+  const sortMap: Record<string, Record<string, 1 | -1>> = {
+    newest: { createdAt: -1 },
+    oldest: { createdAt: 1 },
+  };
+
+  const sort = sortMap[query.sort ?? "newest"];
 
   const [claims, total] = await Promise.all([
     FoundItemClaim.find(filter)
-      .sort({ createdAt: -1 })
+      .sort(sort)
       .skip(offset)
       .limit(limit)
       .populate("foundItemId")

@@ -20,6 +20,7 @@ import {
   adminUpdateUserSchema,
   adminChangeUserRoleSchema,
   adminItemsQuerySchema,
+  adminClaimsQuerySchema,
 } from "../validations/admin.validation";
 
 const checkAdminRole = (role?: string) => {
@@ -187,7 +188,7 @@ export const listClaimsHandler = async (
 ): Promise<void> => {
   checkAdminRole(req.user?.role);
 
-  const parsed = adminQuerySchema.safeParse(req.query);
+  const parsed = adminClaimsQuerySchema.safeParse(req.query);
 
   if (!parsed.success) {
     throw new ApiError(
