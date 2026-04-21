@@ -1,7 +1,10 @@
 import bcrypt from "bcryptjs";
 import { StatusCodes } from "http-status-codes";
 import User from "../models/user.model";
-import { UpdateProfileInput, ChangePasswordInput } from "../validations/user.validation";
+import {
+  UpdateProfileInput,
+  ChangePasswordInput,
+} from "../validations/user.validation";
 import { ApiError } from "../utils/api-error";
 
 const SALT_ROUNDS = 10;
@@ -66,7 +69,10 @@ export const changeUserPassword = async (
   );
 
   if (!passwordMatched) {
-    throw new ApiError(StatusCodes.UNAUTHORIZED, "Current password is incorrect");
+    throw new ApiError(
+      StatusCodes.UNAUTHORIZED,
+      "Current password is incorrect",
+    );
   }
 
   const hashedPassword = await bcrypt.hash(payload.newPassword, SALT_ROUNDS);

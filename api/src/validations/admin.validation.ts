@@ -28,6 +28,8 @@ export const adminItemsQuerySchema = z.object({
 });
 
 export type AdminUpdateUserInput = z.infer<typeof adminUpdateUserSchema>;
-export type AdminChangeUserRoleInput = z.infer<typeof adminChangeUserRoleSchema>;
+export type AdminChangeUserRoleInput = z.infer<
+  typeof adminChangeUserRoleSchema
+>;
 export type AdminQueryInput = z.infer<typeof adminQuerySchema>;
 export type AdminItemsQueryInput = z.infer<typeof adminItemsQuerySchema>;

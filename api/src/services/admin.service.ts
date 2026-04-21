@@ -128,9 +128,7 @@ export const updateUser = async (
   return user;
 };
 
-export const changeUserRole = async (
-  payload: AdminChangeUserRoleInput,
-) => {
+export const changeUserRole = async (payload: AdminChangeUserRoleInput) => {
   const user = await getUser(payload.userId);
 
   user.role = payload.role;
@@ -177,7 +175,11 @@ export const listItems = async (query: AdminItemsQueryInput) => {
   }
 
   const [items, total] = await Promise.all([
-    (Model as any).find(filter).sort({ createdAt: -1 }).skip(offset).limit(limit),
+    (Model as any)
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .skip(offset)
+      .limit(limit),
     (Model as any).countDocuments(filter),
   ]);
 

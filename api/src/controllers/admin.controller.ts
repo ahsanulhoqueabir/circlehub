@@ -63,7 +63,9 @@ export const getUserHandler = async (
 ): Promise<void> => {
   checkAdminRole(req.user?.role);
 
-  const userId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const userId = Array.isArray(req.params.id)
+    ? req.params.id[0]
+    : req.params.id;
   const user = await getUser(userId);
   sendSuccess(res, user, "User fetched successfully");
 };
@@ -83,7 +85,9 @@ export const updateUserHandler = async (
     );
   }
 
-  const userId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const userId = Array.isArray(req.params.id)
+    ? req.params.id[0]
+    : req.params.id;
   const user = await updateUser(userId, parsed.data);
   sendSuccess(res, user, "User updated successfully");
 };
@@ -113,7 +117,9 @@ export const deleteUserHandler = async (
 ): Promise<void> => {
   checkAdminRole(req.user?.role);
 
-  const userId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const userId = Array.isArray(req.params.id)
+    ? req.params.id[0]
+    : req.params.id;
   const result = await deleteUser(userId);
   sendSuccess(res, result, "User deleted successfully");
 };
@@ -143,8 +149,14 @@ export const getItemHandler = async (
 ): Promise<void> => {
   checkAdminRole(req.user?.role);
 
-  const itemType = (Array.isArray(req.params.itemType) ? req.params.itemType[0] : req.params.itemType) as "lost" | "found" | "share";
-  const itemId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const itemType = (
+    Array.isArray(req.params.itemType)
+      ? req.params.itemType[0]
+      : req.params.itemType
+  ) as "lost" | "found" | "share";
+  const itemId = Array.isArray(req.params.id)
+    ? req.params.id[0]
+    : req.params.id;
 
   const item = await getItem(itemType, itemId);
   sendSuccess(res, item, "Item fetched successfully");
@@ -156,8 +168,14 @@ export const deleteItemHandler = async (
 ): Promise<void> => {
   checkAdminRole(req.user?.role);
 
-  const itemType = (Array.isArray(req.params.itemType) ? req.params.itemType[0] : req.params.itemType) as "lost" | "found" | "share";
-  const itemId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const itemType = (
+    Array.isArray(req.params.itemType)
+      ? req.params.itemType[0]
+      : req.params.itemType
+  ) as "lost" | "found" | "share";
+  const itemId = Array.isArray(req.params.id)
+    ? req.params.id[0]
+    : req.params.id;
 
   const result = await deleteItem(itemType, itemId);
   sendSuccess(res, result, "Item deleted successfully");
@@ -188,7 +206,9 @@ export const getClaimHandler = async (
 ): Promise<void> => {
   checkAdminRole(req.user?.role);
 
-  const claimId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const claimId = Array.isArray(req.params.id)
+    ? req.params.id[0]
+    : req.params.id;
   const claim = await getClaim(claimId);
   sendSuccess(res, claim, "Claim fetched successfully");
 };
