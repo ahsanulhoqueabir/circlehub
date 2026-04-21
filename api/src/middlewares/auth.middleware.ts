@@ -8,12 +8,11 @@ export const requireAuth = (
   _res: Response,
   next: NextFunction,
 ): void => {
-  const tokenFromCookie = req.cookies?.accessToken as string | undefined;
   const authHeader = req.headers.authorization;
   const bearerToken = authHeader?.startsWith("Bearer ")
-    ? authHeader.slice(7)
+    ? authHeader.slice(7).trim()
     : undefined;
-  const token = tokenFromCookie || bearerToken;
+  const token = bearerToken;
 
   if (!token) {
     next(new ApiError(StatusCodes.UNAUTHORIZED, "No access token provided"));

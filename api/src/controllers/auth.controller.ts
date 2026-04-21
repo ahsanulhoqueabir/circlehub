@@ -7,12 +7,35 @@ import {
   getCurrentUserById,
 } from "../services/auth.service";
 import { sendSuccess } from "../utils/api-response";
-import {
-  accessTokenCookieOptions,
-  refreshTokenCookieOptions,
-} from "../utils/cookies";
 import { loginSchema, registerSchema } from "../validations/auth.validation";
 import { ApiError } from "../utils/api-error";
+
+const setAuthHeaders = (
+  res: Response,
+  accessToken: string,
+  refreshToken: string,
+): void => {
+  res.setHeader("Authorization", `Bearer ${accessToken}`);
+  res.setHeader("x-access-token", accessToken);
+  res.setHeader("x-refresh-token", refreshToken);
+};
+
+const extractRefreshToken = (req: Request): string | undefined => {
+  const refreshHeader = req.headers["x-refresh-token"];
+
+  if (typeof refreshHeader === "string" && refreshHeader.trim().length > 0) {
+    return refreshHeader.trim();
+  }
+
+  const authHeader = req.headers.authorization;
+
+  if (authHeader?.startsWith("Bearer ")) {
+    const token = authHeader.slice(7).trim();
+    return token.length > 0 ? token : undefined;
+  }
+
+  return undefined;
+};
 
 export const registerHandler = async (
   req: Request,
@@ -28,17 +51,7 @@ export const registerHandler = async (
   }
 
   const result = await registerUser(parsed.data);
-
-  res.cookie(
-    "accessToken",
-    result.tokens.accessToken,
-    accessTokenCookieOptions,
-  );
-  res.cookie(
-    "refreshToken",
-    result.tokens.refreshToken,
-    refreshTokenCookieOptions,
-  );
+  setAuthHeaders(res, result.tokens.accessToken, result.tokens.refreshToken);
 
   sendSuccess(
     res,
@@ -65,17 +78,7 @@ export const loginHandler = async (
   }
 
   const result = await loginUser(parsed.data);
-
-  res.cookie(
-    "accessToken",
-    result.tokens.accessToken,
-    accessTokenCookieOptions,
-  );
-  res.cookie(
-    "refreshToken",
-    result.tokens.refreshToken,
-    refreshTokenCookieOptions,
-  );
+  setAuthHeaders(res, result.tokens.accessToken, result.tokens.refreshToken);
 
   sendSuccess(
     res,
@@ -91,25 +94,17 @@ export const refreshHandler = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
-  const refreshToken =
-    (req.body.refreshToken as string | undefined) || req.cookies?.refreshToken;
+  const refreshToken = extractRefreshToken(req);
 
   if (!refreshToken) {
-    throw new ApiError(StatusCodes.UNAUTHORIZED, "Refresh token is required");
+    throw new ApiError(
+      StatusCodes.UNAUTHORIZED,
+      "Refresh token is required in x-refresh-token or Authorization header",
+    );
   }
 
   const result = await refreshAuthToken(refreshToken);
-
-  res.cookie(
-    "accessToken",
-    result.tokens.accessToken,
-    accessTokenCookieOptions,
-  );
-  res.cookie(
-    "refreshToken",
-    result.tokens.refreshToken,
-    refreshTokenCookieOptions,
-  );
+  setAuthHeaders(res, result.tokens.accessToken, result.tokens.refreshToken);
 
   sendSuccess(
     res,
@@ -135,8 +130,9 @@ export const logoutHandler = async (
   _req: Request,
   res: Response,
 ): Promise<void> => {
-  res.clearCookie("accessToken", accessTokenCookieOptions);
-  res.clearCookie("refreshToken", refreshTokenCookieOptions);
+  res.setHeader("Authorization", "");
+  res.setHeader("x-access-token", "");
+  res.setHeader("x-refresh-token", "");
 
   sendSuccess(res, null, "Logout successful");
 };
