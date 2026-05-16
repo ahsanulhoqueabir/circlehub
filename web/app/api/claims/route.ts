@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/middleware/with-auth";
 import { FoundItemClaimsService } from "@/services/found-item-claims.services";
 import { JwtPayload } from "@/types/jwt.types";
+import { handleOptions, corsResponse } from "@/lib/cors";
+
+export const OPTIONS = handleOptions;
 
 /**
  * GET /api/claims
@@ -22,7 +25,7 @@ export const GET = withAuth(async (req: NextRequest, user: JwtPayload) => {
     }
 
     if (!result.success) {
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error: result.error,
@@ -31,14 +34,14 @@ export const GET = withAuth(async (req: NextRequest, user: JwtPayload) => {
       );
     }
 
-    return NextResponse.json({
+    return corsResponse({
       success: true,
       claims: result.data,
       total: result.data?.length || 0,
     });
   } catch (error) {
     console.error("Error fetching claims:", error);
-    return NextResponse.json(
+    return corsResponse(
       {
         success: false,
         error: "Failed to fetch claims",
@@ -58,7 +61,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
     const body = await req.json();
 
     if (!body.found_item_id) {
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error: "found_item_id is required",
@@ -70,7 +73,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
     const result = await FoundItemClaimsService.createClaim(user.userId, body);
 
     if (!result.success) {
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error: result.error,
@@ -79,7 +82,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
       );
     }
 
-    return NextResponse.json(
+    return corsResponse(
       {
         success: true,
         message: result.data?.message || "Claim submitted successfully",
@@ -89,7 +92,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
     );
   } catch (error) {
     console.error("Error creating claim:", error);
-    return NextResponse.json(
+    return corsResponse(
       {
         success: false,
         error: "Failed to create claim",

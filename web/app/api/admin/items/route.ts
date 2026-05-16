@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { handleOptions, corsResponse } from "@/lib/cors";
+
+export const OPTIONS = handleOptions;
 import "@/lib/mongodb";
 import "@/lib/init-models";
 import {
@@ -18,7 +21,7 @@ async function handle_get(req: AdminAuthRequest) {
 
     const type = searchParams.get("type") as "lost" | "found" | "share";
     if (!type || !["lost", "found", "share"].includes(type)) {
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           message: "Valid item type (lost/found/share) is required",
@@ -44,7 +47,7 @@ async function handle_get(req: AdminAuthRequest) {
 
     const result = await AdminService.getAllItems(options);
     if (!result.success) {
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           message: result.error,
@@ -53,7 +56,7 @@ async function handle_get(req: AdminAuthRequest) {
       );
     }
 
-    return NextResponse.json(
+    return corsResponse(
       {
         success: true,
         message: "Items retrieved successfully",
@@ -63,7 +66,7 @@ async function handle_get(req: AdminAuthRequest) {
     );
   } catch (error: unknown) {
     console.error("Error fetching items:", error);
-    return NextResponse.json(
+    return corsResponse(
       {
         success: false,
         message: "Failed to fetch items",
