@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { handleOptions, corsResponse } from "@/lib/cors";
+
+export const OPTIONS = handleOptions;
 import { withAuth } from "@/middleware/with-auth";
 import { FoundItemClaimsService } from "@/services/found-item-claims.services";
 import { JwtPayload } from "@/types/jwt.types";
@@ -15,7 +18,7 @@ export const GET = withAuth(
   ) => {
     try {
       if (!context?.params) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: "Missing claim ID",
@@ -27,13 +30,13 @@ export const GET = withAuth(
       const { id } = await context.params;
 
       // This would need to be implemented in the service if needed
-      return NextResponse.json(
+      return corsResponse(
         { error: "Not implemented yet", claimId: id },
         { status: 501 }
       );
     } catch (error) {
       console.error("Error fetching claim:", error);
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error: "Failed to fetch claim",
@@ -57,7 +60,7 @@ export const PATCH = withAuth(
   ) => {
     try {
       if (!context?.params) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: "Missing claim ID",
@@ -70,7 +73,7 @@ export const PATCH = withAuth(
       const body = await request.json();
 
       if (!body.status || !["approved", "rejected"].includes(body.status)) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: "Invalid status. Must be 'approved' or 'rejected'",
@@ -86,7 +89,7 @@ export const PATCH = withAuth(
       );
 
       if (!result.success) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: result.error,
@@ -95,14 +98,14 @@ export const PATCH = withAuth(
         );
       }
 
-      return NextResponse.json({
+      return corsResponse({
         success: true,
         message: result.data?.message || "Claim updated successfully",
         claim: result.data?.claim,
       });
     } catch (error) {
       console.error("Error updating claim:", error);
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error: "Failed to update claim",
@@ -126,7 +129,7 @@ export const DELETE = withAuth(
   ) => {
     try {
       if (!context?.params) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: "Missing claim ID",
@@ -143,7 +146,7 @@ export const DELETE = withAuth(
       );
 
       if (!result.success) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: result.error,
@@ -152,13 +155,13 @@ export const DELETE = withAuth(
         );
       }
 
-      return NextResponse.json({
+      return corsResponse({
         success: true,
         message: result.data?.message || "Claim deleted successfully",
       });
     } catch (error) {
       console.error("Error deleting claim:", error);
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error: "Failed to delete claim",

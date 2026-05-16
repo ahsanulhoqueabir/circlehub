@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { handleOptions, corsResponse } from "@/lib/cors";
+
+export const OPTIONS = handleOptions;
 import "@/lib/mongodb";
 import "@/lib/init-models";
 import {
@@ -33,7 +36,7 @@ async function handle_get(req: AdminAuthRequest) {
 
     const result = await AdminService.getAllUsers(options);
     if (!result.success) {
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           message: result.error,
@@ -42,7 +45,7 @@ async function handle_get(req: AdminAuthRequest) {
       );
     }
 
-    return NextResponse.json(
+    return corsResponse(
       {
         success: true,
         message: "Users retrieved successfully",
@@ -52,7 +55,7 @@ async function handle_get(req: AdminAuthRequest) {
     );
   } catch (error) {
     console.error("Error fetching users:", error);
-    return NextResponse.json(
+    return corsResponse(
       {
         success: false,
         message: "Failed to fetch users",

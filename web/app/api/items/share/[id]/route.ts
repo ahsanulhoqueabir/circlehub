@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { handleOptions, corsResponse } from "@/lib/cors";
+
+export const OPTIONS = handleOptions;
 import { ShareItemsService } from "@/services/share-items.services";
 import { uploadDocumentFromBase64 } from "@/services/cloudinary.services";
 import { withAuth } from "@/middleware/with-auth";
@@ -16,36 +19,36 @@ export async function GET(
     const { id } = await context.params;
 
     if (!id) {
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error: "Item ID is required",
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const result = await ShareItemsService.getItemById(id);
 
     if (!result.success) {
-      return NextResponse.json(
+      return corsResponse(
         { success: false, error: result.error },
-        { status: result.statusCode },
+        { status: result.statusCode }
       );
     }
 
-    return NextResponse.json({
+    return corsResponse({
       success: true,
       data: result.data,
     });
   } catch (error) {
     console.error("Get share item error:", error);
-    return NextResponse.json(
+    return corsResponse(
       {
         success: false,
         error: error instanceof Error ? error.message : "Internal server error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -62,21 +65,21 @@ export const PUT = withAuth(
   ) => {
     try {
       if (!context) {
-        return NextResponse.json(
+        return corsResponse(
           { success: false, error: "Invalid request context" },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
       const { id } = await context.params;
 
       if (!id) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: "Item ID is required",
           },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -104,12 +107,12 @@ export const PUT = withAuth(
           );
         } catch (error) {
           console.error("Image upload error:", error);
-          return NextResponse.json(
+          return corsResponse(
             {
               success: false,
               error: "Failed to upload image. Please try again.",
             },
-            { status: 500 },
+            { status: 500 }
           );
         }
       }
@@ -142,13 +145,13 @@ export const PUT = withAuth(
       });
 
       if (!result.success) {
-        return NextResponse.json(
+        return corsResponse(
           { success: false, error: result.error },
-          { status: result.statusCode },
+          { status: result.statusCode }
         );
       }
 
-      return NextResponse.json({
+      return corsResponse({
         success: true,
         data: result.data,
       });
@@ -156,32 +159,32 @@ export const PUT = withAuth(
       console.error("Update share item error:", error);
 
       if (error instanceof Error && error.message.includes("permission")) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: "You don't have permission to perform this action",
           },
-          { status: 403 },
+          { status: 403 }
         );
       }
 
       if (error instanceof Error && error.message.includes("not found")) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: error.message,
           },
-          { status: 404 },
+          { status: 404 }
         );
       }
 
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error:
             error instanceof Error ? error.message : "Internal server error",
         },
-        { status: 500 },
+        { status: 500 }
       );
     }
   },
@@ -199,21 +202,21 @@ export const DELETE = withAuth(
   ) => {
     try {
       if (!context) {
-        return NextResponse.json(
+        return corsResponse(
           { success: false, error: "Invalid request context" },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
       const { id } = await context.params;
 
       if (!id) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: "Item ID is required",
           },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -223,13 +226,13 @@ export const DELETE = withAuth(
       });
 
       if (!result.success) {
-        return NextResponse.json(
+        return corsResponse(
           { success: false, error: result.error },
-          { status: result.statusCode },
+          { status: result.statusCode }
         );
       }
 
-      return NextResponse.json({
+      return corsResponse({
         success: true,
         data: result.data,
       });
@@ -237,32 +240,32 @@ export const DELETE = withAuth(
       console.error("Delete share item error:", error);
 
       if (error instanceof Error && error.message.includes("permission")) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: "You don't have permission to perform this action",
           },
-          { status: 403 },
+          { status: 403 }
         );
       }
 
       if (error instanceof Error && error.message.includes("not found")) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: error.message,
           },
-          { status: 404 },
+          { status: 404 }
         );
       }
 
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error:
             error instanceof Error ? error.message : "Internal server error",
         },
-        { status: 500 },
+        { status: 500 }
       );
     }
   },
@@ -280,21 +283,21 @@ export const PATCH = withAuth(
   ) => {
     try {
       if (!context) {
-        return NextResponse.json(
+        return corsResponse(
           { success: false, error: "Invalid request context" },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
       const { id } = await context.params;
 
       if (!id) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: "Item ID is required",
           },
-          { status: 400 },
+          { status: 400 }
         );
       }
 
@@ -302,12 +305,12 @@ export const PATCH = withAuth(
 
       if (action === "update-status" && status) {
         if (!["available", "reserved", "shared"].includes(status)) {
-          return NextResponse.json(
+          return corsResponse(
             {
               success: false,
               error: "Invalid status. Must be: available, reserved, or shared",
             },
-            { status: 400 },
+            { status: 400 }
           );
         }
 
@@ -318,45 +321,45 @@ export const PATCH = withAuth(
         });
 
         if (!result.success) {
-          return NextResponse.json(
+          return corsResponse(
             { success: false, error: result.error },
-            { status: result.statusCode },
+            { status: result.statusCode }
           );
         }
 
-        return NextResponse.json({
+        return corsResponse({
           success: true,
           data: result.data,
         });
       }
 
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error: "Invalid action",
         },
-        { status: 400 },
+        { status: 400 }
       );
     } catch (error) {
       console.error("Patch share item error:", error);
 
       if (error instanceof Error && error.message.includes("permission")) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: "You don't have permission to perform this action",
           },
-          { status: 403 },
+          { status: 403 }
         );
       }
 
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error:
             error instanceof Error ? error.message : "Internal server error",
         },
-        { status: 500 },
+        { status: 500 }
       );
     }
   },

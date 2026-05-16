@@ -4,6 +4,9 @@ import dbConnect from "@/lib/mongodb";
 import UserModel from "@/models/users.m";
 import UserService from "@/services/user.services";
 import { NextRequest, NextResponse } from "next/server";
+import { handleOptions, corsResponse } from "@/lib/cors";
+
+export const OPTIONS = handleOptions;
 
 // GET current user profile
 export const GET = withAuth(async (req: NextRequest, user: JwtPayload) => {
@@ -15,10 +18,10 @@ export const GET = withAuth(async (req: NextRequest, user: JwtPayload) => {
     );
 
     if (!userProfile) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return corsResponse({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json({
+    return corsResponse({
       user: {
         id: userProfile._id.toString(),
         email: userProfile.email,
@@ -32,9 +35,9 @@ export const GET = withAuth(async (req: NextRequest, user: JwtPayload) => {
     });
   } catch (error) {
     console.error("Get user error:", error);
-    return NextResponse.json(
+    return corsResponse(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 });
@@ -52,18 +55,18 @@ export const PUT = withAuth(async (req: NextRequest, user: JwtPayload) => {
     });
 
     if (!result.success) {
-      return NextResponse.json(
+      return corsResponse(
         { error: result.error },
-        { status: result.statusCode },
+        { status: result.statusCode }
       );
     }
 
-    return NextResponse.json(result.data, { status: result.statusCode });
+    return corsResponse(result.data, { status: result.statusCode });
   } catch (error) {
     console.error("Update user error:", error);
-    return NextResponse.json(
+    return corsResponse(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 });

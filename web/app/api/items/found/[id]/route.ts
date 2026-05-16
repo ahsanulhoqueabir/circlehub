@@ -3,6 +3,9 @@ import { withAuth } from "@/middleware/with-auth";
 import { JwtPayload } from "@/types/jwt.types";
 import { UpdateFoundItemRequest } from "@/types/items.types";
 import { NextRequest, NextResponse } from "next/server";
+import { handleOptions, corsResponse } from "@/lib/cors";
+
+export const OPTIONS = handleOptions;
 
 /**
  * GET /api/items/found/[id]
@@ -16,7 +19,7 @@ export async function GET(
     const { id } = await context.params;
 
     if (!id) {
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error: "Item ID is required",
@@ -28,7 +31,7 @@ export async function GET(
     const result = await FoundItemsService.getItemById(id);
 
     if (!result.success) {
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error: result.error,
@@ -37,13 +40,13 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({
+    return corsResponse({
       success: true,
       data: result.data,
     });
   } catch (error) {
     console.error("Get found item error:", error);
-    return NextResponse.json(
+    return corsResponse(
       {
         success: false,
         error: error instanceof Error ? error.message : "Internal server error",
@@ -65,7 +68,7 @@ export const PUT = withAuth(
   ) => {
     try {
       if (!context?.params) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: "Missing item ID",
@@ -77,7 +80,7 @@ export const PUT = withAuth(
       const { id } = await context.params;
 
       if (!id) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: "Item ID is required",
@@ -91,7 +94,7 @@ export const PUT = withAuth(
       const result = await FoundItemsService.updateItem(id, user.userId, body);
 
       if (!result.success) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: result.error,
@@ -100,14 +103,14 @@ export const PUT = withAuth(
         );
       }
 
-      return NextResponse.json({
+      return corsResponse({
         success: true,
         message: result.data?.message || "Found item updated successfully",
         data: result.data?.item,
       });
     } catch (error) {
       console.error("Update found item error:", error);
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error:
@@ -131,7 +134,7 @@ export const DELETE = withAuth(
   ) => {
     try {
       if (!context?.params) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: "Missing item ID",
@@ -143,7 +146,7 @@ export const DELETE = withAuth(
       const { id } = await context.params;
 
       if (!id) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: "Item ID is required",
@@ -155,7 +158,7 @@ export const DELETE = withAuth(
       const result = await FoundItemsService.deleteItem(id, user.userId);
 
       if (!result.success) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: result.error,
@@ -164,13 +167,13 @@ export const DELETE = withAuth(
         );
       }
 
-      return NextResponse.json({
+      return corsResponse({
         success: true,
         message: result.data?.message || "Found item deleted successfully",
       });
     } catch (error) {
       console.error("Delete found item error:", error);
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error:
@@ -194,7 +197,7 @@ export const PATCH = withAuth(
   ) => {
     try {
       if (!context?.params) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: "Missing item ID",
@@ -206,7 +209,7 @@ export const PATCH = withAuth(
       const { id } = await context.params;
 
       if (!id) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: "Item ID is required",
@@ -225,7 +228,7 @@ export const PATCH = withAuth(
         );
 
         if (!result.success) {
-          return NextResponse.json(
+          return corsResponse(
             {
               success: false,
               error: result.error,
@@ -234,14 +237,14 @@ export const PATCH = withAuth(
           );
         }
 
-        return NextResponse.json({
+        return corsResponse({
           success: true,
           message: result.data?.message || "Item marked as resolved",
           data: result.data?.item,
         });
       }
 
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error: "Invalid action",
@@ -250,7 +253,7 @@ export const PATCH = withAuth(
       );
     } catch (error) {
       console.error("Patch found item error:", error);
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error:

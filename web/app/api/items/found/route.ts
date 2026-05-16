@@ -46,7 +46,24 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // ... (rest of filtering)
+    const statusParam = searchParams.get("status");
+    const filters: ItemFilterOptions = {
+      category: (searchParams.get("category") as ItemCategory) || undefined,
+      status:
+        statusParam === "all"
+          ? undefined
+          : (statusParam as ItemStatus) || "active",
+      search: searchParams.get("search") || undefined,
+      tags: searchParams.get("tags")?.split(",").filter(Boolean) || undefined,
+      location: searchParams.get("location") || undefined,
+      dateFrom: searchParams.get("dateFrom") || undefined,
+      dateTo: searchParams.get("dateTo") || undefined,
+      userId: userId || undefined,
+      sort: (searchParams.get("sort") as SortOption) || "newest",
+      limit: parseInt(searchParams.get("limit") || "20"),
+      offset: parseInt(searchParams.get("offset") || "0"),
+    };
+
     const result = await FoundItemsService.getItems(filters);
 
     if (!result.success) {
