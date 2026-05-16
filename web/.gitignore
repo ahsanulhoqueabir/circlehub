@@ -13,7 +13,6 @@ docs/
 
 # testing
 /coverage
-lib/mock-data/
 scripts/
 mobile/
 
