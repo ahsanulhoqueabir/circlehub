@@ -1,4 +1,7 @@
 import { NextResponse } from "next/server";
+import { handleOptions, corsResponse } from "@/lib/cors";
+
+export const OPTIONS = handleOptions;
 import "@/lib/mongodb";
 import "@/lib/init-models";
 import {
@@ -15,7 +18,7 @@ async function handle_get(req: AdminAuthRequest) {
   try {
     const stats = await AdminService.getDashboardStats();
 
-    return NextResponse.json(
+    return corsResponse(
       {
         success: true,
         message: "Dashboard stats retrieved successfully",
@@ -25,7 +28,7 @@ async function handle_get(req: AdminAuthRequest) {
     );
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);
-    return NextResponse.json(
+    return corsResponse(
       {
         success: false,
         message: "Failed to fetch dashboard stats",

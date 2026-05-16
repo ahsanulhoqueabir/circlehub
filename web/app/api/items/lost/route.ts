@@ -10,6 +10,9 @@ import {
   ItemStatus,
 } from "@/types/items.types";
 import { NextRequest, NextResponse } from "next/server";
+import { handleOptions, corsResponse } from "@/lib/cors";
+
+export const OPTIONS = handleOptions;
 
 /**
  * GET /api/items/lost
@@ -28,16 +31,16 @@ export async function GET(req: NextRequest) {
       );
 
       if (!stats_result.success) {
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: stats_result.error,
           },
-          { status: stats_result.statusCode },
+          { status: stats_result.statusCode }
         );
       }
 
-      return NextResponse.json({
+      return corsResponse({
         success: true,
         data: stats_result.data,
       });
@@ -64,27 +67,27 @@ export async function GET(req: NextRequest) {
     const result = await LostItemsService.getItems(filters);
 
     if (!result.success) {
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error: result.error,
         },
-        { status: result.statusCode },
+        { status: result.statusCode }
       );
     }
 
-    return NextResponse.json({
+    return corsResponse({
       success: true,
       data: result.data,
     });
   } catch (error) {
     console.error("Get lost items error:", error);
-    return NextResponse.json(
+    return corsResponse(
       {
         success: false,
         error: error instanceof Error ? error.message : "Internal server error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
@@ -99,7 +102,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
     const { title, description, category, location, dateLost } = body;
 
     if (!title || !description || !category || !location || !dateLost) {
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error: "Missing required fields",
@@ -111,7 +114,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
             "dateLost",
           ],
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -126,12 +129,12 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
         );
       } catch (error) {
         console.error("Image upload error:", error);
-        return NextResponse.json(
+        return corsResponse(
           {
             success: false,
             error: "Failed to upload image. Please try again.",
           },
-          { status: 500 },
+          { status: 500 }
         );
       }
     }
@@ -148,31 +151,31 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
     });
 
     if (!result.success) {
-      return NextResponse.json(
+      return corsResponse(
         {
           success: false,
           error: result.error,
         },
-        { status: result.statusCode },
+        { status: result.statusCode }
       );
     }
 
-    return NextResponse.json(
+    return corsResponse(
       {
         success: true,
         message: result.data?.message || "Lost item reported successfully",
         data: result.data?.item,
       },
-      { status: result.statusCode },
+      { status: result.statusCode }
     );
   } catch (error) {
     console.error("Create lost item error:", error);
-    return NextResponse.json(
+    return corsResponse(
       {
         success: false,
         error: error instanceof Error ? error.message : "Internal server error",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 });

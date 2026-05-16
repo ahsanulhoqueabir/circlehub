@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { handleOptions, corsResponse } from "@/lib/cors";
+
+export const OPTIONS = handleOptions;
 import type { RefreshTokenRequest } from "@/types/auth.types";
 import { AuthService } from "@/services/auth.services";
 
@@ -11,7 +14,7 @@ export async function POST(req: NextRequest) {
     const body: RefreshTokenRequest = await req.json();
 
     if (!body.refreshToken) {
-      return NextResponse.json(
+      return corsResponse(
         { error: "Refresh token is required" },
         { status: 400 }
       );
@@ -20,16 +23,16 @@ export async function POST(req: NextRequest) {
     const result = await AuthService.refreshAccessToken(body.refreshToken);
 
     if (result.success && result.data) {
-      return NextResponse.json(result.data, { status: result.statusCode });
+      return corsResponse(result.data, { status: result.statusCode });
     }
 
-    return NextResponse.json(
+    return corsResponse(
       { error: result.error },
       { status: result.statusCode }
     );
   } catch (error) {
     console.error("Refresh token API error:", error);
-    return NextResponse.json(
+    return corsResponse(
       { error: "Internal server error" },
       { status: 500 }
     );

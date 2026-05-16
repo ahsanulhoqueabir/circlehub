@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { handleOptions, corsResponse } from "@/lib/cors";
+
+export const OPTIONS = handleOptions;
 import type { LoginRequest } from "@/types/auth.types";
 import { AuthService } from "@/services/auth.services";
 
@@ -9,16 +12,16 @@ export async function POST(req: NextRequest) {
     const result = await AuthService.loginUser(body);
 
     if (result.success && result.data) {
-      return NextResponse.json(result.data, { status: result.statusCode });
+      return corsResponse(result.data, { status: result.statusCode });
     }
 
-    return NextResponse.json(
+    return corsResponse(
       { error: result.error },
       { status: result.statusCode }
     );
   } catch (error) {
     console.error("Login API error:", error);
-    return NextResponse.json(
+    return corsResponse(
       { error: "Internal server error" },
       { status: 500 }
     );

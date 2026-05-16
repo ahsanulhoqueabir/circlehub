@@ -1,6 +1,9 @@
 import { withAuth } from "@/middleware/with-auth";
 import { JwtPayload } from "@/types/jwt.types";
 import { NextRequest, NextResponse } from "next/server";
+import { handleOptions, corsResponse } from "@/lib/cors";
+
+export const OPTIONS = handleOptions;
 import UserService from "@/services/user.services";
 
 // DELETE user account
@@ -9,27 +12,27 @@ export const DELETE = withAuth(async (req: NextRequest, user: JwtPayload) => {
     const { password } = await req.json();
 
     if (!password) {
-      return NextResponse.json(
+      return corsResponse(
         { error: "Password is required to delete account" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const result = await UserService.deleteAccount(user.userId, password);
 
     if (!result.success) {
-      return NextResponse.json(
+      return corsResponse(
         { error: result.error },
-        { status: result.statusCode },
+        { status: result.statusCode }
       );
     }
 
-    return NextResponse.json(result.data, { status: result.statusCode });
+    return corsResponse(result.data, { status: result.statusCode });
   } catch (error) {
     console.error("Delete account error:", error);
-    return NextResponse.json(
+    return corsResponse(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 });

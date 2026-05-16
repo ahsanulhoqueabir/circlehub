@@ -1,6 +1,9 @@
 import { withAuth } from "@/middleware/with-auth";
 import { JwtPayload } from "@/types/jwt.types";
 import { NextRequest, NextResponse } from "next/server";
+import { handleOptions, corsResponse } from "@/lib/cors";
+
+export const OPTIONS = handleOptions;
 import UserService from "@/services/user.services";
 
 // PUT update password
@@ -11,9 +14,9 @@ export const PUT = withAuth(async (req: NextRequest, user: JwtPayload) => {
 
     // Validate input
     if (!current_password || !new_password || !confirm_password) {
-      return NextResponse.json(
+      return corsResponse(
         { error: "All password fields are required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -24,18 +27,18 @@ export const PUT = withAuth(async (req: NextRequest, user: JwtPayload) => {
     });
 
     if (!result.success) {
-      return NextResponse.json(
+      return corsResponse(
         { error: result.error },
-        { status: result.statusCode },
+        { status: result.statusCode }
       );
     }
 
-    return NextResponse.json(result.data, { status: result.statusCode });
+    return corsResponse(result.data, { status: result.statusCode });
   } catch (error) {
     console.error("Change password error:", error);
-    return NextResponse.json(
+    return corsResponse(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 });
