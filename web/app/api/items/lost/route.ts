@@ -1,5 +1,5 @@
 import { LostItemsService } from "@/services/lost-items.services";
-import { uploadDocumentFromBase64 } from "@/services/clodinary.services";
+import { uploadDocumentFromBase64 } from "@/services/cloudinary.services";
 import { withAuth } from "@/middleware/with-auth";
 import { JwtPayload } from "@/types/jwt.types";
 import {

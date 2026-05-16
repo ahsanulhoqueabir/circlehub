@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ShareItemsService } from "@/services/share-items.services";
-import { uploadDocumentFromBase64 } from "@/services/clodinary.services";
+import { uploadDocumentFromBase64 } from "@/services/cloudinary.services";
 import { withAuth } from "@/middleware/with-auth";
 import { JwtPayload } from "@/types/jwt.types";
 
@@ -10,7 +10,7 @@ import { JwtPayload } from "@/types/jwt.types";
  */
 export async function GET(
   req: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await context.params;
@@ -21,7 +21,7 @@ export async function GET(
           success: false,
           error: "Item ID is required",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -30,7 +30,7 @@ export async function GET(
     if (!result.success) {
       return NextResponse.json(
         { success: false, error: result.error },
-        { status: result.statusCode }
+        { status: result.statusCode },
       );
     }
 
@@ -45,7 +45,7 @@ export async function GET(
         success: false,
         error: error instanceof Error ? error.message : "Internal server error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -58,13 +58,13 @@ export const PUT = withAuth(
   async (
     req: NextRequest,
     user: JwtPayload,
-    context?: { params: Promise<{ id: string }> }
+    context?: { params: Promise<{ id: string }> },
   ) => {
     try {
       if (!context) {
         return NextResponse.json(
           { success: false, error: "Invalid request context" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -76,7 +76,7 @@ export const PUT = withAuth(
             success: false,
             error: "Item ID is required",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -100,7 +100,7 @@ export const PUT = withAuth(
           imageUrl = await uploadDocumentFromBase64(
             imageBase64,
             "share-items",
-            `share_${Date.now()}`
+            `share_${Date.now()}`,
           );
         } catch (error) {
           console.error("Image upload error:", error);
@@ -109,7 +109,7 @@ export const PUT = withAuth(
               success: false,
               error: "Failed to upload image. Please try again.",
             },
-            { status: 500 }
+            { status: 500 },
           );
         }
       }
@@ -144,7 +144,7 @@ export const PUT = withAuth(
       if (!result.success) {
         return NextResponse.json(
           { success: false, error: result.error },
-          { status: result.statusCode }
+          { status: result.statusCode },
         );
       }
 
@@ -161,7 +161,7 @@ export const PUT = withAuth(
             success: false,
             error: "You don't have permission to perform this action",
           },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
@@ -171,7 +171,7 @@ export const PUT = withAuth(
             success: false,
             error: error.message,
           },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -181,10 +181,10 @@ export const PUT = withAuth(
           error:
             error instanceof Error ? error.message : "Internal server error",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
-  }
+  },
 );
 
 /**
@@ -195,13 +195,13 @@ export const DELETE = withAuth(
   async (
     req: NextRequest,
     user: JwtPayload,
-    context?: { params: Promise<{ id: string }> }
+    context?: { params: Promise<{ id: string }> },
   ) => {
     try {
       if (!context) {
         return NextResponse.json(
           { success: false, error: "Invalid request context" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -213,7 +213,7 @@ export const DELETE = withAuth(
             success: false,
             error: "Item ID is required",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -225,7 +225,7 @@ export const DELETE = withAuth(
       if (!result.success) {
         return NextResponse.json(
           { success: false, error: result.error },
-          { status: result.statusCode }
+          { status: result.statusCode },
         );
       }
 
@@ -242,7 +242,7 @@ export const DELETE = withAuth(
             success: false,
             error: "You don't have permission to perform this action",
           },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
@@ -252,7 +252,7 @@ export const DELETE = withAuth(
             success: false,
             error: error.message,
           },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -262,10 +262,10 @@ export const DELETE = withAuth(
           error:
             error instanceof Error ? error.message : "Internal server error",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
-  }
+  },
 );
 
 /**
@@ -276,13 +276,13 @@ export const PATCH = withAuth(
   async (
     req: NextRequest,
     user: JwtPayload,
-    context?: { params: Promise<{ id: string }> }
+    context?: { params: Promise<{ id: string }> },
   ) => {
     try {
       if (!context) {
         return NextResponse.json(
           { success: false, error: "Invalid request context" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -294,7 +294,7 @@ export const PATCH = withAuth(
             success: false,
             error: "Item ID is required",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -307,7 +307,7 @@ export const PATCH = withAuth(
               success: false,
               error: "Invalid status. Must be: available, reserved, or shared",
             },
-            { status: 400 }
+            { status: 400 },
           );
         }
 
@@ -320,7 +320,7 @@ export const PATCH = withAuth(
         if (!result.success) {
           return NextResponse.json(
             { success: false, error: result.error },
-            { status: result.statusCode }
+            { status: result.statusCode },
           );
         }
 
@@ -335,7 +335,7 @@ export const PATCH = withAuth(
           success: false,
           error: "Invalid action",
         },
-        { status: 400 }
+        { status: 400 },
       );
     } catch (error) {
       console.error("Patch share item error:", error);
@@ -346,7 +346,7 @@ export const PATCH = withAuth(
             success: false,
             error: "You don't have permission to perform this action",
           },
-          { status: 403 }
+          { status: 403 },
         );
       }
 
@@ -356,8 +356,8 @@ export const PATCH = withAuth(
           error:
             error instanceof Error ? error.message : "Internal server error",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
-  }
+  },
 );

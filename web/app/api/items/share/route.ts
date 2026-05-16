@@ -1,5 +1,5 @@
 import { ShareItemsService } from "@/services/share-items.services";
-import { uploadDocumentFromBase64 } from "@/services/clodinary.services";
+import { uploadDocumentFromBase64 } from "@/services/cloudinary.services";
 import { withAuth } from "@/middleware/with-auth";
 import { JwtPayload } from "@/types/jwt.types";
 import { NextRequest, NextResponse } from "next/server";
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
       if (!result.success) {
         return NextResponse.json(
           { success: false, error: result.error },
-          { status: result.statusCode }
+          { status: result.statusCode },
         );
       }
 
@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
     if (!result.success) {
       return NextResponse.json(
         { success: false, error: result.error },
-        { status: result.statusCode }
+        { status: result.statusCode },
       );
     }
 
@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
         success: false,
         error: error instanceof Error ? error.message : "Internal server error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -120,7 +120,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
             "condition",
           ],
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -131,7 +131,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
           success: false,
           error: "Price is required for sale items and must be greater than 0",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -142,7 +142,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
         imageUrl = await uploadDocumentFromBase64(
           imageBase64,
           "share-items",
-          `share_${Date.now()}`
+          `share_${Date.now()}`,
         );
       } catch (error) {
         console.error("Image upload error:", error);
@@ -151,7 +151,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
             success: false,
             error: "Failed to upload image. Please try again.",
           },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
@@ -174,7 +174,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
     if (!result.success) {
       return NextResponse.json(
         { success: false, error: result.error },
-        { status: result.statusCode }
+        { status: result.statusCode },
       );
     }
 
@@ -183,7 +183,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
         success: true,
         data: result.data,
       },
-      { status: result.statusCode }
+      { status: result.statusCode },
     );
   } catch (error) {
     console.error("Create share item error:", error);
@@ -192,7 +192,7 @@ export const POST = withAuth(async (req: NextRequest, user: JwtPayload) => {
         success: false,
         error: error instanceof Error ? error.message : "Internal server error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 });
